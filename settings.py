@@ -2,13 +2,15 @@ import pygame
 from pygame.locals import *
 import configparser
 
-
 """constants"""
-NAME="pyRunner"
+NAME = "pyRunner"
 CONFIG = "config.cfg"
-# Window Resolution
-SCREEN_MIN_X = 600      # min resolution should work on
-SCREEN_MIN_Y = 400      # screen with 640x480 pixels
+# Minimum Fullscreen Resolution
+SCREEN_MIN_X = 640
+SCREEN_MIN_Y = 480
+# Minimum Windowed Resolution
+WINDOW_MIN_X = SCREEN_MIN_X - 40
+WINDOW_MIN_Y = SCREEN_MIN_Y - 80
 # Colors
 BLUE = pygame.Color(30, 144, 255)
 YELLOW = pygame.Color(255, 255, 0)
@@ -18,7 +20,7 @@ BACKGROUND = pygame.Color(200, 200, 200)
 GRAY = pygame.Color(100, 100, 100)
 # Settings
 _CONF_INFO = "Info"
-_CONF_INFO_NAME = "Name"
+_CONF_INFO_NAME = "name"
 _CONF_DISPLAY = "Display"
 _CONF_DISPLAY_WIDTH = "width"
 _CONF_DISPLAY_HEIGHT = "height"
@@ -91,11 +93,11 @@ def init_screen():
 def update_screen():
     """switch to fullscreen mode"""
     global screen, screen_x, screen_y, fullscreen, upscale
-    screen_resolution = pygame.display.Info()
-    s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
 
     if fullscreen:
         if not upscale:
+            screen_resolution = pygame.display.Info()
+            s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
             screen_x, screen_y = s_width, s_height
         screen = pygame.display.set_mode((screen_x, screen_y), FULLSCREEN | HWSURFACE | DOUBLEBUF, 24)
     else:
@@ -119,14 +121,12 @@ def refresh_screen(rects=None):
 def set_resolution(width, height):
     global screen_x, screen_y
 
-    if width < SCREEN_MIN_X:
-        screen_x = SCREEN_MIN_X
+    if fullscreen:
+        screen_x = SCREEN_MIN_X if width < SCREEN_MIN_X else width
+        screen_y = SCREEN_MIN_Y if height < SCREEN_MIN_Y else height
     else:
-        screen_x = width
-    if height < SCREEN_MIN_Y:
-        screen_y = SCREEN_MIN_Y
-    else:
-        screen_y = height
+        screen_x = WINDOW_MIN_X if width < WINDOW_MIN_X else width
+        screen_y = WINDOW_MIN_Y if height < WINDOW_MIN_Y else height
 
     # update the screen
     update_screen()
