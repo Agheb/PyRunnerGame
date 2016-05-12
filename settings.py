@@ -29,23 +29,6 @@ game_is_running = None
 screen = screen_x = screen_y = fps = fullscreen = None
 
 
-def _default_settings():
-    config = configparser.RawConfigParser()
-
-    """info part"""
-    config.add_section(_CONF_INFO)
-    config.set(_CONF_INFO, _CONF_INFO_NAME, NAME)
-    """write default display configuration"""
-    config.add_section(_CONF_DISPLAY)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH, 800)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT, 600)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_FPS, 25)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN, True)
-
-    with open(CONFIG, 'w') as configfile:
-        config.write(configfile)
-
-
 def read_settings():
     """read the settings from config.cfg"""
     global screen_x, screen_y, fps, fullscreen
@@ -59,8 +42,7 @@ def read_settings():
         fps = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_FPS)
         fullscreen = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN)
     except configparser.NoSectionError:
-        _default_settings()
-        read_settings()
+        write_settings(True)
 
     # controls
     # TODO
@@ -69,8 +51,15 @@ def read_settings():
     # TODO
 
 
-def write_settings():
+def write_settings(default=False):
+    global screen_x, screen_y, fps, fullscreen
     config = configparser.RawConfigParser()
+
+    if default:
+        screen_x = 800
+        screen_y = 600
+        fps = 25
+        fullscreen = True
 
     """info part"""
     config.add_section(_CONF_INFO)
@@ -87,23 +76,22 @@ def write_settings():
 
 
 def init_screen():
+    read_settings()
+    pygame.display.set_caption(NAME)
+    update_screen()
+
+
+def update_screen():
     """switch to fullscreen mode"""
     global screen, screen_x, screen_y, fullscreen
     screen_resolution = pygame.display.Info()
     s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
 
-    read_settings()
-    pygame.display.set_caption(NAME)
-
     if fullscreen:
         screen_x, screen_y = s_width, s_height
         screen = pygame.display.set_mode((screen_x, screen_y), FULLSCREEN | HWSURFACE | DOUBLEBUF, 24)
     else:
-        if s_width < screen_x:
-            screen_x = s_width
-        if s_height - 50 < screen_y - 50:  # leave some space for the menubar etc
-            screen_y = s_height - 50
-        screen = pygame.display.set_mode((screen_x, screen_y), HWSURFACE | DOUBLEBUF | RESIZABLE, 24)
+        screen = pygame.display.set_mode((screen_x, screen_y), RESIZABLE, 24)
 
 
 def refresh_screen():
@@ -112,15 +100,20 @@ def refresh_screen():
     pygame.display.update()
 
 
-def set_resolution(x, y):
-    global screen, screen_x, screen_x
-    if x < SCREEN_MIN_X:
-        x = SCREEN_MIN_X
-    if y < SCREEN_MIN_Y:
-        y = SCREEN_MIN_Y
-    screen = pygame.display.set_mode((x, y), HWSURFACE | DOUBLEBUF | RESIZABLE, 24)
-    # redraw the screen content with adjusted size
-    refresh_screen()
+def set_resolution(width, height):
+    global screen_x, screen_y
+
+    if width < SCREEN_MIN_X:
+        screen_x = SCREEN_MIN_X
+    else:
+        screen_x = width
+    if height < SCREEN_MIN_Y:
+        screen_y = SCREEN_MIN_Y
+    else:
+        screen_y = height
+
+    # update the screen
+    update_screen()
 
 
 def get_screen():
@@ -131,5 +124,16 @@ def get_fps():
     return fps
 
 
+def set_fps(new_fps):
+    global fps
+    if 0 < new_fps <= 60:
+        fps = new_fps
+
+
 def get_is_running():
     return game_is_running
+
+
+def set_is_running(bool_run):
+    global game_is_running
+    game_is_running = bool_run
