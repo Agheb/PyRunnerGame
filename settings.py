@@ -23,15 +23,16 @@ _CONF_DISPLAY = "Display"
 _CONF_DISPLAY_WIDTH = "width"
 _CONF_DISPLAY_HEIGHT = "height"
 _CONF_DISPLAY_FULLSCREEN = "fullscreen"
+_CONF_DISPLAY_UPSCALE = "upscale"
 _CONF_DISPLAY_FPS = "fps"
 """global variables"""
 game_is_running = None
-screen = screen_x = screen_y = fps = fullscreen = None
+screen = screen_x = screen_y = fps = fullscreen = upscale = None
 
 
 def read_settings():
     """read the settings from config.cfg"""
-    global screen_x, screen_y, fps, fullscreen
+    global screen_x, screen_y, fps, fullscreen, upscale
     try:
         config = configparser.RawConfigParser()
         config.read(CONFIG)
@@ -41,7 +42,10 @@ def read_settings():
         screen_y = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT)
         fps = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_FPS)
         fullscreen = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN)
+        upscale = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_UPSCALE)
     except configparser.NoSectionError:
+        write_settings(True)
+    except configparser.NoOptionError:
         write_settings(True)
 
     # controls
@@ -52,14 +56,16 @@ def read_settings():
 
 
 def write_settings(default=False):
-    global screen_x, screen_y, fps, fullscreen
+    global screen_x, screen_y, fps, fullscreen, upscale
     config = configparser.RawConfigParser()
 
     if default:
+        # default display values
         screen_x = 800
         screen_y = 600
         fps = 25
         fullscreen = True
+        upscale = False
 
     """info part"""
     config.add_section(_CONF_INFO)
@@ -70,6 +76,7 @@ def write_settings(default=False):
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT, screen_y)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_FPS, fps)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN, fullscreen)
+    config.set(_CONF_DISPLAY, _CONF_DISPLAY_UPSCALE, upscale)
 
     with open(CONFIG, 'w') as configfile:
         config.write(configfile)
@@ -83,12 +90,13 @@ def init_screen():
 
 def update_screen():
     """switch to fullscreen mode"""
-    global screen, screen_x, screen_y, fullscreen
+    global screen, screen_x, screen_y, fullscreen, upscale
     screen_resolution = pygame.display.Info()
     s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
 
     if fullscreen:
-        screen_x, screen_y = s_width, s_height
+        if not upscale:
+            screen_x, screen_y = s_width, s_height
         screen = pygame.display.set_mode((screen_x, screen_y), FULLSCREEN | HWSURFACE | DOUBLEBUF, 24)
     else:
         screen = pygame.display.set_mode((screen_x, screen_y), RESIZABLE, 24)
@@ -97,9 +105,12 @@ def update_screen():
 def refresh_screen(rects=None):
     """refresh the pygame screen/window"""
     try:
+        screen.fill(BACKGROUND)
+
         if not rects:
-            screen.fill(BACKGROUND)
-        pygame.display.update(rects)
+            pygame.display.update()
+        else:
+            pygame.display.update(rects)
     except pygame.error:
         # OpenGL can only redraw the whole screen
         pygame.display.flip()
