@@ -1,9 +1,6 @@
 # IntelliJ IDEA, PyCharm etc.
 .idea
-<<<<<<< HEAD
 .eclipse
-=======
->>>>>>> arnegewinnt
 
 # Python 3 bytecode
 __pycache__
