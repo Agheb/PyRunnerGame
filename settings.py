@@ -94,10 +94,15 @@ def update_screen():
         screen = pygame.display.set_mode((screen_x, screen_y), RESIZABLE, 24)
 
 
-def refresh_screen():
+def refresh_screen(rects=None):
     """refresh the pygame screen/window"""
-    screen.fill(BACKGROUND)
-    pygame.display.update()
+    try:
+        if not rects:
+            screen.fill(BACKGROUND)
+        pygame.display.update(rects)
+    except pygame.error:
+        # OpenGL can only redraw the whole screen
+        pygame.display.flip()
 
 
 def set_resolution(width, height):

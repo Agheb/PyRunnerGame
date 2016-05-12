@@ -14,12 +14,13 @@ def quit_game():
 def init_game():
     """initialize the game variables"""
     global screen, fps, game_is_running
-    # initialize the multidimensional array (list) and other global variables
-    game_is_running = True
+    # initialize main screen
+    settings.set_is_running(True)
     settings.init_screen()
     screen = settings.get_screen()
     fps = settings.get_fps()
     game_is_running = settings.get_is_running()
+
 
 def start_game():
     """start the game"""
