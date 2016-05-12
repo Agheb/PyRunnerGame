@@ -129,3 +129,7 @@ def get_screen():
 
 def get_fps():
     return fps
+
+
+def get_is_running():
+    return game_is_running

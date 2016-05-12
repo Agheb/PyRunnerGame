@@ -2,8 +2,8 @@ import pygame
 from pygame.locals import *
 from sys import exit
 import settings
-# PyGame Screen
-screen = settings.get_screen()
+screen = fps = game_is_running = None
+
 
 def quit_game():
     """quit the game"""
@@ -13,10 +13,13 @@ def quit_game():
 
 def init_game():
     """initialize the game variables"""
-    global game_is_running
+    global screen, fps, game_is_running
     # initialize the multidimensional array (list) and other global variables
     game_is_running = True
     settings.init_screen()
+    screen = settings.get_screen()
+    fps = settings.get_fps()
+    game_is_running = settings.get_is_running()
 
 def start_game():
     """start the game"""
@@ -24,7 +27,6 @@ def start_game():
     # PyGame initialization
     pygame.init()
     init_game()
-    fps = settings.get_fps()
     clock = pygame.time.Clock()
     refresh_counter = 0
 
