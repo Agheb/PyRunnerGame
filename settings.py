@@ -4,6 +4,7 @@ import configparser
 
 
 """constants"""
+NAME="pyRunner"
 CONFIG = "config.cfg"
 # Window Resolution
 SCREEN_MIN_X = 600      # min resolution should work on
@@ -16,6 +17,8 @@ BLACK = pygame.Color(0, 0, 0)
 BACKGROUND = pygame.Color(200, 200, 200)
 GRAY = pygame.Color(100, 100, 100)
 # Settings
+_CONF_INFO = "Info"
+_CONF_INFO_NAME = "Name"
 _CONF_DISPLAY = "Display"
 _CONF_DISPLAY_WIDTH = "width"
 _CONF_DISPLAY_HEIGHT = "height"
@@ -26,10 +29,12 @@ game_is_running = None
 screen = screen_x = screen_y = fps = fullscreen = None
 
 
-@staticmethod
 def _default_settings():
     config = configparser.RawConfigParser()
 
+    """info part"""
+    config.add_section(_CONF_INFO)
+    config.set(_CONF_INFO, _CONF_INFO_NAME, NAME)
     """write default display configuration"""
     config.add_section(_CONF_DISPLAY)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH, 800)
@@ -67,6 +72,9 @@ def read_settings():
 def write_settings():
     config = configparser.RawConfigParser()
 
+    """info part"""
+    config.add_section(_CONF_INFO)
+    config.set(_CONF_INFO, _CONF_INFO_NAME, NAME)
     """write display configuration"""
     config.add_section(_CONF_DISPLAY)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH, screen_x)
@@ -85,6 +93,7 @@ def init_screen():
     s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
 
     read_settings()
+    pygame.display.set_caption(NAME)
 
     if fullscreen:
         screen_x, screen_y = s_width, s_height

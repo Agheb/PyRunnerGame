@@ -26,7 +26,6 @@ def start_game():
     init_game()
     fps = settings.get_fps()
     clock = pygame.time.Clock()
-    pygame.display.set_caption("pyRunner")
     refresh_counter = 0
 
     # init screen
@@ -37,7 +36,8 @@ def start_game():
             if event.type == QUIT:
                 quit_game()
             elif event.type == VIDEORESIZE:
-                settings.set_resolution(event.dict['size'])
+                x, y = event.dict['size']
+                settings.set_resolution(x, y)
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     quit_game()
