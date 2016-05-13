@@ -32,7 +32,7 @@ _CONF_DISPLAY_UPSCALE = "upscale"
 _CONF_DISPLAY_FPS = "fps"
 """global variables"""
 game_is_running = None
-screen = screen_x = screen_y = fps = fullscreen = upscale = None
+screen = screen_x = screen_y = fps = fullscreen = upscale = menu_options = None
 
 
 def read_settings():
@@ -91,6 +91,7 @@ def init_screen():
     read_settings()
     pygame.display.set_caption(NAME)
     update_screen()
+    screen.fill(BACKGROUND)
 
 
 def update_screen():
@@ -110,9 +111,7 @@ def update_screen():
 def refresh_screen(rects=None):
     """refresh the pygame screen/window"""
     try:
-        screen.fill(BACKGROUND)
-
-        print_menu()
+        # screen.fill(BACKGROUND)
 
         if not rects:
             pygame.display.update()
@@ -141,16 +140,20 @@ def get_screen():
     return screen
 
 
-def print_menu():
+def init_menu():
+    global menu_options
     pygame.font.init()
     menu = Menu(screen)
-    options = [MenuItem("pyRunner", 30, 72), MenuItem("New Game", 150), MenuItem("Multiplayer", 225),
-               MenuItem("Settings", 300), MenuItem("Exit", 375)]
+    menu_options = [MenuItem(NAME, 30, 72), MenuItem("New Game", 150), MenuItem("Multiplayer", 225),
+                    MenuItem("Settings", 300), MenuItem("Exit", 375)]
+
+def print_menu(options):
     # while True:
         # pygame.event.pump()
 
     for x in range(0, len(options)):
         option = options[x]
+        pygame.draw.rect(screen, BACKGROUND, option.rect)
 
         if x is 0:
             option.hovered = True
@@ -160,7 +163,8 @@ def print_menu():
             else:
                 option.hovered = False
         option.draw()
-    pygame.display.update()
+
+        refresh_screen(option.rect)
 
 def get_fps():
     return fps
@@ -191,6 +195,8 @@ def init_game():
     """initialize the game variables"""
     # initialize main screen
     init_screen()
+    init_menu()
+    print_menu(menu_options)
 
 def start_game():
     """start the game"""
@@ -236,7 +242,7 @@ def start_game():
                     refresh_screen()
                 # x, y = pygame.mouse.get_pos()
             elif event.type == MOUSEMOTION:
-                refresh_screen()
+                print_menu(menu_options)
 
         # save cpu resources
         clock.tick(fps)
