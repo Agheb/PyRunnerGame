@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import configparser
+import mainmenu
 
 """constants"""
 NAME = "pyRunner"
@@ -109,6 +110,11 @@ def refresh_screen(rects=None):
     try:
         screen.fill(BACKGROUND)
 
+        mainmenu.print_pygame_text(screen, "pyRunner", True, 0, 150, 72)
+        mainmenu.print_pygame_text(screen, "New Game", True, 0, 300)
+        mainmenu.print_pygame_text(screen, "Multiplayer", True, 0, 350)
+        mainmenu.print_pygame_text(screen, "Settings", True, 0, 400)
+        mainmenu.print_pygame_text(screen, "Exit", True, 0, 500)
         if not rects:
             pygame.display.update()
         else:

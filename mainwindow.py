@@ -57,7 +57,6 @@ def start_game():
                     settings.refresh_screen()
                 else:
                     if event.key == K_n:
-                        player_one_starts = True
                         init_game()
                     if event.key == K_r:
                         init_game()
