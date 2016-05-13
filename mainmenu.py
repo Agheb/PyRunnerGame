@@ -1,9 +1,4 @@
 import pygame
-from pygame.locals import *
-import settings
-
-BLACK = pygame.Color(0, 0, 0)
-
 """
 
     Main Menu
@@ -64,65 +59,50 @@ BLACK = pygame.Color(0, 0, 0)
 
 """
 
-
-def print_pygame_text(screen, textstring, center_x=False, offset_x=0, offset_y=20, size=36, text_color=BLACK, bkgr=SRCALPHA):
-
-    pygame.font.init()
-    """print some text in the pygame window"""
-    textfont = "./resources/fonts/Angeline_Vintage_Demo.otf"
-    font = pygame.font.Font(textfont, size)
-    text = font.render(textstring, 1, text_color, bkgr)
-    textpos = text.get_rect()
-    # center text on x axis
-    if center_x:
-        textpos.centerx = screen.get_rect().centerx
-    else:
-        textpos.centerx = offset_x
-    # move text on y axis
-    textpos.centery = offset_y
-    # draw text to screen
-    screen.blit(text, textpos)
+"""Constants"""
+BLACK = pygame.Color(0, 0, 0)
+MENU_FONT = "./resources/fonts/Angeline_Vintage_Demo.otf"
+screen = None
 
 
-# menu functions
-def menu_back():
-    pass
+class Menu:
+
+    def __init__(self, scr):
+        global screen
+        screen = scr
 
 
-def menu_new_game():
-    pass
+class MenuItem:
+    hovered = False
 
-def menu_new_game_singleplayer():
-    pass
+    def __init__(self, text, pos_y, size=36, parent_menu=None):
+        self.text = text
+        self.pos_y = pos_y
+        self.size = size
+        self.parent_menu = parent_menu
+        self.font = pygame.font.Font(MENU_FONT, size)
+        self.font_renderer = self.font.render(self.text, True, self.get_color())
+        self.rect = self.font_renderer.get_rect()
+        self.set_rect()
+        self.draw()
 
+    def draw(self):
+        self.set_renderer()
+        screen.blit(self.font_renderer, self.rect)
 
-def menu_new_game_start_game():
-    """for single and multiplayer games"""
-    pass
+    def set_renderer(self):
+        self.font_renderer = self.font.render(self.text, True, self.get_color())
 
+    def get_color(self):
+        if self.hovered:
+            return (255, 255, 255)
+        else:
+            return (100, 100, 100)
 
-def menu_singleplayer():
-    pass
-
-
-def menu_multiplayer():
-    pass
-
-
-def menu_multiplayer_lan():
-    pass
-
-
-def menu_options():
-    pass
-
-
-def menu_options_video():
-    pass
-
-
-def menu_options_controls():
-    pass
-
-
-m_back = "Back"
+    def set_rect(self):
+        self.set_renderer()
+        self.rect = self.font_renderer.get_rect()
+        # center vertically
+        self.rect.centerx = screen.get_rect().centerx
+        # and position at y
+        self.rect.centery = self.pos_y
