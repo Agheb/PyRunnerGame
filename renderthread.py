@@ -12,7 +12,7 @@ WINDOW_MIN_Y = SCREEN_MIN_Y - 80
 
 class RenderThread(threading.Thread):
 
-    def __init__(self, caption, x, y, fps=25, fullscreen=False, upscale=False):
+    def __init__(self, caption, x, y, fps=25, fullscreen=False, upscale=False, daemon=True):
         threading.Thread.__init__(self)
         pygame.init()
         self.thread_is_running = True
@@ -22,6 +22,7 @@ class RenderThread(threading.Thread):
         self.fps = fps
         self.fullscreen = fullscreen
         self.upscale = upscale
+        self.daemon = daemon
         self.clock = pygame.time.Clock()
         self.rects_to_update = []
         self.screen = None
