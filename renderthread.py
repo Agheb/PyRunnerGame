@@ -33,7 +33,7 @@ class RenderThread(threading.Thread):
         runcounter = 0
 
         while self.thread_is_running:
-            if self.fps <= runcounter:
+            if self.fps * 10 <= runcounter:
                 # completely refresh screen once per second
                 self.refresh_screen(True)
                 runcounter = 0
