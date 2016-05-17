@@ -142,11 +142,26 @@ def get_screen():
 
 
 def init_menu():
-    global menu_options
     pygame.font.init()
     menu = Menu(screen)
-    menu_options = [MenuItem(NAME, None, 30, 72), MenuItem("New Game", None, 150), MenuItem("Multiplayer", None, 225),
-                    MenuItem("Settings", None, 300), MenuItem("Exit", quit_game, 375)]
+    switch_menu("main")
+
+
+def switch_menu(menuname):
+    global menu_options, menu_pos
+    screen.fill(BACKGROUND)
+    menu_pos = 1
+    if menuname == "new":
+        menu_options = [MenuItem("New Game", None, 30, 48), MenuItem("Single Player", None, 150),
+                     MenuItem("Multiplayer", None, 225),
+                     MenuItem("Back", 'switch_menu("main")', 300)]
+    elif menuname == "main":
+        menu_options = [MenuItem(NAME, None, 30, 72), MenuItem("New Game", 'switch_menu("new")', 150),
+                        MenuItem("Multiplayer", None, 225),
+                        MenuItem("Settings", None, 300), MenuItem("Exit", 'quit_game()', 375)]
+
+    print_menu(menu_options)
+
 
 def get_fps():
     return fps
@@ -216,7 +231,7 @@ def start_game():
                             menu_pos += 1
                             print_menu(menu_options, menu_pos)
                     if event.key == K_RETURN:
-                        func = menu_options[menu_pos].get_action()
+                        func = eval(menu_options[menu_pos].get_action())
                         if func:
                             func()
                     # lazy update the screen, only if a key was pressed while the game is running
