@@ -61,19 +61,24 @@ import pygame
 
 """Constants"""
 BLACK = pygame.Color(0, 0, 0)
-MENU_FONT = "./resources/fonts/Angeline_Vintage_Demo.otf"
-screen = None
+MENU_FONT = "./resources/fonts/Mikodacs.otf"
 BACKGROUND = pygame.Color(200, 200, 200)
+screen = None
 
 
-class Menu:
+class Menu(object):
 
     def __init__(self, scr):
         global screen
         screen = scr
+        pygame.font.init()
+        # display = pygame.display.Info()
+        # width, height = display.current_w, display.current_h
+        # print(str(width) + "/" + str(height))
+        # screen = pygame.Surface((width, height))
 
 
-class MenuItem:
+class MenuItem(object):
     hovered = False
 
     def __init__(self, text, action, pos_y, size=36, parent_menu=None):
@@ -91,6 +96,9 @@ class MenuItem:
     def draw(self):
         self.set_renderer()
         screen.blit(self.font_renderer, self.rect)
+
+    def get_rect(self):
+        return self.rect
 
     def set_renderer(self):
         self.font_renderer = self.font.render(self.text, True, self.get_color())
@@ -112,23 +120,48 @@ class MenuItem:
     def get_action(self):
         return self.action
 
+    def set_pos_y(self, pos):
+        self.pos_y = pos
 
-def print_menu(options, pos=1):
+
+def print_menu(options, new_pos=1, old_pos=1, complete=True):
     # while True:
         # pygame.event.pump()
+    screen_resolution = pygame.display.Info()
+    s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
+    textsize = 0
+    for i in range(0, len(options)):
+        textsize += options[i].size
+    margin_y = (s_height - textsize) / (len(options) + 2)
+    rects = []
 
-    for x in range(0, len(options)):
-        option = options[x]
-        pygame.draw.rect(screen, BACKGROUND, option.rect)
+    if complete:
+        for x in range(0, len(options)):
+            option = options[x]
+            option.set_pos_y(margin_y * x + margin_y)
+            pygame.draw.rect(screen, BACKGROUND, option.get_rect())
 
-        if x is 0:
-            option.hovered = True
-        else:
-            if x is pos:  # option.rect.collidepoint(pygame.mouse.get_pos()):
+            if x is 0:
                 option.hovered = True
             else:
-                option.hovered = False
+                if x is new_pos:  # option.rect.collidepoint(pygame.mouse.get_pos()):
+                    option.hovered = True
+                else:
+                    option.hovered = False
 
-        option.draw()
+            option.draw()
+            rects.append(option.get_rect())
+    else:
+        new_option = options[new_pos]
+        old_option = options[old_pos]
 
-    pygame.display.update()
+        new_option.hovered = True
+        old_option.hovered = False
+
+        new_option.draw()
+        old_option.draw()
+
+        rects.append(new_option.get_rect())
+        rects.append(old_option.get_rect())
+
+    return rects
