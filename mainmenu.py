@@ -63,6 +63,7 @@ import pygame
 BLACK = pygame.Color(0, 0, 0)
 MENU_FONT = "./resources/fonts/Angeline_Vintage_Demo.otf"
 screen = None
+BACKGROUND = pygame.Color(200, 200, 200)
 
 
 class Menu:
@@ -75,8 +76,9 @@ class Menu:
 class MenuItem:
     hovered = False
 
-    def __init__(self, text, pos_y, size=36, parent_menu=None):
+    def __init__(self, text, action, pos_y, size=36, parent_menu=None):
         self.text = text
+        self.action = action
         self.pos_y = pos_y
         self.size = size
         self.parent_menu = parent_menu
@@ -106,3 +108,27 @@ class MenuItem:
         self.rect.centerx = screen.get_rect().centerx
         # and position at y
         self.rect.centery = self.pos_y
+
+    def get_action(self):
+        return self.action
+
+
+def print_menu(options, pos=1):
+    # while True:
+        # pygame.event.pump()
+
+    for x in range(0, len(options)):
+        option = options[x]
+        pygame.draw.rect(screen, BACKGROUND, option.rect)
+
+        if x is 0:
+            option.hovered = True
+        else:
+            if x is pos:  # option.rect.collidepoint(pygame.mouse.get_pos()):
+                option.hovered = True
+            else:
+                option.hovered = False
+
+        option.draw()
+
+    pygame.display.update()

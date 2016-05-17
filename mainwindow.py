@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 from sys import exit
 import configparser
-from mainmenu import Menu, MenuItem
+from mainmenu import Menu, MenuItem, print_menu
 
 """constants"""
 NAME = "pyRunner"
@@ -31,8 +31,9 @@ _CONF_DISPLAY_FULLSCREEN = "fullscreen"
 _CONF_DISPLAY_UPSCALE = "upscale"
 _CONF_DISPLAY_FPS = "fps"
 """global variables"""
-game_is_running = None
-screen = screen_x = screen_y = fps = fullscreen = upscale = menu_options = None
+game_is_running = True
+screen = screen_x = screen_y = fps = fullscreen = upscale = menu = menu_options = None
+menu_pos = 1
 
 
 def read_settings():
@@ -144,27 +145,8 @@ def init_menu():
     global menu_options
     pygame.font.init()
     menu = Menu(screen)
-    menu_options = [MenuItem(NAME, 30, 72), MenuItem("New Game", 150), MenuItem("Multiplayer", 225),
-                    MenuItem("Settings", 300), MenuItem("Exit", 375)]
-
-def print_menu(options):
-    # while True:
-        # pygame.event.pump()
-
-    for x in range(0, len(options)):
-        option = options[x]
-        pygame.draw.rect(screen, BACKGROUND, option.rect)
-
-        if x is 0:
-            option.hovered = True
-        else:
-            if option.rect.collidepoint(pygame.mouse.get_pos()):
-                option.hovered = True
-            else:
-                option.hovered = False
-        option.draw()
-
-        refresh_screen(option.rect)
+    menu_options = [MenuItem(NAME, None, 30, 72), MenuItem("New Game", None, 150), MenuItem("Multiplayer", None, 225),
+                    MenuItem("Settings", None, 300), MenuItem("Exit", quit_game, 375)]
 
 def get_fps():
     return fps
@@ -200,7 +182,7 @@ def init_game():
 
 def start_game():
     """start the game"""
-    global screen_x, screen_y, screen, fps
+    global screen_x, screen_y, screen, fps, menu_pos
     # PyGame initialization
     pygame.init()
     init_game()
@@ -221,14 +203,22 @@ def start_game():
                 if event.key == K_ESCAPE:
                     quit_game()
                 if game_is_running:
-                    if K_0 <= event.key <= K_9:
-                        pass
                     if event.key == K_LEFT:
                         pass
                     if event.key == K_RIGHT:
                         pass
-                    if event.key == K_SPACE or event.key == K_DOWN:
-                        pass
+                    if event.key == K_UP:
+                        if 1 < menu_pos:
+                            menu_pos -= 1
+                            print_menu(menu_options, menu_pos)
+                    if event.key == K_DOWN:
+                        if menu_pos < len(menu_options) - 1:
+                            menu_pos += 1
+                            print_menu(menu_options, menu_pos)
+                    if event.key == K_RETURN:
+                        func = menu_options[menu_pos].get_action()
+                        if func:
+                            func()
                     # lazy update the screen, only if a key was pressed while the game is running
                     refresh_screen()
                 else:
@@ -242,7 +232,8 @@ def start_game():
                     refresh_screen()
                 # x, y = pygame.mouse.get_pos()
             elif event.type == MOUSEMOTION:
-                print_menu(menu_options)
+                pass
+                # print_menu(menu_options)
 
         # save cpu resources
         clock.tick(fps)
