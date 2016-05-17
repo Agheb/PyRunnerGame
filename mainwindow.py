@@ -154,41 +154,47 @@ def start_game():
     init_game()
     clock = pygame.time.Clock()
 
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                quit_game()
-            elif event.type == VIDEORESIZE:
-                x, y = event.dict['size']
-                render_thread.set_resolution(x, y)
-            elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
+    try:
+        while True:
+            for event in pygame.event.get():
+                if event.type == QUIT:
                     quit_game()
-                if game_is_running:
-                    if event.key == K_LEFT:
-                        pass
-                    if event.key == K_RIGHT:
-                        pass
-                    if event.key == K_UP:
-                        if 1 < menu_pos:
-                            menu_pos -= 1
-                            render_thread.add_rect_to_update(print_menu(menu_options, menu_pos, menu_pos + 1, False))
-                    if event.key == K_DOWN:
-                        if menu_pos < len(menu_options) - 1:
-                            menu_pos += 1
-                            render_thread.add_rect_to_update(print_menu(menu_options, menu_pos, menu_pos - 1, False))
-                    if event.key == K_RETURN:
-                        func = eval(menu_options[menu_pos].get_action())
-                        if func:
-                            func()
-                else:
-                    if event.key == K_n:
-                        init_game()
-                    if event.key == K_r:
-                        init_game()
+                elif event.type == VIDEORESIZE:
+                    x, y = event.dict['size']
+                    render_thread.set_resolution(x, y)
+                elif event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        quit_game()
+                    if game_is_running:
+                        if event.key == K_LEFT:
+                            pass
+                        if event.key == K_RIGHT:
+                            pass
+                        if event.key == K_UP:
+                            if 1 < menu_pos:
+                                menu_pos -= 1
+                                render_thread.add_rect_to_update(print_menu(menu_options, menu_pos, menu_pos + 1, False))
+                        if event.key == K_DOWN:
+                            if menu_pos < len(menu_options) - 1:
+                                menu_pos += 1
+                                render_thread.add_rect_to_update(print_menu(menu_options, menu_pos, menu_pos - 1, False))
+                        if event.key == K_RETURN:
+                            func = eval(menu_options[menu_pos].get_action())
+                            if func:
+                                func()
+                    else:
+                        if event.key == K_n:
+                            init_game()
+                        if event.key == K_r:
+                            init_game()
 
-        # save cpu resources
-        clock.tick(fps)
+            # save cpu resources
+            clock.tick(fps)
+    # if the menu functions are not set yet
+    except TypeError:
+        # make sure the application shuts down correctly on errors
+        render_thread.stop_thread()
+        raise
 
 
 # start the 4 in a row game

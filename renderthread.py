@@ -64,7 +64,6 @@ class RenderThread(threading.Thread):
             if not self.rects_to_update or complete_screen:
                 pygame.display.update()
             else:
-                print(str(self.rects_to_update))
                 pygame.display.update(self.rects_to_update)
                 self.rects_to_update = []
 
