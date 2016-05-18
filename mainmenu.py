@@ -100,7 +100,7 @@ class Menu(object):
     def print_item(self, menu_item, index, pos, margin_top):
         menu_item.rect.centerx = self.surface.get_rect().centerx
         menu_item.rect.centery = margin_top
-        if index is (0 or pos):
+        if index is 0 or index is pos:
             menu_item.hovered = True
         else:
             menu_item.hovered = False
