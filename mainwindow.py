@@ -8,7 +8,6 @@ from renderthread import RenderThread
 """constants"""
 NAME = "pyRunner"
 CONFIG = "config.cfg"
-MENU_FONT = "./resources/fonts/Angeline_Vintage_Demo.otf"
 # Colors
 BLUE = pygame.Color(30, 144, 255)
 YELLOW = pygame.Color(255, 255, 0)

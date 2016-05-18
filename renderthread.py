@@ -12,13 +12,13 @@ WINDOW_MIN_Y = SCREEN_MIN_Y - 80
 
 class RenderThread(threading.Thread):
 
-    def __init__(self, caption, x, y, fps=25, fullscreen=False, upscale=False, daemon=True):
+    def __init__(self, caption, width, height, fps=25, fullscreen=False, upscale=False, daemon=True):
         threading.Thread.__init__(self)
         pygame.init()
         self.thread_is_running = True
         self.caption = caption
-        self.screen_x = x
-        self.screen_y = y
+        self.screen_x = width
+        self.screen_y = height
         self.fps = fps
         self.fullscreen = fullscreen
         self.upscale = upscale
@@ -34,7 +34,7 @@ class RenderThread(threading.Thread):
 
         while self.thread_is_running:
             if self.fps * 10 <= runcounter:
-                # completely refresh screen once per second
+                # completely refresh screen once every 10 seconds
                 self.refresh_screen(True)
                 runcounter = 0
             else:
