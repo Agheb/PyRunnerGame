@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 """
 
     Main Menu
@@ -63,30 +64,83 @@ import pygame
 BLACK = pygame.Color(0, 0, 0)
 MENU_FONT = "./resources/fonts/Mikodacs.otf"
 BACKGROUND = pygame.Color(200, 200, 200)
-screen = None
+screen = pygame.display.set_mode((800, 600), RESIZABLE, 32)
 
 
 class Menu(object):
 
-    def __init__(self, scr):
-        global screen
-        screen = scr
+    def __init__(self, parent=None):
+        self.surface = None
+        self.parent = parent
+        self.menu_items = []
+        self.items_count = 0
+        if self.parent:
+            self.add_menu_item(MenuItem("Back", self.parent))
         pygame.font.init()
-        # display = pygame.display.Info()
-        # width, height = display.current_w, display.current_h
-        # print(str(width) + "/" + str(height))
-        # screen = pygame.Surface((width, height))
+
+    def add_menu_item(self, menu_item):
+        # keep the back button at the end of the menu items list
+        self.menu_items.insert(self.items_count - 1, menu_item)
+        print(str(self.items_count))
+        self.items_count += 1
+
+        print(str(self.items_count))
+
+    def get_surface(self):
+        return self.surface
+
+    def set_surface(self, surface):
+        self.surface = surface
+
+    def print_menu(self, new_pos=1, old_pos=1, complete=True):
+        screen_resolution = pygame.display.Info()
+        s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
+        textsize = 0
+        length = int(self.items_count)
+        for i in range(0, length):
+            textsize += self.menu_items[i].size
+        margin_y = (s_height - textsize) / (length + 2)
+        rects = []
+
+        if complete:
+            for menu_index in range(0, length):
+                option = self.menu_items[menu_index]
+                option.set_pos_y(margin_y * menu_index + margin_y)
+                pygame.draw.rect(screen, BACKGROUND, option.get_rect())
+
+                if menu_index is 0:
+                    option.hovered = True
+                else:
+                    if menu_index is new_pos:  # option.rect.collidepoint(pygame.mouse.get_pos()):
+                        option.hovered = True
+                    else:
+                        option.hovered = False
+
+                option.draw()
+                rects.append(option.get_rect())
+        else:
+            new_option = self.menu_items[new_pos]
+            old_option = self.menu_items[old_pos]
+
+            new_option.hovered = True
+            old_option.hovered = False
+
+            new_option.draw()
+            old_option.draw()
+
+            rects.append(new_option.get_rect())
+            rects.append(old_option.get_rect())
+
+        return rects
 
 
 class MenuItem(object):
     hovered = False
 
-    def __init__(self, text, action, pos_y, size=36, parent_menu=None):
+    def __init__(self, text, action, size=36):
         self.text = text
         self.action = action
-        self.pos_y = pos_y
         self.size = size
-        self.parent_menu = parent_menu
         self.font = pygame.font.Font(MENU_FONT, size)
         self.font_renderer = self.font.render(self.text, True, self.get_color())
         self.rect = self.font_renderer.get_rect()
@@ -114,54 +168,17 @@ class MenuItem(object):
         self.rect = self.font_renderer.get_rect()
         # center vertically
         self.rect.centerx = screen.get_rect().centerx
-        # and position at y
-        self.rect.centery = self.pos_y
 
     def get_action(self):
         return self.action
 
-    def set_pos_y(self, pos):
-        self.pos_y = pos
 
+if __name__ == "__main__":
+    menu = Menu()
+    Menu.add_menu_item(menu, MenuItem("Hallo", None))
+    Menu.add_menu_item(menu, MenuItem("Welt", menu))
 
-def print_menu(options, new_pos=1, old_pos=1, complete=True):
-    # while True:
-        # pygame.event.pump()
-    screen_resolution = pygame.display.Info()
-    s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
-    textsize = 0
-    for i in range(0, len(options)):
-        textsize += options[i].size
-    margin_y = (s_height - textsize) / (len(options) + 2)
-    rects = []
+    while True:
+        Menu.print_menu(0, 0, True)
+        pygame.time.Clock().tick(5)
 
-    if complete:
-        for x in range(0, len(options)):
-            option = options[x]
-            option.set_pos_y(margin_y * x + margin_y)
-            pygame.draw.rect(screen, BACKGROUND, option.get_rect())
-
-            if x is 0:
-                option.hovered = True
-            else:
-                if x is new_pos:  # option.rect.collidepoint(pygame.mouse.get_pos()):
-                    option.hovered = True
-                else:
-                    option.hovered = False
-
-            option.draw()
-            rects.append(option.get_rect())
-    else:
-        new_option = options[new_pos]
-        old_option = options[old_pos]
-
-        new_option.hovered = True
-        old_option.hovered = False
-
-        new_option.draw()
-        old_option.draw()
-
-        rects.append(new_option.get_rect())
-        rects.append(old_option.get_rect())
-
-    return rects
