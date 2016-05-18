@@ -23,10 +23,12 @@ class RenderThread(threading.Thread):
         self.fullscreen = fullscreen
         self.upscale = upscale
         self.daemon = daemon
+        self.display_modes = None
         self.clock = pygame.time.Clock()
         self.rects_to_update = []
         self.screen = None
         self.update_screen()
+        self.check_display_modes()
         pygame.display.set_caption(self.caption)
 
     def run(self):
@@ -47,17 +49,20 @@ class RenderThread(threading.Thread):
 
     def update_screen(self):
         """switch to fullscreen mode"""
+
         display = pygame.display.Info()
 
         if self.fullscreen:
             pygame.mouse.set_visible(False)
-            if not self.upscale:
+            if self.upscale:
                 s_width, s_height = display.current_w, display.current_h
                 self.screen_x, self.screen_y = s_width, s_height
             self.screen = pygame.display.set_mode((self.screen_x, self.screen_y), FULLSCREEN, display.bitsize)
         else:
             pygame.mouse.set_visible(True)
             self.screen = pygame.display.set_mode((self.screen_x, self.screen_y), RESIZABLE, display.bitsize)
+
+        self.refresh_screen(True)
 
     def refresh_screen(self, complete_screen=False):
         """refresh the pygame screen/window"""
@@ -105,3 +110,15 @@ class RenderThread(threading.Thread):
 
     def stop_thread(self):
         self.thread_is_running = False
+
+    def set_fullscreen(self, bool_full):
+        if bool_full is not self.fullscreen:
+            self.fullscreen = bool_full
+            self.update_screen()
+
+    def check_display_modes(self):
+        if self.fullscreen:
+            self.display_modes = pygame.display.list_modes()
+
+    def get_display_modes(self):
+        return self.display_modes

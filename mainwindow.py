@@ -1,9 +1,12 @@
 import pygame
+import sys
+import os
 from pygame.locals import *
 from sys import exit
 import configparser
 from mainmenu import Menu, MenuItem
 from renderthread import RenderThread
+from time import sleep
 
 """constants"""
 NAME = "pyRunner"
@@ -99,28 +102,39 @@ def init_menu():
     menu_main.add_menu_item(MenuItem(NAME, None, 72))
     # new game menu
     menu_new_game = Menu(surface, menu_main)
-    menu_new_game.add_menu_item(MenuItem("Start Game", None, 72))
+    menu_new_game.add_menu_item(MenuItem("Start Game", None, 48))
     menu_new_game.add_menu_item(MenuItem("Singleplayer", None))
     menu_new_game.add_menu_item(MenuItem("Multiplayer", None))
     #   single player
     menu_ng_singleplayer = Menu(surface, menu_new_game)
-    menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, 72))
+    menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, 48))
     menu_ng_singleplayer.add_menu_item(MenuItem("New Game", None))
     menu_ng_singleplayer.add_menu_item(MenuItem("Resume", None))
     menu_ng_singleplayer.add_menu_item(MenuItem("Difficulty", None))
     #   multiplayer
     menu_ng_multiplayer = Menu(surface, menu_new_game)
-    menu_ng_multiplayer.add_menu_item(MenuItem("Multiplayer", None, 72))
+    menu_ng_multiplayer.add_menu_item(MenuItem("Multiplayer", None, 48))
     menu_ng_multiplayer.add_menu_item(MenuItem("Local Game", None))
     menu_ng_multiplayer.add_menu_item(MenuItem("Network Game", None))
     menu_ng_multiplayer.add_menu_item(MenuItem("Game Settings", None))
     # settings menu
     menu_settings = Menu(surface, menu_main)
-    menu_settings.add_menu_item(MenuItem("Settings", None, 72))
+    menu_settings.add_menu_item(MenuItem("Settings", None, 48))
     #   video settings
     menu_s_video = Menu(surface, menu_settings)
-    menu_s_video.add_menu_item(MenuItem("Video Settings", None, 72))
-    menu_s_video.add_menu_item(MenuItem("Fullscreen " + bool_to_string(fullscreen), None))
+    menu_s_video.add_menu_item(MenuItem("Video Settings", None, 48))
+    menu_s_video.add_menu_item(MenuItem("Fullscreen <" + bool_to_string(fullscreen) + ">", 'switch_fullscreen()'))
+    # resolutions
+    if fullscreen:
+        menu_s_v_resolution = Menu(surface, menu_s_video)
+        menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, 48))
+        for res in render_thread.get_display_modes():
+            width, height = res
+            res_name = str(width) + "x" + str(height)
+            func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
+            menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name))
+        res_name = "<" + str(screen_x) + "x" + str(screen_y) + ">"
+        menu_s_video.add_menu_item(MenuItem("Resolution " + res_name, menu_s_v_resolution))
     # complete the settings menu at the end to store the up to date objects
     menu_settings.add_menu_item(MenuItem("Audio", None))
     menu_settings.add_menu_item(MenuItem("Controls", None))
@@ -134,15 +148,15 @@ def init_menu():
 
 
 def switch_menu(menu):
-    global current_menu
+    global current_menu, menu_pos
     current_menu = menu
+    menu_pos = 1
     show_menu()
 
 
 def show_menu():
-    global current_menu, menu_pos
+    global current_menu
     render_thread.fill_screen(BACKGROUND)
-    menu_pos = 1
     current_menu.print_menu(menu_pos, 0)
     render_thread.refresh_screen(True)
 
@@ -152,6 +166,18 @@ def bool_to_string(blean):
         return "on"
     else:
         return "off"
+
+
+def set_resolution(width, height, restart=False):
+    global screen_x, screen_y
+    screen_x = width
+    screen_y = height
+
+    if restart:
+        write_settings()
+        restart_program()
+    else:
+        render_thread.set_resolution(screen_x, screen_y)
 
 
 def get_fps():
@@ -180,11 +206,28 @@ def quit_game():
     exit()
 
 
+def restart_program():
+    """Restarts the current program."""
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
+
+
 def init_game():
     """initialize the game variables"""
     # initialize main screen
     init_screen()
     init_menu()
+
+
+def switch_fullscreen():
+    global fullscreen
+    if fullscreen:
+        fullscreen = False
+    else:
+        fullscreen = True
+
+    write_settings()
+    restart_program()
 
 
 def start_game():
@@ -201,6 +244,7 @@ def start_game():
             elif event.type == VIDEORESIZE:
                 x, y = event.dict['size']
                 render_thread.set_resolution(x, y)
+                show_menu()
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     quit_game()

@@ -97,38 +97,48 @@ class Menu(object):
     def set_surface(self, surface):
         self.surface = surface
 
-    def print_menu(self, new_pos=1, old_pos=1, complete=True):
+    def print_item(self, menu_item, index, pos, margin_top):
+        menu_item.rect.centerx = self.surface.get_rect().centerx
+        menu_item.rect.centery = margin_top
+        if index is (0 or pos):
+            menu_item.hovered = True
+        else:
+            menu_item.hovered = False
+        menu_item.draw()
+
+        return menu_item.get_rect()
+
+    def print_menu(self, new_pos=1, old_pos=1, complete=True, start_pos=1):
         length = self.get_length()
         rects = []
 
         if length - 1 <= new_pos:
             new_pos = length - 1
 
+        margin_top = self.menu_items[0].get_size()
+        margin_bottom = self.surface.get_height() - margin_top
+        space_needed = (length * 1.5) * self.menu_items[1].get_size()
+
         if complete:
-            margin_top = self.menu_items[0].size
+            self.surface.fill(BACKGROUND)
+            # always draw the first item (header)
+            rects.append(self.print_item(self.menu_items[0], 0, new_pos, margin_top))
+            margin_top += self.menu_items[1].size
 
-            for menu_index in range(0, length):
-                option = self.menu_items[menu_index]
-                # center vertically
-                option.rect.centerx = self.surface.get_rect().centerx
-                # align item correctly
-                option.rect.centery = margin_top
-                margin_top += option.get_size() * 1.5
-
-                # pygame.draw.rect(screen, BACKGROUND, option.get_rect())
-                if menu_index is 0:
-                    option.hovered = True
-                else:
-                    if menu_index is new_pos:  # option.rect.collidepoint(pygame.mouse.get_pos()):
-                        option.hovered = True
-                    else:
-                        option.hovered = False
-
-                option.draw()
-                rects.append(option.get_rect())
+            for menu_index in range(start_pos, length):
+                menu_item = self.menu_items[menu_index]
+                margin_top += menu_item.get_size() * 1.5
+                rects.append(self.print_item(self.menu_items[menu_index], menu_index, new_pos, margin_top))
         else:
             new_option = self.menu_items[new_pos]
             old_option = self.menu_items[old_pos]
+
+            if space_needed > margin_bottom:
+                if new_pos < old_pos:
+                    self.print_menu(new_pos, old_pos, True, new_pos)
+                else:
+                    self.print_menu(new_pos, old_pos, True, old_pos)
+
 
             new_option.hovered = True
             old_option.hovered = False
@@ -183,4 +193,7 @@ class MenuItem(object):
 
     def set_menu(self, menu):
         self.menu = menu
+
+    def set_text(self, text):
+        self.text = text
 
