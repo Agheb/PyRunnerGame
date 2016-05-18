@@ -64,13 +64,12 @@ from pygame.locals import *
 BLACK = pygame.Color(0, 0, 0)
 MENU_FONT = "./resources/fonts/Mikodacs.otf"
 BACKGROUND = pygame.Color(200, 200, 200)
-screen = pygame.display.set_mode((800, 600), RESIZABLE, 32)
 
 
 class Menu(object):
 
-    def __init__(self, parent=None):
-        self.surface = None
+    def __init__(self, surface, parent=None):
+        self.surface = surface
         self.parent = parent
         self.menu_items = []
         if self.parent:
@@ -83,6 +82,14 @@ class Menu(object):
             self.menu_items.insert(len(self.menu_items) - 1, menu_item)
         else:
             self.menu_items.append(menu_item)
+        # finish initialization
+        menu_item.set_menu(self)
+
+    def get_menu_item(self, index):
+        return self.menu_items[index]
+
+    def get_length(self):
+        return len(self.menu_items)
 
     def get_surface(self):
         return self.surface
@@ -91,16 +98,22 @@ class Menu(object):
         self.surface = surface
 
     def print_menu(self, new_pos=1, old_pos=1, complete=True):
-        screen_resolution = pygame.display.Info()
-        s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
-        length = len(self.menu_items)
-
+        length = self.get_length()
         rects = []
 
+        if length - 1 <= new_pos:
+            new_pos = length - 1
+
         if complete:
+            margin_top = self.menu_items[0].size
+
             for menu_index in range(0, length):
                 option = self.menu_items[menu_index]
-                option.get_rect().centery = (menu_index + 1) * option.get_size() * 1.5
+                # center vertically
+                option.rect.centerx = self.surface.get_rect().centerx
+                # align item correctly
+                option.rect.centery = margin_top
+                margin_top += option.get_size() * 1.5
 
                 # pygame.draw.rect(screen, BACKGROUND, option.get_rect())
                 if menu_index is 0:
@@ -133,6 +146,7 @@ class MenuItem(object):
     hovered = False
 
     def __init__(self, text, action, size=36):
+        self.menu = None
         self.text = text
         self.action = action
         self.size = size
@@ -140,11 +154,10 @@ class MenuItem(object):
         self.font_renderer = self.font.render(self.text, True, self.get_color())
         self.rect = self.font_renderer.get_rect()
         self.set_rect()
-        self.draw()
 
     def draw(self):
         self.set_renderer()
-        screen.blit(self.font_renderer, self.rect)
+        self.menu.get_surface().blit(self.font_renderer, self.rect)
 
     def get_rect(self):
         return self.rect
@@ -161,31 +174,13 @@ class MenuItem(object):
     def set_rect(self):
         self.set_renderer()
         self.rect = self.font_renderer.get_rect()
-        # center vertically
-        self.rect.centerx = screen.get_rect().centerx
 
     def get_action(self):
         return self.action
 
-    def switch_menu(self):
-        if self.action is Menu:
-            self.action.print_menu(0, 0, True)
-
     def get_size(self):
         return self.size
 
+    def set_menu(self, menu):
+        self.menu = menu
 
-if __name__ == "__main__":
-    pygame.init()
-    menu = Menu()
-    menu.add_menu_item(MenuItem("Hallo", None))
-    menu.add_menu_item(MenuItem("Welt ist extrem viel breiter", None))
-    menu.add_menu_item(MenuItem("Exit", None))
-    menu2 = Menu(menu)
-    menu2.add_menu_item(MenuItem("Hallo", None))
-    menu2.add_menu_item(MenuItem("Menu 2", None))
-
-    while True:
-        screen.fill(BACKGROUND)
-        pygame.time.Clock().tick(1)
-        pygame.display.update(menu2.print_menu(0, 0, True))
