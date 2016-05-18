@@ -50,11 +50,13 @@ class RenderThread(threading.Thread):
         display = pygame.display.Info()
 
         if self.fullscreen:
+            pygame.mouse.set_visible(False)
             if not self.upscale:
                 s_width, s_height = display.current_w, display.current_h
                 self.screen_x, self.screen_y = s_width, s_height
             self.screen = pygame.display.set_mode((self.screen_x, self.screen_y), FULLSCREEN, display.bitsize)
         else:
+            pygame.mouse.set_visible(True)
             self.screen = pygame.display.set_mode((self.screen_x, self.screen_y), RESIZABLE, display.bitsize)
 
     def refresh_screen(self, complete_screen=False):
