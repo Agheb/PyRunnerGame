@@ -27,7 +27,6 @@ _CONF_DISPLAY_FPS = "fps"
 """global variables"""
 game_is_running = True
 screen_x = screen_y = fps = fullscreen = upscale = None
-menu_main = menu_new_game = menu_ng_singleplayer = menu_ng_multiplayer = menu_settings = None
 current_menu = None
 menu_pos = 1
 render_thread = None
@@ -94,37 +93,42 @@ def init_screen():
 
 
 def init_menu():
-    global current_menu, menu_main, menu_new_game, menu_ng_singleplayer, menu_ng_multiplayer, menu_settings
     surface = render_thread.get_screen()
     # main menu
     menu_main = Menu(surface)
     menu_main.add_menu_item(MenuItem(NAME, None, 72))
-    menu_main.add_menu_item(MenuItem("Start Game", 'menu_new_game'))
-    menu_main.add_menu_item(MenuItem("Settings", 'menu_settings'))
-    menu_main.add_menu_item(MenuItem("Exit", 'quit_game()'))
     # new game menu
-    menu_new_game = Menu(surface, 'menu_main')
+    menu_new_game = Menu(surface, menu_main)
     menu_new_game.add_menu_item(MenuItem("Start Game", None, 72))
     menu_new_game.add_menu_item(MenuItem("Singleplayer", None))
     menu_new_game.add_menu_item(MenuItem("Multiplayer", None))
     #   single player
-    menu_ng_singleplayer = Menu(surface, 'menu_new_game')
+    menu_ng_singleplayer = Menu(surface, menu_new_game)
     menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, 72))
     menu_ng_singleplayer.add_menu_item(MenuItem("New Game", None))
     menu_ng_singleplayer.add_menu_item(MenuItem("Resume", None))
     menu_ng_singleplayer.add_menu_item(MenuItem("Difficulty", None))
     #   multiplayer
-    menu_ng_multiplayer = Menu(surface, 'menu_new_game')
+    menu_ng_multiplayer = Menu(surface, menu_new_game)
     menu_ng_multiplayer.add_menu_item(MenuItem("Multiplayer", None, 72))
     menu_ng_multiplayer.add_menu_item(MenuItem("Local Game", None))
     menu_ng_multiplayer.add_menu_item(MenuItem("Network Game", None))
     menu_ng_multiplayer.add_menu_item(MenuItem("Game Settings", None))
     # settings menu
-    menu_settings = Menu(surface, 'menu_main')
+    menu_settings = Menu(surface, menu_main)
     menu_settings.add_menu_item(MenuItem("Settings", None, 72))
+    #   video settings
+    menu_s_video = Menu(surface, menu_settings)
+    menu_s_video.add_menu_item(MenuItem("Video Settings", None, 72))
+    menu_s_video.add_menu_item(MenuItem("Fullscreen " + bool_to_string(fullscreen), None))
+    # complete the settings menu at the end to store the up to date objects
     menu_settings.add_menu_item(MenuItem("Audio", None))
     menu_settings.add_menu_item(MenuItem("Controls", None))
-    menu_settings.add_menu_item(MenuItem("Video", None))
+    menu_settings.add_menu_item(MenuItem("Video", menu_s_video))
+    # complete main menu at the end to store the up to date objects
+    menu_main.add_menu_item(MenuItem("Start Game", menu_new_game))
+    menu_main.add_menu_item(MenuItem("Settings", menu_settings))
+    menu_main.add_menu_item(MenuItem("Exit", 'quit_game()'))
 
     switch_menu(menu_main)
 
@@ -141,6 +145,13 @@ def show_menu():
     menu_pos = 1
     current_menu.print_menu(menu_pos, 0)
     render_thread.refresh_screen(True)
+
+
+def bool_to_string(blean):
+    if blean:
+        return "on"
+    else:
+        return "off"
 
 
 def get_fps():
@@ -208,11 +219,11 @@ def start_game():
                             render_thread.add_rect_to_update(current_menu.print_menu(menu_pos, menu_pos - 1, False))
                     if event.key == K_RETURN:
                         try:
-                            action = eval(current_menu.get_menu_item(menu_pos).get_action())
+                            action = current_menu.get_menu_item(menu_pos).get_action()
                             if type(action) is Menu:
                                 switch_menu(action)
                             else:
-                                action()
+                                eval(action)()
                         except TypeError:
                             pass
                 else:
