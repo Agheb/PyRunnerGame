@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 from sys import exit
 import configparser
-from mainmenu import Menu, MenuItem, print_menu
+from mainmenu import Menu, MenuItem
 from renderthread import RenderThread
 
 """constants"""
@@ -26,7 +26,9 @@ _CONF_DISPLAY_UPSCALE = "upscale"
 _CONF_DISPLAY_FPS = "fps"
 """global variables"""
 game_is_running = True
-screen_x = screen_y = fps = fullscreen = upscale = menu = menu_options = None
+screen_x = screen_y = fps = fullscreen = upscale = None
+menu_main = menu_new_game = menu_ng_singleplayer = menu_ng_multiplayer = menu_settings = None
+current_menu = None
 menu_pos = 1
 render_thread = None
 
@@ -92,24 +94,52 @@ def init_screen():
 
 
 def init_menu():
-    menu = Menu(render_thread.get_screen())
-    switch_menu("main")
+    global current_menu, menu_main, menu_new_game, menu_ng_singleplayer, menu_ng_multiplayer, menu_settings
+    surface = render_thread.get_screen()
+    # main menu
+    menu_main = Menu(surface)
+    menu_main.add_menu_item(MenuItem(NAME, None, 72))
+    menu_main.add_menu_item(MenuItem("Start Game", 'menu_new_game'))
+    menu_main.add_menu_item(MenuItem("Settings", 'menu_settings'))
+    menu_main.add_menu_item(MenuItem("Exit", 'quit_game()'))
+    # new game menu
+    menu_new_game = Menu(surface, 'menu_main')
+    menu_new_game.add_menu_item(MenuItem("Start Game", None, 72))
+    menu_new_game.add_menu_item(MenuItem("Singleplayer", None))
+    menu_new_game.add_menu_item(MenuItem("Multiplayer", None))
+    #   single player
+    menu_ng_singleplayer = Menu(surface, 'menu_new_game')
+    menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, 72))
+    menu_ng_singleplayer.add_menu_item(MenuItem("New Game", None))
+    menu_ng_singleplayer.add_menu_item(MenuItem("Resume", None))
+    menu_ng_singleplayer.add_menu_item(MenuItem("Difficulty", None))
+    #   multiplayer
+    menu_ng_multiplayer = Menu(surface, 'menu_new_game')
+    menu_ng_multiplayer.add_menu_item(MenuItem("Multiplayer", None, 72))
+    menu_ng_multiplayer.add_menu_item(MenuItem("Local Game", None))
+    menu_ng_multiplayer.add_menu_item(MenuItem("Network Game", None))
+    menu_ng_multiplayer.add_menu_item(MenuItem("Game Settings", None))
+    # settings menu
+    menu_settings = Menu(surface, 'menu_main')
+    menu_settings.add_menu_item(MenuItem("Settings", None, 72))
+    menu_settings.add_menu_item(MenuItem("Audio", None))
+    menu_settings.add_menu_item(MenuItem("Controls", None))
+    menu_settings.add_menu_item(MenuItem("Video", None))
+
+    switch_menu(menu_main)
 
 
-def switch_menu(menuname):
-    global menu_options, menu_pos
+def switch_menu(menu):
+    global current_menu
+    current_menu = menu
+    show_menu()
+
+
+def show_menu():
+    global current_menu, menu_pos
     render_thread.fill_screen(BACKGROUND)
     menu_pos = 1
-    if menuname == "new":
-        menu_options = [MenuItem("New Game", None, 30, 48), MenuItem("Single Player", None, 150),
-                     MenuItem("Multiplayer", None, 225),
-                     MenuItem("Back", 'switch_menu("main")', 300)]
-    elif menuname == "main":
-        menu_options = [MenuItem(NAME, None, 30, 72), MenuItem("New Game", 'switch_menu("new")', 150),
-                        MenuItem("Multiplayer", None, 225),
-                        MenuItem("Settings", None, 300), MenuItem("Exit", 'quit_game()', 375)]
-
-    print_menu(menu_options)
+    current_menu.print_menu(menu_pos, 0)
     render_thread.refresh_screen(True)
 
 
@@ -144,7 +174,7 @@ def init_game():
     # initialize main screen
     init_screen()
     init_menu()
-    print_menu(menu_options)
+
 
 def start_game():
     """start the game"""
@@ -171,15 +201,20 @@ def start_game():
                     if event.key == K_UP:
                         if 1 < menu_pos:
                             menu_pos -= 1
-                            render_thread.add_rect_to_update(print_menu(menu_options, menu_pos, menu_pos + 1, False))
+                            render_thread.add_rect_to_update(current_menu.print_menu(menu_pos, menu_pos + 1, False))
                     if event.key == K_DOWN:
-                        if menu_pos < len(menu_options) - 1:
+                        if menu_pos < current_menu.get_length() - 1:
                             menu_pos += 1
-                            render_thread.add_rect_to_update(print_menu(menu_options, menu_pos, menu_pos - 1, False))
+                            render_thread.add_rect_to_update(current_menu.print_menu(menu_pos, menu_pos - 1, False))
                     if event.key == K_RETURN:
-                        func = eval(menu_options[menu_pos].get_action())
-                        if func:
-                            func()
+                        try:
+                            action = eval(current_menu.get_menu_item(menu_pos).get_action())
+                            if type(action) is Menu:
+                                switch_menu(action)
+                            else:
+                                action()
+                        except TypeError:
+                            pass
                 else:
                     if event.key == K_n:
                         init_game()
