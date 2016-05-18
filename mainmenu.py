@@ -73,18 +73,16 @@ class Menu(object):
         self.surface = None
         self.parent = parent
         self.menu_items = []
-        self.items_count = 0
         if self.parent:
             self.add_menu_item(MenuItem("Back", self.parent))
         pygame.font.init()
 
     def add_menu_item(self, menu_item):
-        # keep the back button at the end of the menu items list
-        self.menu_items.insert(self.items_count - 1, menu_item)
-        print(str(self.items_count))
-        self.items_count += 1
-
-        print(str(self.items_count))
+        if self.parent:
+            # keep the back button at the end of the menu items list
+            self.menu_items.insert(len(self.menu_items) - 1, menu_item)
+        else:
+            self.menu_items.append(menu_item)
 
     def get_surface(self):
         return self.surface
@@ -95,19 +93,16 @@ class Menu(object):
     def print_menu(self, new_pos=1, old_pos=1, complete=True):
         screen_resolution = pygame.display.Info()
         s_width, s_height = screen_resolution.current_w, screen_resolution.current_h
-        textsize = 0
-        length = int(self.items_count)
-        for i in range(0, length):
-            textsize += self.menu_items[i].size
-        margin_y = (s_height - textsize) / (length + 2)
+        length = len(self.menu_items)
+
         rects = []
 
         if complete:
             for menu_index in range(0, length):
                 option = self.menu_items[menu_index]
-                option.set_pos_y(margin_y * menu_index + margin_y)
-                pygame.draw.rect(screen, BACKGROUND, option.get_rect())
+                option.get_rect().centery = (menu_index + 1) * option.get_size() * 1.5
 
+                # pygame.draw.rect(screen, BACKGROUND, option.get_rect())
                 if menu_index is 0:
                     option.hovered = True
                 else:
@@ -172,13 +167,25 @@ class MenuItem(object):
     def get_action(self):
         return self.action
 
+    def switch_menu(self):
+        if self.action is Menu:
+            self.action.print_menu(0, 0, True)
+
+    def get_size(self):
+        return self.size
+
 
 if __name__ == "__main__":
+    pygame.init()
     menu = Menu()
-    Menu.add_menu_item(menu, MenuItem("Hallo", None))
-    Menu.add_menu_item(menu, MenuItem("Welt", menu))
+    menu.add_menu_item(MenuItem("Hallo", None))
+    menu.add_menu_item(MenuItem("Welt ist extrem viel breiter", None))
+    menu.add_menu_item(MenuItem("Exit", None))
+    menu2 = Menu(menu)
+    menu2.add_menu_item(MenuItem("Hallo", None))
+    menu2.add_menu_item(MenuItem("Menu 2", None))
 
     while True:
-        Menu.print_menu(0, 0, True)
-        pygame.time.Clock().tick(5)
-
+        screen.fill(BACKGROUND)
+        pygame.time.Clock().tick(1)
+        pygame.display.update(menu2.print_menu(0, 0, True))
