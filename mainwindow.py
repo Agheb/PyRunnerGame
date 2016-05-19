@@ -7,7 +7,7 @@ import configparser
 from mainmenu import Menu, MenuItem
 from renderthread import RenderThread
 
-"""constants"""
+'''constants'''
 NAME = "pyRunner"
 CONFIG = "config.cfg"
 # Colors
@@ -26,7 +26,7 @@ _CONF_DISPLAY_HEIGHT = "height"
 _CONF_DISPLAY_FULLSCREEN = "fullscreen"
 _CONF_DISPLAY_UPSCALE = "upscale"
 _CONF_DISPLAY_FPS = "fps"
-"""global variables"""
+'''global variables'''
 game_is_running = True
 screen_x = screen_y = fps = fullscreen = upscale = None
 current_menu = None
@@ -41,7 +41,7 @@ def read_settings():
         config = configparser.RawConfigParser()
         config.read(CONFIG)
 
-        """get display configuration"""
+        '''get display configuration'''
         screen_x = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH)
         screen_y = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT)
         fps = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_FPS)
@@ -60,6 +60,11 @@ def read_settings():
 
 
 def write_settings(default=False):
+    """save the current used settings
+
+    Args:
+        default (bool): true to save default values to the disk
+    """
     global screen_x, screen_y, fps, fullscreen, upscale
     config = configparser.RawConfigParser()
 
@@ -71,10 +76,10 @@ def write_settings(default=False):
         fullscreen = True
         upscale = False
 
-    """info part"""
+    '''info part'''
     config.add_section(_CONF_INFO)
     config.set(_CONF_INFO, _CONF_INFO_NAME, NAME)
-    """write display configuration"""
+    '''write display configuration'''
     config.add_section(_CONF_DISPLAY)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH, screen_x)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT, screen_y)
@@ -87,6 +92,7 @@ def write_settings(default=False):
 
 
 def init_screen():
+    """initialize the main screen"""
     global render_thread
     read_settings()
     render_thread = RenderThread(NAME, screen_x, screen_y, fps, fullscreen, upscale)
@@ -95,58 +101,81 @@ def init_screen():
 
 
 def init_menu():
-    surface = render_thread.screen
-    # main menu
+    """initialize the whole main menu structure
+
+    Cave: menus need to be saved in the reverse order (bottom to top) so that
+          the top menus contain all up to date sub-menu objects
+    """
+    s_width = int(render_thread.screen.get_width() / 4) * 3
+    s_height = int(render_thread.screen.get_height() / 3) * 2
+    surface = pygame.Surface((s_width, s_height))
+    # regular font sizes
+    h1_size = 72
+    h2_size = 48
+    item_size = 36
+    '''first create the root menu'''
     menu_main = Menu(surface)
-    menu_main.add_menu_item(MenuItem(NAME, None, 72))
+    '''then calculate the ratio to adjust font sizes accordingly'''
+    ratio = menu_main.calc_font_size(h1_size, item_size)
+    h1_size = int(h1_size * ratio)
+    h2_size = int(h2_size * ratio)
+    item_size = int(item_size * ratio)
+    '''then begin adding items and pass them the font sizes'''
+    menu_main.add_menu_item(MenuItem(NAME, None, h1_size))
     # new game menu
-    menu_new_game = Menu(surface, menu_main)
-    menu_new_game.add_menu_item(MenuItem("Start Game", None, 48))
-    menu_new_game.add_menu_item(MenuItem("Singleplayer", None))
-    menu_new_game.add_menu_item(MenuItem("Multiplayer", None))
+    menu_new_game = Menu(surface, menu_main, item_size)
+    menu_new_game.add_menu_item(MenuItem("Start Game", None, h2_size))
+    menu_new_game.add_menu_item(MenuItem("Singleplayer", None, item_size))
+    menu_new_game.add_menu_item(MenuItem("Multiplayer", None, item_size))
     #   single player
-    menu_ng_singleplayer = Menu(surface, menu_new_game)
-    menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, 48))
-    menu_ng_singleplayer.add_menu_item(MenuItem("New Game", None))
-    menu_ng_singleplayer.add_menu_item(MenuItem("Resume", None))
-    menu_ng_singleplayer.add_menu_item(MenuItem("Difficulty", None))
+    menu_ng_singleplayer = Menu(surface, menu_new_game, item_size)
+    menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, h2_size))
+    menu_ng_singleplayer.add_menu_item(MenuItem("New Game", None, item_size))
+    menu_ng_singleplayer.add_menu_item(MenuItem("Resume", None, item_size))
+    menu_ng_singleplayer.add_menu_item(MenuItem("Difficulty", None, item_size))
     #   multiplayer
-    menu_ng_multiplayer = Menu(surface, menu_new_game)
-    menu_ng_multiplayer.add_menu_item(MenuItem("Multiplayer", None, 48))
-    menu_ng_multiplayer.add_menu_item(MenuItem("Local Game", None))
-    menu_ng_multiplayer.add_menu_item(MenuItem("Network Game", None))
-    menu_ng_multiplayer.add_menu_item(MenuItem("Game Settings", None))
+    menu_ng_multiplayer = Menu(surface, menu_new_game, item_size)
+    menu_ng_multiplayer.add_menu_item(MenuItem("Multiplayer", None, h2_size))
+    menu_ng_multiplayer.add_menu_item(MenuItem("Local Game", None, item_size))
+    menu_ng_multiplayer.add_menu_item(MenuItem("Network Game", None, item_size))
+    menu_ng_multiplayer.add_menu_item(MenuItem("Game Settings", None, item_size))
     # settings menu
-    menu_settings = Menu(surface, menu_main)
-    menu_settings.add_menu_item(MenuItem("Settings", None, 48))
+    menu_settings = Menu(surface, menu_main, item_size)
+    menu_settings.add_menu_item(MenuItem("Settings", None, h2_size))
     #   video settings
-    menu_s_video = Menu(surface, menu_settings)
-    menu_s_video.add_menu_item(MenuItem("Video Settings", None, 48))
-    menu_s_video.add_menu_item(MenuItem("Fullscreen <" + bool_to_string(fullscreen) + ">", 'switch_fullscreen()'))
+    menu_s_video = Menu(surface, menu_settings, item_size)
+    menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
+    menu_s_video.add_menu_item(MenuItem("Fullscreen <" + bool_to_string(fullscreen) + ">", 'switch_fullscreen()', item_size))
     # resolutions
     if fullscreen:
-        menu_s_v_resolution = Menu(surface, menu_s_video)
-        menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, 48))
+        menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
+        menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, h2_size))
         for res in render_thread.display_modes:
             width, height = res
             res_name = str(width) + "x" + str(height)
             func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
-            menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name))
+            menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
         res_name = "<" + str(screen_x) + "x" + str(screen_y) + ">"
-        menu_s_video.add_menu_item(MenuItem("Resolution " + res_name, menu_s_v_resolution))
-    # complete the settings menu at the end to store the up to date objects
-    menu_settings.add_menu_item(MenuItem("Audio", None))
-    menu_settings.add_menu_item(MenuItem("Controls", None))
-    menu_settings.add_menu_item(MenuItem("Video", menu_s_video))
-    # complete main menu at the end to store the up to date objects
-    menu_main.add_menu_item(MenuItem("Start Game", menu_new_game))
-    menu_main.add_menu_item(MenuItem("Settings", menu_settings))
-    menu_main.add_menu_item(MenuItem("Exit", 'quit_game()'))
+        menu_s_video.add_menu_item(MenuItem("Resolution " + res_name, menu_s_v_resolution, item_size))
+    '''complete the settings menu at the end to store the up to date objects'''
+    menu_settings.add_menu_item(MenuItem("Audio", None, item_size))
+    menu_settings.add_menu_item(MenuItem("Controls", None, item_size))
+    menu_settings.add_menu_item(MenuItem("Video", menu_s_video, item_size))
+    '''complete main menu at the end to store the up to date objects'''
+    menu_main.add_menu_item(MenuItem("Start Game", menu_new_game, item_size))
+    menu_main.add_menu_item(MenuItem("Settings", menu_settings, item_size))
+    menu_main.add_menu_item(MenuItem("Exit", 'quit_game()', item_size))
 
-    switch_menu(menu_main)
+    '''save the main menu'''
+    set_current_menu(menu_main)
 
 
-def switch_menu(menu):
+def set_current_menu(menu):
+    """switch menu level
+
+    Args:
+        menu (Menu): the (sub)menu to switch to
+    """
     global current_menu, menu_pos
     current_menu = menu
     menu_pos = 1
@@ -154,13 +183,37 @@ def switch_menu(menu):
 
 
 def show_menu():
+    """print the current menu to the screen"""
     global current_menu
     render_thread.fill_screen(BACKGROUND)
-    current_menu.print_menu(menu_pos, 0)
+    current_menu.print_menu(menu_pos, menu_pos, True)
+    surface = current_menu.surface
+    render_thread.blit(surface, None, True)
     render_thread.refresh_screen(True)
 
 
+def navigate_menu(old_pos):
+    """helps rerendering the changed menu items for partial screen updates"""
+    rects = current_menu.print_menu(menu_pos, old_pos, False)
+    render_thread.blit(current_menu.surface, None, True)
+    render_thread.add_rect_to_update(rects)
+
+
+def do_menu_action():
+    """try to evaluate if a menu action is either a sub-menu or a function to call"""
+    try:
+        action = current_menu.get_menu_item(menu_pos).action
+        if type(action) is Menu:
+            set_current_menu(action)
+        else:
+            eval(action)()
+    except TypeError:
+        # don't crash on wrong actions, the menu will stay up and nothing will happen
+        pass
+
+
 def bool_to_string(boolean):
+    """helper function for the MenuItems containing booleans in their name"""
     if boolean:
         return "on"
     else:
@@ -168,34 +221,35 @@ def bool_to_string(boolean):
 
 
 def set_resolution(width, height, restart=False):
+    """set the main screen/surface resolution
+
+    Args:
+        width (int): new width
+        height (int): new height
+        restart (bool): restart this process for a clean initialization
+    """
     global screen_x, screen_y
     screen_x = width
     screen_y = height
 
     if restart:
+        '''save changed settings to disk and restart this program'''
         write_settings()
         restart_program()
     else:
         render_thread.set_resolution(screen_x, screen_y)
 
 
-def get_fps():
-    return fps
-
-
-def set_fps(new_fps):
-    global fps
-    if 0 < new_fps <= 60:
-        fps = new_fps
-
-
-def get_is_running():
-    return game_is_running
-
-
-def set_is_running(bool_run):
-    global game_is_running
-    game_is_running = bool_run
+def switch_fullscreen():
+    """switch between windowed and fullscreen mode"""
+    global fullscreen
+    if fullscreen:
+        fullscreen = False
+    else:
+        fullscreen = True
+    '''save changed settings to disk and restart this program'''
+    write_settings()
+    restart_program()
 
 
 def quit_game():
@@ -206,27 +260,17 @@ def quit_game():
 
 
 def restart_program():
-    """Restarts the current program."""
+    """Restarts the current program"""
     python = sys.executable
     os.execl(python, python, * sys.argv)
 
 
 def init_game():
     """initialize the game variables"""
-    # initialize main screen
+    # initialize the main screen
     init_screen()
+    # initialize the main menu
     init_menu()
-
-
-def switch_fullscreen():
-    global fullscreen
-    if fullscreen:
-        fullscreen = False
-    else:
-        fullscreen = True
-
-    write_settings()
-    restart_program()
 
 
 def start_game():
@@ -241,10 +285,12 @@ def start_game():
             if event.type == QUIT:
                 quit_game()
             elif event.type == VIDEORESIZE:
+                '''notice window size changes in windowed mode'''
                 x, y = event.dict['size']
                 render_thread.set_resolution(x, y)
-                show_menu()
+                init_menu()
             elif event.type == KEYDOWN:
+                '''key pressing events'''
                 if game_is_running:
                     if event.key == K_LEFT:
                         pass
@@ -253,24 +299,17 @@ def start_game():
                     if event.key == K_UP:
                         if 1 < menu_pos:
                             menu_pos -= 1
-                            render_thread.add_rect_to_update(current_menu.print_menu(menu_pos, menu_pos + 1, False))
+                            navigate_menu(menu_pos + 1)
                     if event.key == K_DOWN:
                         if menu_pos < current_menu.length - 1:
                             menu_pos += 1
-                            render_thread.add_rect_to_update(current_menu.print_menu(menu_pos, menu_pos - 1, False))
+                            navigate_menu(menu_pos - 1)
                     if event.key == K_RETURN:
-                        try:
-                            action = current_menu.get_menu_item(menu_pos).action
-                            if type(action) is Menu:
-                                switch_menu(action)
-                            else:
-                                eval(action)()
-                        except TypeError:
-                            pass
+                        do_menu_action()
                     if event.key == K_ESCAPE:
                         back_item = current_menu.get_menu_item(current_menu.length - 1).action
                         if type(back_item) is Menu:
-                            switch_menu(back_item)
+                            set_current_menu(back_item)
                         else:
                             quit_game()
                 else:
