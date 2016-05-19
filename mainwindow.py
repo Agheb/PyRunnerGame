@@ -6,7 +6,6 @@ from sys import exit
 import configparser
 from mainmenu import Menu, MenuItem
 from renderthread import RenderThread
-from time import sleep
 
 """constants"""
 NAME = "pyRunner"
@@ -96,7 +95,7 @@ def init_screen():
 
 
 def init_menu():
-    surface = render_thread.get_screen()
+    surface = render_thread.screen
     # main menu
     menu_main = Menu(surface)
     menu_main.add_menu_item(MenuItem(NAME, None, 72))
@@ -128,7 +127,7 @@ def init_menu():
     if fullscreen:
         menu_s_v_resolution = Menu(surface, menu_s_video)
         menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, 48))
-        for res in render_thread.get_display_modes():
+        for res in render_thread.display_modes:
             width, height = res
             res_name = str(width) + "x" + str(height)
             func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
@@ -161,8 +160,8 @@ def show_menu():
     render_thread.refresh_screen(True)
 
 
-def bool_to_string(blean):
-    if blean:
+def bool_to_string(boolean):
+    if boolean:
         return "on"
     else:
         return "off"
@@ -256,12 +255,12 @@ def start_game():
                             menu_pos -= 1
                             render_thread.add_rect_to_update(current_menu.print_menu(menu_pos, menu_pos + 1, False))
                     if event.key == K_DOWN:
-                        if menu_pos < current_menu.get_length() - 1:
+                        if menu_pos < current_menu.length - 1:
                             menu_pos += 1
                             render_thread.add_rect_to_update(current_menu.print_menu(menu_pos, menu_pos - 1, False))
                     if event.key == K_RETURN:
                         try:
-                            action = current_menu.get_menu_item(menu_pos).get_action()
+                            action = current_menu.get_menu_item(menu_pos).action
                             if type(action) is Menu:
                                 switch_menu(action)
                             else:
@@ -269,7 +268,7 @@ def start_game():
                         except TypeError:
                             pass
                     if event.key == K_ESCAPE:
-                        back_item = current_menu.get_menu_item(current_menu.get_length() - 1).get_action()
+                        back_item = current_menu.get_menu_item(current_menu.length - 1).action
                         if type(back_item) is Menu:
                             switch_menu(back_item)
                         else:

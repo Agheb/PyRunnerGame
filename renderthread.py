@@ -21,22 +21,39 @@ class RenderThread(threading.Thread):
             fullscreen (Optional[bool]): run in fullscreen or windowed mode
             upscale (Optional[bool]): don't switch screen resolution but render on smaller surface
             daemon (Optional[bool]): quit this thread if main program quits
+
+        Attributes:
+            thread_is_running (bool): status of this thread
+            caption (str): Window title used in windowed mode
+            _screen_x (int): width of the surface
+            _screen_y (int): height of the surface
+            fps (int): frames per second
+            fullscreen (bool): True if screen is in fullscreen mode
+            upscale (bool): True if screen should be switched to lower resolution
+            daemon (bool): True if this thread should be stopped with the main program
+            clock (pygame.time.Clock): used to time loops
+            _rects_to_update (list(Rect)): list containing all Rects which should be redrawn/updated
+            screen (pygame.Surface): surface this Menu is drawn to
+            _display_modes(list((x, y))): list containing all valid fullscreen resolutions
+
+        Properties:
+            rects_to_update (list(Rect)): read only access to _rects_to_update
     """
 
     def __init__(self, caption, width, height, fps=25, fullscreen=False, upscale=False, daemon=True):
         threading.Thread.__init__(self)
         self.thread_is_running = True
-        self.caption = caption
-        self.screen_x = width
-        self.screen_y = height
+        self._caption = caption
+        self._screen_x = width
+        self._screen_y = height
         self.fps = fps
-        self.fullscreen = fullscreen
+        self._fullscreen = fullscreen
         self.upscale = upscale
         self.daemon = daemon
         # clock thread @ fps
         self.clock = pygame.time.Clock()
         # dirty rects list to only partially update the screen
-        self.rects_to_update = []
+        self._rects_to_update = []
         # initialize the screen
         self.screen = None
         # initialize pygame in case it's not already
@@ -46,9 +63,8 @@ class RenderThread(threading.Thread):
             pygame.init()
             self.update_screen()
         # in fullscreen mode: save all available modes for the settings
-        self.display_modes = None
+        self._display_modes = None
         self.check_display_modes()
-        self.set_caption(self.caption)
 
     def run(self):
         """Thread main run function
@@ -79,16 +95,16 @@ class RenderThread(threading.Thread):
             # if upscaling is set, render to a smaller surface but show it on the full screen
             if not self.upscale:
                 disp_screen = pygame.display.set_mode((display.current_w, display.current_h), FULLSCREEN, display.bitsize)
-                self.screen = pygame.Surface((self.screen_x, self.screen_y))
+                self.screen = pygame.Surface((self._screen_x, self._screen_y))
                 # self.screen.get_rect().centerx = disp_screen.get_rect().centerx
                 # self.screen.get_rect().centery = disp_screen.get_rect().centery
                 disp_screen.blit(self.screen, (0, 0))
             else:
                 # switch screen resolution to the desired one
-                self.screen = pygame.display.set_mode((self.screen_x, self.screen_y), FULLSCREEN, display.bitsize)
+                self.screen = pygame.display.set_mode((self._screen_x, self._screen_y), FULLSCREEN, display.bitsize)
         else:
             pygame.mouse.set_visible(True)
-            self.screen = pygame.display.set_mode((self.screen_x, self.screen_y), RESIZABLE, display.bitsize)
+            self.screen = pygame.display.set_mode((self._screen_x, self._screen_y), RESIZABLE, display.bitsize)
 
         self.refresh_screen(True)
 
@@ -101,7 +117,7 @@ class RenderThread(threading.Thread):
             else:
                 # only update the changed rects
                 pygame.display.update(self.rects_to_update)
-                self.rects_to_update = []
+                self._rects_to_update = []
         except pygame.error:
             # OpenGL can only redraw the whole screen
             pygame.display.flip()
@@ -114,23 +130,31 @@ class RenderThread(threading.Thread):
                 height (int): screen/window height
         """
         if self.fullscreen:
-            self.screen_x = SCREEN_MIN_X if width < SCREEN_MIN_X else width
-            self.screen_y = SCREEN_MIN_Y if height < SCREEN_MIN_Y else height
+            self._screen_x = SCREEN_MIN_X if width < SCREEN_MIN_X else width
+            self._screen_y = SCREEN_MIN_Y if height < SCREEN_MIN_Y else height
         else:
-            self.screen_x = WINDOW_MIN_X if width < WINDOW_MIN_X else width
-            self.screen_y = WINDOW_MIN_Y if height < WINDOW_MIN_Y else height
+            self._screen_x = WINDOW_MIN_X if width < WINDOW_MIN_X else width
+            self._screen_y = WINDOW_MIN_Y if height < WINDOW_MIN_Y else height
 
         # update the screen
         self.update_screen()
 
-    def set_caption(self, text):
+    @property
+    def caption(self):
+        """ Title of the pygame window
+        Returns: caption (str)
+        """
+        return self._caption
+
+    @caption.setter
+    def set_caption(self, caption):
         """change the screen/window resolution
 
             Args:
-                text (str): new window caption
+                caption (str): new window caption
         """
-        if self.caption is not text:
-            self.caption = text
+        if self.caption is not caption:
+            self._caption = caption
         pygame.display.set_caption(self.caption)
 
     def fill_screen(self, fillcolor):
@@ -140,6 +164,10 @@ class RenderThread(threading.Thread):
                 fillcolor (pygame.Color): color to fill the current surface with
         """
         self.screen.fill(fillcolor)
+
+    @property
+    def rects_to_update(self):
+        return self._rects_to_update
 
     def add_rect_to_update(self, rects):
         """add a rect or list of rects to the rects_to_update list
@@ -151,40 +179,41 @@ class RenderThread(threading.Thread):
             for i in range(0, len(rects)):
                 # add the list one by one because pygame.display.update()
                 # doesn't allow multi dimensional lists
-                self.rects_to_update.append(rects[i])
+                self._rects_to_update.append(rects[i])
         else:
-            self.rects_to_update.append(rects)
-
-    def get_screen(self):
-        """returns the current drawing surface / main screen
-
-            Returns:
-                screen (pygame.Surface): Surface on which all rendering takes place
-        """
-        return self.screen
+            self._rects_to_update.append(rects)
 
     def stop_thread(self):
         """stop the current thread by disabling its run loop"""
         self.thread_is_running = False
 
-    def set_fullscreen(self, bool_full):
+    @property
+    def fullscreen(self):
+        return self._fullscreen
+
+    @fullscreen.setter
+    def fullscreen(self, fullscreen):
         """switch fullscreen on or off
 
             Args:
-                bool_full (bool): fullscreen on (True) or off (False)
+                fullscreen (bool): fullscreen on (True) or off (False)
         """
-        if bool_full is not self.fullscreen:
-            self.fullscreen = bool_full
+        if self.fullscreen is not fullscreen:
+            self._fullscreen = fullscreen
             self.update_screen()
 
     def check_display_modes(self):
-        """get all available display modes in fullscreen"""
-        if self.fullscreen:
-            self.display_modes = pygame.display.list_modes()
+        """store all available display modes in fullscreen
 
-    def get_display_modes(self):
+            Cave: should only be run once on (full)screen initialization because it causes heavy flickering
+        """
+        if self.fullscreen:
+            self._display_modes = pygame.display.list_modes()
+
+    @property
+    def display_modes(self):
         """return the saved list of display modes
 
             Returns: display_modes ([(x, y)]): tuples of width and heights in a list
         """
-        return self.display_modes
+        return self._display_modes
