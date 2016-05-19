@@ -13,31 +13,33 @@ WINDOW_MIN_Y = SCREEN_MIN_Y - 80
 class RenderThread(threading.Thread):
     """Main Thread which renders all drawings to the screen
 
-        Args:
-            caption (str): Window Title to use in windowed mode
-            width (int): screen/window width
-            height (int): screen/window height
-            fps (Optional[int]): frames per second (how often the screen will be redrawn per second)
-            fullscreen (Optional[bool]): run in fullscreen or windowed mode
-            upscale (Optional[bool]): don't switch screen resolution but render on smaller surface
-            daemon (Optional[bool]): quit this thread if main program quits
+    Args:
+        caption (str): Window Title to use in windowed mode
+        width (int): screen/window width
+        height (int): screen/window height
+        fps (Optional[int]): frames per second (how often the screen will be redrawn per second)
+        fullscreen (Optional[bool]): run in fullscreen or windowed mode
+        upscale (Optional[bool]): don't switch screen resolution but render on smaller surface
+        daemon (Optional[bool]): quit this thread if main program quits
 
-        Attributes:
-            thread_is_running (bool): status of this thread
-            caption (str): Window title used in windowed mode
-            _screen_x (int): width of the surface
-            _screen_y (int): height of the surface
-            fps (int): frames per second
-            fullscreen (bool): True if screen is in fullscreen mode
-            upscale (bool): True if screen should be switched to lower resolution
-            daemon (bool): True if this thread should be stopped with the main program
-            clock (pygame.time.Clock): used to time loops
-            _rects_to_update (list(Rect)): list containing all Rects which should be redrawn/updated
-            screen (pygame.Surface): surface this Menu is drawn to
-            _display_modes(list((x, y))): list containing all valid fullscreen resolutions
+    Attributes:
+        thread_is_running (bool): status of this thread
+        caption (str): Window title used in windowed mode
+        _screen_x (int): width of the surface
+        _screen_y (int): height of the surface
+        fps (int): frames per second
+        fullscreen (bool): True if screen is in fullscreen mode
+        upscale (bool): True if screen should be switched to lower resolution
+        daemon (bool): True if this thread should be stopped with the main program
+        clock (pygame.time.Clock): used to time loops
+        _rects_to_update (list(Rect)): list containing all Rects which should be redrawn/updated
+        screen (pygame.Surface): surface this Menu is drawn to
+        _display_modes(list((x, y))): list containing all valid fullscreen resolutions
 
-        Properties:
-            rects_to_update (list(Rect)): read only access to _rects_to_update
+    Properties:
+        rects_to_update (list(Rect)): read only access to _rects_to_update, @see add_rect_to_update
+        display_modes (list(resolutions)): read only access to _display_modes
+        fullscreen (bool): set fullscreen on/off, automatically updates the screen
     """
 
     def __init__(self, caption, width, height, fps=25, fullscreen=False, upscale=False, daemon=True):
@@ -69,7 +71,7 @@ class RenderThread(threading.Thread):
     def run(self):
         """Thread main run function
 
-            Overrides: threading.Thread.run()
+        Overrides: threading.Thread.run()
         """
         run_counter = 0
 
@@ -125,9 +127,9 @@ class RenderThread(threading.Thread):
     def set_resolution(self, width, height):
         """change the screen/window resolution
 
-            Args:
-                width (int): screen/window width
-                height (int): screen/window height
+        Args:
+            width (int): screen/window width
+            height (int): screen/window height
         """
         if self.fullscreen:
             self._screen_x = SCREEN_MIN_X if width < SCREEN_MIN_X else width
@@ -142,6 +144,7 @@ class RenderThread(threading.Thread):
     @property
     def caption(self):
         """ Title of the pygame window
+
         Returns: caption (str)
         """
         return self._caption
@@ -150,8 +153,8 @@ class RenderThread(threading.Thread):
     def set_caption(self, caption):
         """change the screen/window resolution
 
-            Args:
-                caption (str): new window caption
+        Args:
+            caption (str): new window caption
         """
         if self.caption is not caption:
             self._caption = caption
@@ -160,8 +163,8 @@ class RenderThread(threading.Thread):
     def fill_screen(self, fillcolor):
         """change the screen/window resolution
 
-            Args:
-                fillcolor (pygame.Color): color to fill the current surface with
+        Args:
+            fillcolor (pygame.Color): color to fill the current surface with
         """
         self.screen.fill(fillcolor)
 
@@ -172,8 +175,8 @@ class RenderThread(threading.Thread):
     def add_rect_to_update(self, rects):
         """add a rect or list of rects to the rects_to_update list
 
-            Args:
-                rects (pygame.Rect or [pygame.Rect]): Rect or List of Rects to add
+        Args:
+            rects (pygame.Rect or [pygame.Rect]): Rect or List of Rects to add
         """
         if len(rects) > 1:
             for i in range(0, len(rects)):
@@ -182,6 +185,21 @@ class RenderThread(threading.Thread):
                 self._rects_to_update.append(rects[i])
         else:
             self._rects_to_update.append(rects)
+
+    def blit(self, surface, pos, center=False):
+        """blit a surface to the main screen
+
+        Args:
+            surface (pygame.Surface): surface to draw to the screen
+            pos (int x, int y): position where to draw it at the screen (also accepts a Rect)
+            center (bool): if set pos get's ignored and the surface is centered on the screen
+        """
+        rect = pos
+        if center:
+            rect = surface.get_rect()
+            rect.centerx = self._screen_x / 2
+            rect.centery = self._screen_y / 2
+        self.screen.blit(surface, rect)
 
     def stop_thread(self):
         """stop the current thread by disabling its run loop"""
@@ -195,8 +213,8 @@ class RenderThread(threading.Thread):
     def fullscreen(self, fullscreen):
         """switch fullscreen on or off
 
-            Args:
-                fullscreen (bool): fullscreen on (True) or off (False)
+        Args:
+            fullscreen (bool): fullscreen mode on (True) or off (False)
         """
         if self.fullscreen is not fullscreen:
             self._fullscreen = fullscreen
@@ -205,7 +223,7 @@ class RenderThread(threading.Thread):
     def check_display_modes(self):
         """store all available display modes in fullscreen
 
-            Cave: should only be run once on (full)screen initialization because it causes heavy flickering
+        Cave: should only be run once on (full)screen initialization because it causes heavy flickering
         """
         if self.fullscreen:
             self._display_modes = pygame.display.list_modes()
@@ -214,6 +232,7 @@ class RenderThread(threading.Thread):
     def display_modes(self):
         """return the saved list of display modes
 
-            Returns: display_modes ([(x, y)]): tuples of width and heights in a list
+        Returns: display_modes ([(x, y)]): tuples of width and heights in a list
         """
         return self._display_modes
+
