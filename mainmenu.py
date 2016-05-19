@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 '''
 Main Menu
     - Start New Game
@@ -40,9 +41,11 @@ Main Menu
 '''Constants'''
 BLACK = pygame.Color(0, 0, 0)
 GRAY = pygame.Color(150, 150, 150)
+WHITE = pygame.Color(255, 255, 255)
+RED = pygame.Color(150, 0, 0)
 MENU_FONT = "./resources/fonts/Mikodacs.otf"
 BACKGROUND = pygame.Color(100, 100, 100)
-# including 1 for the header and 1 for the back button
+# including 2 for the header
 MAX_ITEMS_NO_SCROLL = 7
 # space between two entries
 LINE_SPACING = 1.5
@@ -137,12 +140,16 @@ class Menu(object):
         margin_top = self.menu_items[0].size
 
         if complete:
-            self.surface.fill(BACKGROUND)
+            back_rect = self.draw_background(BACKGROUND)
+            rects.append(back_rect)
             # always draw the first item (header)
             rects.append(self.draw_item(self.menu_items[0], 0, new_pos, margin_top))
             margin_top += self.menu_items[1].size
 
-            for menu_index in range(start_pos, length):
+            stop_pos = start_pos + MAX_ITEMS_NO_SCROLL - 2  # including 2 for the header
+            if stop_pos > length:
+                stop_pos = length
+            for menu_index in range(start_pos, stop_pos):
                 menu_item = self.menu_items[menu_index]
                 margin_top += menu_item.size * LINE_SPACING
                 rects.append(self.draw_item(self.menu_items[menu_index], menu_index, new_pos, margin_top))
@@ -154,7 +161,7 @@ class Menu(object):
                     rects.append(self.draw_arrow(arrow_pos_x, self.font_size * 2, self.font_size, False))
                 if start_pos < length - 2:
                     # down facing arrow
-                    rects.append(self.draw_arrow(arrow_pos_x, arrow_pos_y, self.font_size))
+                    rects.append(self.draw_arrow(arrow_pos_x, arrow_pos_y - self.font_size, self.font_size))
         else:
             '''partial screen update'''
             new_option = self.menu_items[new_pos]
@@ -183,6 +190,24 @@ class Menu(object):
             rects.append(old_option.get_rect())
         '''pass the changed rects to the render thread / pygame'''
         return rects
+
+    def draw_background(self, bgcolor):
+        """draws a custom shaped background"""
+        width = self.surface.get_width()
+        height = self.surface.get_height()
+        radius = 20
+        width -= radius
+        height -= radius
+
+        background_rect = pygame.Rect(10, 10, width, height)
+        background_rect.union_ip(pygame.draw.rect(self.surface, bgcolor, background_rect, 0))
+        background_rect.union_ip(pygame.draw.rect(self.surface, RED, background_rect, 5))
+        background_rect.union_ip(pygame.draw.circle(self.surface, RED, (radius, radius), radius))
+        background_rect.union_ip(pygame.draw.circle(self.surface, RED, (width, radius), radius))
+        background_rect.union_ip(pygame.draw.circle(self.surface, RED, (radius, height), radius))
+        background_rect.union_ip(pygame.draw.circle(self.surface, RED, (width, height), radius))
+
+        return background_rect
 
     def calc_font_size(self, header_size, font_size):
         """calculate a ratio to multiply font sizes with to adjust them for different screen sizes

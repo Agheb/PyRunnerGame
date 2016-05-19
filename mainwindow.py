@@ -108,7 +108,7 @@ def init_menu():
     """
     s_width = int(render_thread.screen.get_width() / 4) * 3
     s_height = int(render_thread.screen.get_height() / 3) * 2
-    surface = pygame.Surface((s_width, s_height))
+    surface = pygame.Surface((s_width, s_height), SRCALPHA, 32)
     # regular font sizes
     h1_size = 72
     h2_size = 48
