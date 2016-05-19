@@ -246,8 +246,6 @@ def start_game():
                 render_thread.set_resolution(x, y)
                 show_menu()
             elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    quit_game()
                 if game_is_running:
                     if event.key == K_LEFT:
                         pass
@@ -270,12 +268,15 @@ def start_game():
                                 eval(action)()
                         except TypeError:
                             pass
+                    if event.key == K_ESCAPE:
+                        back_item = current_menu.get_menu_item(current_menu.get_length() - 1).get_action()
+                        if type(back_item) is Menu:
+                            switch_menu(back_item)
+                        else:
+                            quit_game()
                 else:
-                    if event.key == K_n:
-                        init_game()
-                    if event.key == K_r:
-                        init_game()
-
+                    if event.key == K_ESCAPE:
+                        quit_game()
         # save cpu resources
         clock.tick(fps)
 

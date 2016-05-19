@@ -1,5 +1,4 @@
 import pygame
-from pygame.locals import *
 """
 
     Main Menu
@@ -79,7 +78,7 @@ class Menu(object):
     def add_menu_item(self, menu_item):
         if self.parent:
             # keep the back button at the end of the menu items list
-            self.menu_items.insert(len(self.menu_items) - 1, menu_item)
+            self.menu_items.insert(self.get_length() - 1, menu_item)
         else:
             self.menu_items.append(menu_item)
         # finish initialization
@@ -100,10 +99,7 @@ class Menu(object):
     def print_item(self, menu_item, index, pos, margin_top):
         menu_item.rect.centerx = self.surface.get_rect().centerx
         menu_item.rect.centery = margin_top
-        if index is 0 or index is pos:
-            menu_item.hovered = True
-        else:
-            menu_item.hovered = False
+        menu_item.hovered = True if index is 0 or index is pos else False
         menu_item.draw()
 
         return menu_item.get_rect()
@@ -116,8 +112,9 @@ class Menu(object):
             new_pos = length - 1
 
         margin_top = self.menu_items[0].get_size()
-        margin_bottom = self.surface.get_height() - margin_top
-        space_needed = (length * 1.5) * self.menu_items[1].get_size()
+        margin_bottom = self.surface.get_height() - 2 * margin_top
+        regular_size = self.menu_items[1].get_size() * 1.5
+        space_needed = length * regular_size
 
         if complete:
             self.surface.fill(BACKGROUND)
@@ -138,7 +135,6 @@ class Menu(object):
                     self.print_menu(new_pos, old_pos, True, new_pos)
                 else:
                     self.print_menu(new_pos, old_pos, True, old_pos)
-
 
             new_option.hovered = True
             old_option.hovered = False
@@ -196,4 +192,3 @@ class MenuItem(object):
 
     def set_text(self, text):
         self.text = text
-
