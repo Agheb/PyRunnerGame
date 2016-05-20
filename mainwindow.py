@@ -150,8 +150,6 @@ def init_menu():
     menu_s_video.add_menu_item(MenuItem(menu_s_video_fullscreen, 'switch_fullscreen()', item_size))
     menu_s_video_switch_res = "Switch Resolution <" + bool_to_string(switch_resolution) + ">"
     menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
-    menu_s_video_showfps = "Show FPS <" + bool_to_string(show_fps) + ">"
-    menu_s_video.add_menu_item(MenuItem(menu_s_video_showfps, 'switch_showfps()', item_size))
     # resolutions
     if fullscreen:
         menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
@@ -163,6 +161,8 @@ def init_menu():
             menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
         res_name = "<" + str(screen_x) + "x" + str(screen_y) + ">"
         menu_s_video.add_menu_item(MenuItem("Resolution " + res_name, menu_s_v_resolution, item_size))
+    menu_s_video_showfps = "Show FPS <" + bool_to_string(show_fps) + ">"
+    menu_s_video.add_menu_item(MenuItem(menu_s_video_showfps, 'switch_showfps()', item_size))
     '''complete the settings menu at the end to store the up to date objects'''
     menu_settings.add_menu_item(MenuItem("Audio", None, item_size))
     menu_settings.add_menu_item(MenuItem("Controls", None, item_size))
@@ -270,12 +270,10 @@ def switch_showfps():
     """switch fps overlay on/off"""
     global show_fps
     show_fps = False if show_fps else True
-    if current_menu.get_menu_item(0).text == "Video Settings":
-        for i in range(1, current_menu.length):
-            item = current_menu.get_menu_item(i)
-            if item.action == 'switch_showfps()':
-                item.text = "Show FPS <" + bool_to_string(show_fps) + ">"
-                show_menu(True)
+    item = current_menu.get_menu_item(menu_pos)
+    if item.action == 'switch_showfps()':
+        item.text = "Show FPS <" + bool_to_string(show_fps) + ">"
+        show_menu(True)
 
 
 def switch_fs_resolution():
