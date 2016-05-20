@@ -28,7 +28,7 @@ _CONF_DISPLAY_SWITCH_RES = "switch resolution"
 _CONF_DISPLAY_FPS = "fps"
 '''global variables'''
 game_is_running = True
-screen_x = screen_y = fps = fullscreen = switch_resolution = None
+screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = None
 current_menu = None
 menu_pos = 1
 render_thread = None
@@ -108,7 +108,7 @@ def init_menu():
     """
     s_width = int(render_thread.screen.get_width() / 4) * 3
     s_height = int(render_thread.screen.get_height() / 3) * 2
-    surface = pygame.Surface((s_width, s_height), SRCALPHA, 32)
+    surface = pygame.Surface((s_width, s_height), SRCALPHA)
     # regular font sizes
     h1_size = 72
     h2_size = 48
@@ -185,12 +185,20 @@ def set_current_menu(menu):
     show_menu()
 
 
-def show_menu():
+def show_menu(boolean=True):
     """print the current menu to the screen"""
-    global current_menu
+    global current_menu, in_menu
+    surface = None
     render_thread.fill_screen(BACKGROUND)
-    current_menu.print_menu(menu_pos, menu_pos, True)
-    surface = current_menu.surface
+    if boolean:
+        in_menu = True
+        current_menu.print_menu(menu_pos, menu_pos, True)
+        surface = current_menu.surface
+    else:
+        in_menu = False
+        # TODO add game surface here
+        surface = pygame.Surface((screen_x, screen_y))
+        surface.fill(RED)
     render_thread.blit(surface, None, True)
     render_thread.refresh_screen(True)
 
@@ -308,21 +316,27 @@ def start_game():
                     if event.key == K_RIGHT:
                         pass
                     if event.key == K_UP:
-                        if 1 < menu_pos:
-                            menu_pos -= 1
-                            navigate_menu(menu_pos + 1)
+                        if in_menu:
+                            if 1 < menu_pos:
+                                menu_pos -= 1
+                                navigate_menu(menu_pos + 1)
                     if event.key == K_DOWN:
-                        if menu_pos < current_menu.length - 1:
-                            menu_pos += 1
-                            navigate_menu(menu_pos - 1)
+                        if in_menu:
+                            if menu_pos < current_menu.length - 1:
+                                menu_pos += 1
+                                navigate_menu(menu_pos - 1)
                     if event.key == K_RETURN:
-                        do_menu_action()
+                        if in_menu:
+                            do_menu_action()
                     if event.key == K_ESCAPE:
-                        back_item = current_menu.get_menu_item(current_menu.length - 1).action
-                        if type(back_item) is Menu:
-                            set_current_menu(back_item)
+                        if in_menu:
+                            back_item = current_menu.get_menu_item(current_menu.length - 1).action
+                            if type(back_item) is Menu:
+                                set_current_menu(back_item)
+                            else:
+                                show_menu(False)
                         else:
-                            quit_game()
+                            show_menu()
                 else:
                     if event.key == K_ESCAPE:
                         quit_game()
