@@ -99,7 +99,7 @@ class Menu(object):
         """
         return self.menu_items[index]
 
-    def draw_item(self, menu_item, index, pos, margin_top):
+    def draw_item(self, menu_item, index, pos, margin_top=None):
         """draw a specific MenuItem
 
         Args:
@@ -111,8 +111,12 @@ class Menu(object):
         Returns: pygame.Rect
         """
         menu_item.rect.centerx = self.surface.get_rect().centerx
-        menu_item.rect.centery = margin_top
+        if margin_top:
+            menu_item.rect.centery = margin_top
         menu_item.hovered = True if index is 0 or index is pos else False
+        # overwrite the old rendering
+        pygame.draw.rect(self.surface, BACKGROUND, menu_item.get_rect())
+        # draw the new rendering
         menu_item.draw()
 
         return menu_item.get_rect()
@@ -132,6 +136,8 @@ class Menu(object):
         arrow_pos_x = self.surface.get_width() - self.font_size * 2.25
         arrow_pos_y = self.surface.get_height() - self.font_size * 2
         rects = []
+        max_items_view = MAX_ITEMS_NO_SCROLL - 2  # including 2 for the header
+        stop_pos = start_pos + max_items_view if start_pos + max_items_view < length else length
 
         # limit the cursor
         if length - 1 <= new_pos:
@@ -140,15 +146,11 @@ class Menu(object):
         margin_top = self.menu_items[0].size
 
         if complete:
-            back_rect = self.draw_background(BACKGROUND)
-            rects.append(back_rect)
+            rects.append(self.draw_background(BACKGROUND))
             # always draw the first item (header)
             rects.append(self.draw_item(self.menu_items[0], 0, new_pos, margin_top))
             margin_top += self.menu_items[1].size
 
-            stop_pos = start_pos + MAX_ITEMS_NO_SCROLL - 2  # including 2 for the header
-            if stop_pos > length:
-                stop_pos = length
             for menu_index in range(start_pos, stop_pos):
                 menu_item = self.menu_items[menu_index]
                 margin_top += menu_item.size * LINE_SPACING
@@ -166,28 +168,21 @@ class Menu(object):
             '''partial screen update'''
             new_option = self.menu_items[new_pos]
             old_option = self.menu_items[old_pos]
-            # overwrite the old rendering
-            pygame.draw.rect(self.surface, BACKGROUND, new_option)
-            pygame.draw.rect(self.surface, BACKGROUND, old_option)
 
             if length > MAX_ITEMS_NO_SCROLL:
                 '''draw down facing arrow - the menu get's redrawn completely as soon as the user starts scrolling'''
-                if start_pos < length - 2:
-                    rects.append(self.draw_arrow(arrow_pos_x, arrow_pos_y, self.font_size))
+                if stop_pos is not length:
+                    rects.append(self.draw_arrow(arrow_pos_x, arrow_pos_y - self.font_size, self.font_size))
                 if new_pos < old_pos:
-                    self.print_menu(new_pos, old_pos, True, new_pos)
+                    if new_pos % max_items_view is 0:
+                        return self.print_menu(new_pos, old_pos, True, old_pos - max_items_view)
                 else:
-                    self.print_menu(new_pos, old_pos, True, old_pos)
+                    if old_pos % max_items_view is 0:
+                        return self.print_menu(new_pos, old_pos, True, new_pos)
 
-            # highlight the selected item
-            new_option.hovered = True
-            old_option.hovered = False
-            # draw the new item
-            new_option.draw()
-            old_option.draw()
-            # tell the render thread to update those areas
-            rects.append(new_option.get_rect())
-            rects.append(old_option.get_rect())
+            # update the changed items
+            rects.append(self.draw_item(new_option, new_pos, new_pos))
+            rects.append(self.draw_item(old_option, old_pos, new_pos))
         '''pass the changed rects to the render thread / pygame'''
         return rects
 
