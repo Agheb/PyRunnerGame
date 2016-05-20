@@ -67,6 +67,7 @@ class Menu(object):
         self.font_size = font_size
         self.menu_items = []
         self.length = 0
+        self.background = None
         if self.parent:
             # always add a back button for sub-menus
             self.add_menu_item(MenuItem("Back", self.parent, self.font_size))
@@ -189,22 +190,29 @@ class Menu(object):
         return rects
 
     def draw_background(self, bgcolor):
-        """draws a custom shaped background"""
-        width = self.surface.get_width()
-        height = self.surface.get_height()
-        radius = 20
-        width -= radius
-        height -= radius
+        """draws a custom shaped background to the main surface"""
+        if not self.background:
+            '''only draw it once'''
+            width = self.surface.get_width()
+            height = self.surface.get_height()
+            bg_surface = pygame.Surface((width, height), SRCALPHA)
+            radius = 20
+            width -= radius
+            height -= radius
 
-        background_rect = pygame.Rect(10, 10, width, height)
-        background_rect.union_ip(pygame.draw.rect(self.surface, bgcolor, background_rect, 0))
-        background_rect.union_ip(pygame.draw.rect(self.surface, RED, background_rect, 5))
-        background_rect.union_ip(pygame.draw.circle(self.surface, RED, (radius, radius), radius))
-        background_rect.union_ip(pygame.draw.circle(self.surface, RED, (width, radius), radius))
-        background_rect.union_ip(pygame.draw.circle(self.surface, RED, (radius, height), radius))
-        background_rect.union_ip(pygame.draw.circle(self.surface, RED, (width, height), radius))
+            background_rect = pygame.Rect(10, 10, width, height)
+            background_rect.union_ip(pygame.draw.rect(bg_surface, bgcolor, background_rect, 0))
+            background_rect.union_ip(pygame.draw.rect(bg_surface, RED, background_rect, 5))
+            background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (radius, radius), radius))
+            background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (width, radius), radius))
+            background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (radius, height), radius))
+            background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (width, height), radius))
+            '''and save the result for later use'''
+            self.background = bg_surface
 
-        return background_rect
+        self.surface.blit(self.background, (0, 0))
+
+        return self.background.get_rect()
 
     def calc_font_size(self, header_size, font_size):
         """calculate a ratio to multiply font sizes with to adjust them for different screen sizes
