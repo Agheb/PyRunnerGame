@@ -28,7 +28,7 @@ _CONF_DISPLAY_SWITCH_RES = "switch resolution"
 _CONF_DISPLAY_FPS = "fps"
 '''global variables'''
 game_is_running = True
-screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = None
+screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = bg_image = None
 current_menu = None
 menu_pos = 1
 render_thread = None
@@ -187,18 +187,23 @@ def set_current_menu(menu):
 
 def show_menu(boolean=True):
     """print the current menu to the screen"""
-    global current_menu, in_menu
+    global current_menu, in_menu, menu_pos, bg_image
     surface = None
     render_thread.fill_screen(BACKGROUND)
     if boolean:
         in_menu = True
+        menu_pos = 1
         current_menu.print_menu(menu_pos, menu_pos, True)
         surface = current_menu.surface
     else:
         in_menu = False
         # TODO add game surface here
         surface = pygame.Surface((screen_x, screen_y))
-        surface.fill(RED)
+        if bg_image.get_width() is not screen_x or bg_image.get_height() is not screen_y:
+            bg_image = pygame.transform.scale(bg_image, (screen_x, screen_y), surface)
+        else:
+            surface.blit(bg_image, (0, 0))
+    # draw the selected surface to the screen
     render_thread.blit(surface, None, True)
     render_thread.refresh_screen(True)
 
@@ -285,9 +290,12 @@ def restart_program():
 
 
 def init_game():
+    global bg_image
     """initialize the game variables"""
     # initialize the main screen
     init_screen()
+    # load images
+    bg_image = pygame.image.load(os.path.join('./resources/images/', 'lode2.gif')).convert()
     # initialize the main menu
     init_menu()
 

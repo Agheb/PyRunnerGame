@@ -19,7 +19,7 @@ class RenderThread(threading.Thread):
         height (int): screen/window height
         fps (Optional[int]): frames per second (how often the screen will be redrawn per second)
         fullscreen (Optional[bool]): run in fullscreen or windowed mode
-        upscale (Optional[bool]): don't switch screen resolution but render on smaller surface
+        switch_resolution (Optional[bool]): don't switch screen resolution but render on smaller surface
         daemon (Optional[bool]): quit this thread if main program quits
 
     Attributes:
@@ -29,7 +29,7 @@ class RenderThread(threading.Thread):
         _screen_y (int): height of the surface
         fps (int): frames per second
         fullscreen (bool): True if screen is in fullscreen mode
-        upscale (bool): True if screen should be switched to lower resolution
+        switch_resolution (bool): True if screen should be switched to lower resolution
         daemon (bool): True if this thread should be stopped with the main program
         clock (pygame.time.Clock): used to time loops
         _rects_to_update (list(Rect)): list containing all Rects which should be redrawn/updated
@@ -37,6 +37,7 @@ class RenderThread(threading.Thread):
         _display_modes(list((x, y))): list containing all valid fullscreen resolutions
 
     Properties:
+        screen (pygame.Surface): the main surface to draw to
         rects_to_update (list(Rect)): read only access to _rects_to_update, @see add_rect_to_update
         display_modes (list(resolutions)): read only access to _display_modes
         fullscreen (bool): set fullscreen on/off, automatically updates the screen
@@ -210,7 +211,8 @@ class RenderThread(threading.Thread):
         """return the main drawing surface
 
         Returns: pygame.Surface
-                the whole screen if upscale is set or else a smaller, centered surface with the requested dimensions
+                the whole screen if switch_resolution is set or else
+                a smaller,centered surface with the requested dimensions
         """
         if self.switch_resolution:
             return self._screen
