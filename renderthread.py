@@ -176,11 +176,13 @@ class RenderThread(threading.Thread):
         font_rendered = font.render(text, True, WHITE, SRCALPHA)
         font_rect = font_rendered.get_rect()
         if not self._fps_dirty_rect and self.bg_surface:
-            self._fps_dirty_rect = self.bg_surface.subsurface((pos_x, pos_y, font_rect.width, font_rect.height))
+            '''get the clean background rect with some additional security padding around it'''
+            self._fps_dirty_rect = self.bg_surface.subsurface((pos_x - 5, pos_y - 5, font_rect.width + 10, font_rect.height + 10))
         else:
-            self.blit(self._fps_dirty_rect, (pos_x, pos_y))
+            self.blit(self._fps_dirty_rect, (pos_x - 5, pos_y - 5))
         self.blit(font_rendered, (pos_x, pos_y))
-        self.add_rect_to_update(font_rect)
+        # update the dirty rect area because it's a little bit bigger
+        self.add_rect_to_update(self._fps_dirty_rect.get_rect())
 
 
     @property
