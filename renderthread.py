@@ -48,7 +48,7 @@ class RenderThread(threading.Thread):
     def __init__(self, caption, width, height, fps=25, fullscreen=False, switch_resolution=False, daemon=True):
         threading.Thread.__init__(self)
         self.thread_is_running = True
-        self._caption = caption
+        self._caption = None
         self._screen_x = width
         self._screen_y = height
         self.fps = fps
@@ -76,6 +76,8 @@ class RenderThread(threading.Thread):
         # in fullscreen mode: save all available modes for the settings
         self._display_modes = None
         self.check_display_modes()
+        # set the window title
+        self.caption = caption
 
     def run(self):
         """Thread main run function
@@ -184,7 +186,6 @@ class RenderThread(threading.Thread):
         # update the dirty rect area because it's a little bit bigger
         self.add_rect_to_update(self._fps_dirty_rect.get_rect())
 
-
     @property
     def caption(self):
         """ Title of the pygame window
@@ -194,7 +195,7 @@ class RenderThread(threading.Thread):
         return self._caption
 
     @caption.setter
-    def set_caption(self, caption):
+    def caption(self, caption):
         """change the screen/window resolution
 
         Args:
