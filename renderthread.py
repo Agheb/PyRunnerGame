@@ -214,7 +214,7 @@ class RenderThread(threading.Thread):
                 the whole screen if switch_resolution is set or else
                 a smaller,centered surface with the requested dimensions
         """
-        if self.switch_resolution:
+        if not self.fullscreen or self.switch_resolution:
             return self._screen
         else:
             return self._surface
