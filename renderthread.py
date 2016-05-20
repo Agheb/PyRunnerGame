@@ -84,7 +84,7 @@ class RenderThread(threading.Thread):
         """
         run_counter = 0
         fps_counter = 0
-        fps_interval = self.fps
+        fps_interval = self.fps / 3
         refresh_time = self.fps * 10
 
         while self.thread_is_running:
@@ -222,7 +222,7 @@ class RenderThread(threading.Thread):
         Args:
             rects (pygame.Rect or [pygame.Rect]): Rect or List of Rects to add
         """
-        self.lock.acquire(True, 1)
+        self.lock.acquire(True)
         if type(rects) is not Rect:
             for i in range(0, len(rects)):
                 # add the list one by one because pygame.display.update()
@@ -234,7 +234,7 @@ class RenderThread(threading.Thread):
 
     def _clean_rects_to_update(self):
         """clear the list of rects to update after successfully updating the screen"""
-        self.lock.acquire(True, 1)
+        self.lock.acquire(True)
         self._rects_to_update = []
         self.lock.release()
 

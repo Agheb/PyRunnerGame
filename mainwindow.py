@@ -3,7 +3,12 @@ import sys
 import os
 from pygame.locals import *
 from sys import exit
-import configparser
+try:
+    # Python 3
+    import configparser
+except ImportError:
+    # Python 2
+    import ConfigParser
 from mainmenu import Menu, MenuItem
 from renderthread import RenderThread
 
@@ -35,11 +40,23 @@ menu_pos = 1
 render_thread = None
 
 
+def get_config_parser():
+    """get the adequate config parser for either python 2 or 3
+
+    Returns: ConfigParser (Python 2) or configparser (Python 3)
+    """
+    try:
+        config = configparser.RawConfigParser()
+    except NameError:
+        config = ConfigParser.RawConfigParser()
+    return config
+
+
 def read_settings():
     """read the settings from config.cfg"""
     global screen_x, screen_y, fps, fullscreen, switch_resolution
     try:
-        config = configparser.RawConfigParser()
+        config = get_config_parser()
         config.read(CONFIG)
 
         '''get display configuration'''
@@ -67,7 +84,7 @@ def write_settings(default=False):
         default (bool): true to save default values to the disk
     """
     global screen_x, screen_y, fps, fullscreen, switch_resolution
-    config = configparser.RawConfigParser()
+    config = get_config_parser()
 
     if default:
         # default display values
