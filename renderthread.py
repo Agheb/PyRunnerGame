@@ -63,6 +63,7 @@ class RenderThread(threading.Thread):
         # initialize the screen
         self._screen = None
         self._overlay = None
+        self.show_framerate = False
         if switch_resolution:
             self._surface = None
         # initialize pygame in case it's not already
@@ -81,18 +82,27 @@ class RenderThread(threading.Thread):
         Overrides: threading.Thread.run()
         """
         run_counter = 0
+        fps_counter = 0
+        fps_interval = self.fps
+        refresh_time = self.fps * 10
 
         while self.thread_is_running:
-            if self.fps * 10 <= run_counter:
+            if refresh_time <= run_counter:
                 # completely refresh screen once every 10 seconds
                 self.refresh_screen(True)
                 run_counter = 0
             else:
                 # else only if necessary
-                if self.rects_to_update:
+                if self._rects_to_update:
                     self.refresh_screen()
                 run_counter += 1
 
+            if self.show_framerate:
+                if fps_counter >= fps_interval:
+                    self.show_fps()
+                    fps_counter = 0
+                else:
+                    fps_counter += 1
             self.clock.tick(self.fps)
 
     def update_screen(self):
@@ -125,6 +135,7 @@ class RenderThread(threading.Thread):
                 # only update the changed rects
                 try:
                     pygame.display.update(self.rects_to_update)
+                    self._clean_rects_to_update()
                 except ValueError:
                     print("Error occured parsing " + str(self._rects_to_update))
                     self._clean_rects_to_update()

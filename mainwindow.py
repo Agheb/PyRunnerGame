@@ -29,7 +29,7 @@ _CONF_DISPLAY_SWITCH_RES = "switch resolution"
 _CONF_DISPLAY_FPS = "fps"
 '''global variables'''
 game_is_running = True
-screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = bg_image = show_fps = None
+screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = bg_image = None
 current_menu = None
 menu_pos = 1
 render_thread = None
@@ -161,7 +161,7 @@ def init_menu():
             menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
         res_name = "<" + str(screen_x) + "x" + str(screen_y) + ">"
         menu_s_video.add_menu_item(MenuItem("Resolution " + res_name, menu_s_v_resolution, item_size))
-    menu_s_video_showfps = "Show FPS <" + bool_to_string(show_fps) + ">"
+    menu_s_video_showfps = "Show FPS <" + bool_to_string(render_thread.show_framerate) + ">"
     menu_s_video.add_menu_item(MenuItem(menu_s_video_showfps, 'switch_showfps()', item_size))
     '''complete the settings menu at the end to store the up to date objects'''
     menu_settings.add_menu_item(MenuItem("Audio", None, item_size))
@@ -268,11 +268,11 @@ def switch_fullscreen():
 
 def switch_showfps():
     """switch fps overlay on/off"""
-    global show_fps
-    show_fps = False if show_fps else True
+    new = False if render_thread.show_framerate else True
+    render_thread.show_framerate = new
     item = current_menu.get_menu_item(menu_pos)
     if item.action == 'switch_showfps()':
-        item.text = "Show FPS <" + bool_to_string(show_fps) + ">"
+        item.text = "Show FPS <" + bool_to_string(new) + ">"
         show_menu(True)
 
 
@@ -318,8 +318,6 @@ def start_game():
     init_game()
     # Main loop relevant vars
     clock = pygame.time.Clock()
-    loops = 0
-    fps_interval = int(fps / 3)
 
     while True:
         for event in pygame.event.get():
@@ -363,12 +361,6 @@ def start_game():
                     if event.key == K_ESCAPE:
                         quit_game()
 
-        if show_fps:
-            if loops >= fps_interval:
-                render_thread.show_fps()
-                loops = 0
-            else:
-                loops += 1
         # save cpu resources
         clock.tick(fps)
 
