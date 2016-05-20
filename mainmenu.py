@@ -140,12 +140,13 @@ class Menu(object):
         stop_pos = start_pos + max_items_view if start_pos + max_items_view < length else length
 
         # limit the cursor
-        if length - 1 <= new_pos:
+        if new_pos is length:
             new_pos = length - 1
 
         margin_top = self.menu_items[0].size
 
         if complete:
+            # draw the fancy background
             rects.append(self.draw_background(BACKGROUND))
             # always draw the first item (header)
             rects.append(self.draw_item(self.menu_items[0], 0, new_pos, margin_top))
@@ -158,10 +159,10 @@ class Menu(object):
 
             '''draw arrows if the menu is too long to notify about that'''
             if length > MAX_ITEMS_NO_SCROLL:
-                if start_pos > 1:
+                if start_pos is not 1:
                     # up facing arrow
                     rects.append(self.draw_arrow(arrow_pos_x, self.font_size * 2, self.font_size, False))
-                if start_pos < length - 2:
+                if stop_pos is not length:
                     # down facing arrow
                     rects.append(self.draw_arrow(arrow_pos_x, arrow_pos_y - self.font_size, self.font_size))
         else:
@@ -170,14 +171,15 @@ class Menu(object):
             old_option = self.menu_items[old_pos]
 
             if length > MAX_ITEMS_NO_SCROLL:
-                '''draw down facing arrow - the menu get's redrawn completely as soon as the user starts scrolling'''
-                if stop_pos is not length:
-                    rects.append(self.draw_arrow(arrow_pos_x, arrow_pos_y - self.font_size, self.font_size))
                 if new_pos < old_pos:
+                    # if the cursor moves up
                     if new_pos % max_items_view is 0:
+                        # scroll page wise up if the next item is out of sight
                         return self.print_menu(new_pos, old_pos, True, old_pos - max_items_view)
                 else:
+                    # if the cursor moves down
                     if old_pos % max_items_view is 0:
+                        # scroll page wise down if the next item is out of sight
                         return self.print_menu(new_pos, old_pos, True, new_pos)
 
             # update the changed items

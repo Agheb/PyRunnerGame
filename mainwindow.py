@@ -24,11 +24,11 @@ _CONF_DISPLAY = "Display"
 _CONF_DISPLAY_WIDTH = "width"
 _CONF_DISPLAY_HEIGHT = "height"
 _CONF_DISPLAY_FULLSCREEN = "fullscreen"
-_CONF_DISPLAY_UPSCALE = "upscale"
+_CONF_DISPLAY_SWITCH_RES = "switch resolution"
 _CONF_DISPLAY_FPS = "fps"
 '''global variables'''
 game_is_running = True
-screen_x = screen_y = fps = fullscreen = upscale = None
+screen_x = screen_y = fps = fullscreen = switch_resolution = None
 current_menu = None
 menu_pos = 1
 render_thread = None
@@ -36,7 +36,7 @@ render_thread = None
 
 def read_settings():
     """read the settings from config.cfg"""
-    global screen_x, screen_y, fps, fullscreen, upscale
+    global screen_x, screen_y, fps, fullscreen, switch_resolution
     try:
         config = configparser.RawConfigParser()
         config.read(CONFIG)
@@ -46,7 +46,7 @@ def read_settings():
         screen_y = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT)
         fps = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_FPS)
         fullscreen = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN)
-        upscale = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_UPSCALE)
+        switch_resolution = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_SWITCH_RES)
     except configparser.NoSectionError:
         write_settings(True)
     except configparser.NoOptionError:
@@ -65,7 +65,7 @@ def write_settings(default=False):
     Args:
         default (bool): true to save default values to the disk
     """
-    global screen_x, screen_y, fps, fullscreen, upscale
+    global screen_x, screen_y, fps, fullscreen, switch_resolution
     config = configparser.RawConfigParser()
 
     if default:
@@ -74,7 +74,7 @@ def write_settings(default=False):
         screen_y = 600
         fps = 25
         fullscreen = True
-        upscale = False
+        switch_resolution = False
 
     '''info part'''
     config.add_section(_CONF_INFO)
@@ -85,7 +85,7 @@ def write_settings(default=False):
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT, screen_y)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_FPS, fps)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN, fullscreen)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_UPSCALE, upscale)
+    config.set(_CONF_DISPLAY, _CONF_DISPLAY_SWITCH_RES, switch_resolution)
 
     with open(CONFIG, 'w') as configfile:
         config.write(configfile)
@@ -95,7 +95,7 @@ def init_screen():
     """initialize the main screen"""
     global render_thread
     read_settings()
-    render_thread = RenderThread(NAME, screen_x, screen_y, fps, fullscreen, upscale)
+    render_thread = RenderThread(NAME, screen_x, screen_y, fps, fullscreen, switch_resolution)
     render_thread.fill_screen(BACKGROUND)
     render_thread.start()
 
@@ -145,7 +145,10 @@ def init_menu():
     #   video settings
     menu_s_video = Menu(surface, menu_settings, item_size)
     menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
-    menu_s_video.add_menu_item(MenuItem("Fullscreen <" + bool_to_string(fullscreen) + ">", 'switch_fullscreen()', item_size))
+    menu_s_video_fullscreen = "Fullscreen <" + bool_to_string(fullscreen) + ">"
+    menu_s_video.add_menu_item(MenuItem(menu_s_video_fullscreen, 'switch_fullscreen()', item_size))
+    menu_s_video_switch_res = "Switch Resolution <" + bool_to_string(switch_resolution) + ">"
+    menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
     # resolutions
     if fullscreen:
         menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
@@ -243,11 +246,19 @@ def set_resolution(width, height, restart=False):
 def switch_fullscreen():
     """switch between windowed and fullscreen mode"""
     global fullscreen
-    if fullscreen:
-        fullscreen = False
-    else:
-        fullscreen = True
+    fullscreen = False if fullscreen else True
     '''save changed settings to disk and restart this program'''
+    write_settings()
+    restart_program()
+
+
+def switch_fs_resolution():
+    """switch between windowed and fullscreen mode"""
+    global switch_resolution
+    switch_resolution = False if switch_resolution else True
+    '''save changed settings to disk and restart this program'''
+    # workaround: else pygame is getting the wrong screen dimensions
+    render_thread.fullscreen = False
     write_settings()
     restart_program()
 

@@ -33,7 +33,7 @@ class RenderThread(threading.Thread):
         daemon (bool): True if this thread should be stopped with the main program
         clock (pygame.time.Clock): used to time loops
         _rects_to_update (list(Rect)): list containing all Rects which should be redrawn/updated
-        screen (pygame.Surface): surface this Menu is drawn to
+        _screen (pygame.Surface): surface this Menu is drawn to
         _display_modes(list((x, y))): list containing all valid fullscreen resolutions
 
     Properties:
@@ -42,7 +42,7 @@ class RenderThread(threading.Thread):
         fullscreen (bool): set fullscreen on/off, automatically updates the screen
     """
 
-    def __init__(self, caption, width, height, fps=25, fullscreen=False, upscale=False, daemon=True):
+    def __init__(self, caption, width, height, fps=25, fullscreen=False, switch_resolution=False, daemon=True):
         threading.Thread.__init__(self)
         self.thread_is_running = True
         self._caption = caption
@@ -50,14 +50,16 @@ class RenderThread(threading.Thread):
         self._screen_y = height
         self.fps = fps
         self._fullscreen = fullscreen
-        self.upscale = upscale
+        self.switch_resolution = switch_resolution
         self.daemon = daemon
         # clock thread @ fps
         self.clock = pygame.time.Clock()
         # dirty rects list to only partially update the screen
         self._rects_to_update = []
         # initialize the screen
-        self.screen = None
+        self._screen = None
+        if switch_resolution:
+            self._surface = None
         # initialize pygame in case it's not already
         try:
             self.update_screen()
@@ -94,19 +96,17 @@ class RenderThread(threading.Thread):
 
         if self.fullscreen:
             pygame.mouse.set_visible(False)
-            # if upscaling is set, render to a smaller surface but show it on the full screen
-            if not self.upscale:
-                disp_screen = pygame.display.set_mode((display.current_w, display.current_h), FULLSCREEN, display.bitsize)
-                self.screen = pygame.Surface((self._screen_x, self._screen_y))
-                # self.screen.get_rect().centerx = disp_screen.get_rect().centerx
-                # self.screen.get_rect().centery = disp_screen.get_rect().centery
-                disp_screen.blit(self.screen, (0, 0))
+            '''if switch resolution is False, render to a smaller surface but show it centered on the full screen'''
+            if not self.switch_resolution:
+                self._screen = pygame.display.set_mode((display.current_w, display.current_h), FULLSCREEN, display.bitsize)
+                self._surface = pygame.Surface((self._screen_x, self._screen_y))
+                self.blit(self._surface, None, True)
             else:
-                # switch screen resolution to the desired one
-                self.screen = pygame.display.set_mode((self._screen_x, self._screen_y), FULLSCREEN, display.bitsize)
+                '''switch screen resolution to the desired one'''
+                self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), FULLSCREEN, display.bitsize)
         else:
             pygame.mouse.set_visible(True)
-            self.screen = pygame.display.set_mode((self._screen_x, self._screen_y), RESIZABLE, display.bitsize)
+            self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), RESIZABLE, display.bitsize)
 
         self.refresh_screen(True)
 
@@ -166,7 +166,7 @@ class RenderThread(threading.Thread):
         Args:
             fillcolor (pygame.Color): color to fill the current surface with
         """
-        self.screen.fill(fillcolor)
+        self._screen.fill(fillcolor)
 
     @property
     def rects_to_update(self):
@@ -197,13 +197,25 @@ class RenderThread(threading.Thread):
         rect = pos
         if center:
             rect = surface.get_rect()
-            rect.centerx = self._screen_x / 2
-            rect.centery = self._screen_y / 2
-        self.screen.blit(surface, rect)
+            rect.centerx = self._screen_x / 2 if self.switch_resolution else self._screen.get_width() / 2
+            rect.centery = self._screen_y / 2 if self.switch_resolution else self._screen.get_height() / 2
+        self._screen.blit(surface, rect)
 
     def stop_thread(self):
         """stop the current thread by disabling its run loop"""
         self.thread_is_running = False
+
+    @property
+    def screen(self):
+        """return the main drawing surface
+
+        Returns: pygame.Surface
+                the whole screen if upscale is set or else a smaller, centered surface with the requested dimensions
+        """
+        if self.switch_resolution:
+            return self._screen
+        else:
+            return self._surface
 
     @property
     def fullscreen(self):
