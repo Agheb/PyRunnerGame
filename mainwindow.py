@@ -192,20 +192,23 @@ def show_menu(boolean=True):
     """print the current menu to the screen"""
     global current_menu, in_menu, menu_pos, bg_image
     render_thread.fill_screen(BACKGROUND)
+    # TODO add game surface here
+    # surface = pygame.Surface((screen_x, screen_y))
+    if bg_image.get_width() is not screen_x or bg_image.get_height() is not screen_y:
+        bg_image = pygame.transform.scale(bg_image, (screen_x, screen_y))
+    surface = bg_image
+    # save this as background surface for dirty rects
+    render_thread.bg_surface = bg_image
+    render_thread.blit(surface, None, True)
+
     if boolean:
         in_menu = True
         current_menu.print_menu(menu_pos, menu_pos, True)
-        surface = current_menu.surface
+        render_thread.blit(current_menu.surface, None, True)
     else:
         in_menu = False
         menu_pos = 1
-        # TODO add game surface here
-        # surface = pygame.Surface((screen_x, screen_y))
-        if bg_image.get_width() is not screen_x or bg_image.get_height() is not screen_y:
-            bg_image = pygame.transform.scale(bg_image, (screen_x, screen_y))
-        surface = bg_image
     # draw the selected surface to the screen
-    render_thread.blit(surface, None, True)
     render_thread.refresh_screen(True)
 
 

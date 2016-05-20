@@ -62,7 +62,8 @@ class RenderThread(threading.Thread):
         self._rects_to_update = []
         # initialize the screen
         self._screen = None
-        self._overlay = None
+        self.bg_surface = None
+        self._fps_dirty_rect = None
         self.show_framerate = False
         if switch_resolution:
             self._surface = None
@@ -127,9 +128,13 @@ class RenderThread(threading.Thread):
 
     def refresh_screen(self, complete_screen=False):
         """refresh the pygame screen/window"""
+        if not self.rects_to_update and not complete_screen:
+            print(str("nothing to udpate, refreshing the whole screen; use refresh_screen(True) to avoid this message"))
+            complete_screen = True
+
         try:
             # redraw the whole screen
-            if not self.rects_to_update or complete_screen:
+            if complete_screen:
                 pygame.display.update()
             else:
                 # only update the changed rects
@@ -164,15 +169,17 @@ class RenderThread(threading.Thread):
     def show_fps(self):
         """draws the current frame rate in the screens up right corner"""
         width = self.screen.get_width()
-        height = self.screen.get_height()
-        if not self._overlay:
-            self._overlay = pygame.Surface((width, height), SRCALPHA)
+        pos_x = width - 60
+        pos_y = 30
         font = pygame.font.Font(None, 24)
         text = '%.2f' % self.clock.get_fps()
-        font_rendered = font.render(text, True, WHITE, BACKGROUND)
+        font_rendered = font.render(text, True, WHITE, SRCALPHA)
         font_rect = font_rendered.get_rect()
-        self._overlay.blit(font_rendered, (width - 60, 30))
-        self.blit(self._overlay, None, True)
+        if not self._fps_dirty_rect and self.bg_surface:
+            self._fps_dirty_rect = self.bg_surface.subsurface((pos_x, pos_y, font_rect.width, font_rect.height))
+        else:
+            self.blit(self._fps_dirty_rect, (pos_x, pos_y))
+        self.blit(font_rendered, (pos_x, pos_y))
         self.add_rect_to_update(font_rect)
 
 
@@ -201,7 +208,7 @@ class RenderThread(threading.Thread):
         Args:
             fillcolor (pygame.Color): color to fill the current surface with
         """
-        self._screen.fill(fillcolor)
+        self.screen.fill(fillcolor)
 
     @property
     def rects_to_update(self):
@@ -237,12 +244,18 @@ class RenderThread(threading.Thread):
             pos (int x, int y): position where to draw it at the screen (also accepts a Rect)
             center (bool): if set pos get's ignored and the surface is centered on the screen
         """
-        rect = pos
         if center:
             rect = surface.get_rect()
             rect.centerx = self._screen_x / 2 if self.switch_resolution else self._screen.get_width() / 2
             rect.centery = self._screen_y / 2 if self.switch_resolution else self._screen.get_height() / 2
-        self._screen.blit(surface, rect)
+            pos = rect
+        elif not self.switch_resolution and self.fullscreen:
+            '''calculate offset if rendering surface is smaller than the screen size'''
+            margin_x, margin_y = pos
+            margin_x += int((self._screen.get_width() - self._surface.get_width()) / 2)
+            margin_y += int((self._screen.get_height() - self._surface.get_height()) / 2)
+            pos = (margin_x, margin_y)
+        self._screen.blit(surface, pos)
 
     def stop_thread(self):
         """stop the current thread by disabling its run loop"""
