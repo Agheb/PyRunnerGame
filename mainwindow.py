@@ -17,6 +17,7 @@ RED = pygame.Color(255, 0, 0)
 BLACK = pygame.Color(0, 0, 0)
 BACKGROUND = pygame.Color(200, 200, 200)
 GRAY = pygame.Color(100, 100, 100)
+WHITE = (255, 255, 255)
 # Settings
 _CONF_INFO = "Info"
 _CONF_INFO_NAME = "name"
@@ -28,7 +29,7 @@ _CONF_DISPLAY_SWITCH_RES = "switch resolution"
 _CONF_DISPLAY_FPS = "fps"
 '''global variables'''
 game_is_running = True
-screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = bg_image = None
+screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = bg_image = show_fps = None
 current_menu = None
 menu_pos = 1
 render_thread = None
@@ -149,6 +150,8 @@ def init_menu():
     menu_s_video.add_menu_item(MenuItem(menu_s_video_fullscreen, 'switch_fullscreen()', item_size))
     menu_s_video_switch_res = "Switch Resolution <" + bool_to_string(switch_resolution) + ">"
     menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
+    menu_s_video_showfps = "Show FPS <" + bool_to_string(show_fps) + ">"
+    menu_s_video.add_menu_item(MenuItem(menu_s_video_showfps, 'switch_showfps()', item_size))
     # resolutions
     if fullscreen:
         menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
@@ -191,11 +194,11 @@ def show_menu(boolean=True):
     render_thread.fill_screen(BACKGROUND)
     if boolean:
         in_menu = True
-        menu_pos = 1
         current_menu.print_menu(menu_pos, menu_pos, True)
         surface = current_menu.surface
     else:
         in_menu = False
+        menu_pos = 1
         # TODO add game surface here
         # surface = pygame.Surface((screen_x, screen_y))
         if bg_image.get_width() is not screen_x or bg_image.get_height() is not screen_y:
@@ -206,9 +209,9 @@ def show_menu(boolean=True):
     render_thread.refresh_screen(True)
 
 
-def navigate_menu(old_pos):
+def navigate_menu(old_pos, complete=False):
     """helps rerendering the changed menu items for partial screen updates"""
-    rects = current_menu.print_menu(menu_pos, old_pos, False)
+    rects = current_menu.print_menu(menu_pos, old_pos, complete)
     render_thread.blit(current_menu.surface, None, True)
     render_thread.add_rect_to_update(rects)
 
@@ -263,6 +266,18 @@ def switch_fullscreen():
     restart_program()
 
 
+def switch_showfps():
+    """switch fps overlay on/off"""
+    global show_fps
+    show_fps = False if show_fps else True
+    if current_menu.get_menu_item(0).text == "Video Settings":
+        for i in range(1, current_menu.length):
+            item = current_menu.get_menu_item(i)
+            if item.action == 'switch_showfps()':
+                item.text = "Show FPS <" + bool_to_string(show_fps) + ">"
+                show_menu(True)
+
+
 def switch_fs_resolution():
     """switch between windowed and fullscreen mode"""
     global switch_resolution
@@ -303,7 +318,10 @@ def start_game():
     global screen_x, screen_y, fps, menu_pos
     # PyGame initialization
     init_game()
+    # Main loop relevant vars
     clock = pygame.time.Clock()
+    loops = 0
+    fps_interval = int(fps / 3)
 
     while True:
         for event in pygame.event.get():
@@ -346,6 +364,13 @@ def start_game():
                 else:
                     if event.key == K_ESCAPE:
                         quit_game()
+
+        if show_fps:
+            if loops >= fps_interval:
+                render_thread.show_fps()
+                loops = 0
+            else:
+                loops += 1
         # save cpu resources
         clock.tick(fps)
 

@@ -8,7 +8,9 @@ SCREEN_MIN_Y = 480
 # Minimum Windowed Resolution
 WINDOW_MIN_X = SCREEN_MIN_X - 40
 WINDOW_MIN_Y = SCREEN_MIN_Y - 80
-
+# Colors
+WHITE = (255, 255, 255)
+BACKGROUND = pygame.Color(200, 200, 200)
 
 class RenderThread(threading.Thread):
     """Main Thread which renders all drawings to the screen
@@ -53,12 +55,14 @@ class RenderThread(threading.Thread):
         self._fullscreen = fullscreen
         self.switch_resolution = switch_resolution
         self.daemon = daemon
+        self.lock = threading.Lock()
         # clock thread @ fps
         self.clock = pygame.time.Clock()
         # dirty rects list to only partially update the screen
         self._rects_to_update = []
         # initialize the screen
         self._screen = None
+        self._overlay = None
         if switch_resolution:
             self._surface = None
         # initialize pygame in case it's not already
@@ -119,8 +123,11 @@ class RenderThread(threading.Thread):
                 pygame.display.update()
             else:
                 # only update the changed rects
-                pygame.display.update(self.rects_to_update)
-                self._rects_to_update = []
+                try:
+                    pygame.display.update(self.rects_to_update)
+                except ValueError:
+                    print("Error occured parsing " + str(self._rects_to_update))
+                    self._clean_rects_to_update()
         except pygame.error:
             # OpenGL can only redraw the whole screen
             pygame.display.flip()
@@ -141,6 +148,21 @@ class RenderThread(threading.Thread):
 
         # update the screen
         self.update_screen()
+
+    def show_fps(self):
+        """draws the current frame rate in the screens up right corner"""
+        width = self.screen.get_width()
+        height = self.screen.get_height()
+        if not self._overlay:
+            self._overlay = pygame.Surface((width, height), SRCALPHA)
+        font = pygame.font.Font(None, 24)
+        text = '%.2f' % self.clock.get_fps()
+        font_rendered = font.render(text, True, WHITE, BACKGROUND)
+        font_rect = font_rendered.get_rect()
+        self._overlay.blit(font_rendered, (width - 60, 30))
+        self.blit(self._overlay, None, True)
+        self.add_rect_to_update(font_rect)
+
 
     @property
     def caption(self):
@@ -179,13 +201,21 @@ class RenderThread(threading.Thread):
         Args:
             rects (pygame.Rect or [pygame.Rect]): Rect or List of Rects to add
         """
-        if len(rects) > 1:
+        self.lock.acquire(True, 1)
+        if type(rects) is not Rect:
             for i in range(0, len(rects)):
                 # add the list one by one because pygame.display.update()
                 # doesn't allow multi dimensional lists
                 self._rects_to_update.append(rects[i])
         else:
             self._rects_to_update.append(rects)
+        self.lock.release()
+
+    def _clean_rects_to_update(self):
+        """clear the list of rects to update after successfully updating the screen"""
+        self.lock.acquire(True, 1)
+        self._rects_to_update = []
+        self.lock.release()
 
     def blit(self, surface, pos, center=False):
         """blit a surface to the main screen
