@@ -152,7 +152,7 @@ class RenderThread(threading.Thread):
                     '''completely refresh the screen'''
                     print("Error occured parsing " + str(self._rects_to_update))
                     self._rects_to_update = []
-                    pygame.display.update()
+                    self.refresh_screen(True)
         except pygame.error:
             # OpenGL can only redraw the whole screen
             pygame.display.flip()

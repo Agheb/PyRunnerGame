@@ -187,7 +187,12 @@ class Menu(object):
             rects.append(self.draw_item(new_option, new_pos, new_pos))
             rects.append(self.draw_item(old_option, old_pos, new_pos))
         '''pass the changed rects to the render thread / pygame'''
-        return rects
+        rects_fix = []
+        while rects:
+            x, y, width, height = rects.pop()
+            rect = pygame.Rect(x + 100, y + 100, width, height)
+            rects_fix.append(rect)
+        return rects_fix
 
     def draw_background(self, bgcolor):
         """draws a custom shaped background to the main surface"""
