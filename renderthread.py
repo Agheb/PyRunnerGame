@@ -146,6 +146,7 @@ class RenderThread(threading.Thread):
                 except ValueError:
                     print("Error occured parsing " + str(self._rects_to_update))
                 finally:
+                    pygame.display.update()  # linux debug
                     '''always clean up the rects_to_update list'''
                     self._clean_rects_to_update()
         except pygame.error:
