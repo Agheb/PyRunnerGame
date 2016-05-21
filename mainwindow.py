@@ -1,7 +1,7 @@
 import pygame
+from pygame.locals import *
 import sys
 import os
-from pygame.locals import *
 from sys import exit
 try:
     # Python 3
@@ -11,6 +11,7 @@ except ImportError:
     import ConfigParser
 from mainmenu import Menu, MenuItem
 from renderthread import RenderThread
+from musicthread import MusicMixer
 
 '''constants'''
 NAME = "pyRunner"
@@ -38,6 +39,7 @@ screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = bg_image 
 current_menu = None
 menu_pos = 1
 render_thread = None
+music_thread = None
 
 
 def get_config_parser():
@@ -107,6 +109,13 @@ def write_settings(default=False):
 
     with open(CONFIG, 'w') as configfile:
         config.write(configfile)
+
+
+def init_audio():
+    global music_thread
+    music_thread = MusicMixer()
+    music_thread.background_music = ('time_delay.wav', 1)
+    music_thread.start()
 
 
 def init_screen():
@@ -323,6 +332,8 @@ def restart_program():
 def init_game():
     global bg_image
     """initialize the game variables"""
+    # init audio subsystem first to avoid lag
+    init_audio()
     # initialize the main screen
     init_screen()
     # load images
@@ -338,6 +349,9 @@ def start_game():
     init_game()
     # Main loop relevant vars
     clock = pygame.time.Clock()
+
+    # switch music (test)
+    music_thread.background_music = ('summers_end_acoustic.aif', 0)
 
     while True:
         for event in pygame.event.get():

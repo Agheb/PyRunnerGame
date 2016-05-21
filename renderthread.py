@@ -12,6 +12,7 @@ WINDOW_MIN_Y = SCREEN_MIN_Y - 80
 WHITE = (255, 255, 255)
 BACKGROUND = pygame.Color(200, 200, 200)
 
+
 class RenderThread(threading.Thread):
     """Main Thread which renders all drawings to the screen
 
