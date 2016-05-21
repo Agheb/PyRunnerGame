@@ -1,8 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import threading
 import os
 import pygame
-from pygame.locals import *
 
+'''relative folder paths'''
 MUSIC_PATH = "./resources/music/"
 SOUND_PATH = "./resources/sound_fx/"
 
