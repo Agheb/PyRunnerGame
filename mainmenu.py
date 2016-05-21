@@ -189,7 +189,7 @@ class Menu(object):
             rects.append(self.draw_item(old_option, old_pos, new_pos))
         '''bug fix for fucking linux not taking into account that the smaller surface is centered on the bigger one'''
         rects_fix = []
-        diff_x, diff_y = self.render_thread.offsets_for_centered_surface(self.surface)
+        diff_x, diff_y = self.render_thread.offsets_for_centered_surface(self.surface, None, True)
         while rects:
             x, y, width, height = rects.pop()
             rect = pygame.Rect(x + diff_x, y + diff_y, width, height)

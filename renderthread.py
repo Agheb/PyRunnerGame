@@ -145,10 +145,7 @@ class RenderThread(threading.Thread):
                     while self.rects_to_update:
                         rect = self.rects_to_update.pop()
                         pygame.display.update(rect)
-                        print("FUCKING LINUX DEBUG STRING 5 (@Refresh): Rect: " + str(rect))
-                except ValueError:
-                    print("Error occured parsing " + str(self._rects_to_update))
-                except pygame.error:
+                except ValueError or pygame.error:
                     '''completely refresh the screen'''
                     print("Error occured parsing " + str(self._rects_to_update))
                     self._rects_to_update = []
@@ -240,20 +237,34 @@ class RenderThread(threading.Thread):
         else:
             self._rects_to_update.append(rects)
 
-    def offsets_for_centered_surface(self, surface):
-        s_width = surface.get_width()
-        s_height = surface.get_height()
-        scr_width = self.screen.get_width()
-        scr_height = self.screen.get_height()
-        if s_width is not scr_width and s_height is not scr_height:
-            offset_x = s_width - scr_width if s_width > scr_width else scr_width - s_width
-            offset_y = s_height - scr_height if s_height > scr_height else scr_height - s_height
-            offset_x = int(offset_x / 2)
-            offset_y = int(offset_y / 2)
-            pos = (offset_x, offset_y)
-        else:
-            '''same size'''
-            pos = (0, 0)
+    def offsets_for_centered_surface(self, surface, pos, centered):
+        """This function calculates the offsets to center smaller surfaces on the main screen
+           and to determine the offsets to pass the correct rects to pygame.display.update().
+           This is mainly important because MacOS X takes the smaller surface offset into account
+           (or it might quietly update the whole screen) while Linux doesn't refresh anything
+           because the rects are misplaced)
+
+        Args:
+            surface (pygame.Surface): the surface that's drawn to the screen
+            pos (int, int): the position where it should be drawn
+            centered (bool): determines if the surface should be/is centered on the screen
+
+        Returns: (int, int) as x and y offset
+        """
+        if centered:
+            s_width = surface.get_width()
+            s_height = surface.get_height()
+            scr_width = self.screen.get_width()
+            scr_height = self.screen.get_height()
+            if s_width is not scr_width and s_height is not scr_height:
+                offset_x = s_width - scr_width if s_width > scr_width else scr_width - s_width
+                offset_y = s_height - scr_height if s_height > scr_height else scr_height - s_height
+                offset_x = int(offset_x / 2)
+                offset_y = int(offset_y / 2)
+                pos = (offset_x, offset_y)
+            else:
+                '''same size'''
+                pos = (0, 0)
 
         if not self.switch_resolution and self.fullscreen:
             '''calculate offset if rendering surface is smaller than the screen size'''
@@ -272,11 +283,10 @@ class RenderThread(threading.Thread):
             pos (int x, int y): position where to draw it at the screen (also accepts a Rect)
             center (bool): if set pos get's ignored and the surface is centered on the screen
         """
-        pos = self.offsets_for_centered_surface(surface)
+        pos = self.offsets_for_centered_surface(surface, pos, center)
         rect = surface.get_rect()
         rect.x, rect.y = pos
         self._screen.blit(surface, rect)
-        # self.rects_to_update.append(rect)
 
     def stop_thread(self):
         """stop the current thread by disabling its run loop"""
