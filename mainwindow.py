@@ -169,6 +169,12 @@ def init_menu():
     # settings menu
     menu_settings = Menu(surface, menu_main, item_size)
     menu_settings.add_menu_item(MenuItem("Settings", None, h2_size))
+    menu_s_audio = Menu(surface, menu_settings, item_size)
+    menu_s_audio.add_menu_item(MenuItem("Audio Settings", None, h2_size))
+    menu_s_audio_music = "Music <" + bool_to_string(music_thread.play_music) + ">"
+    menu_s_audio.add_menu_item(MenuItem(menu_s_audio_music, 'switch_audio_music()', item_size))
+    menu_s_audio_sfx = "Sound FX <" + bool_to_string(music_thread.play_sfx) + ">"
+    menu_s_audio.add_menu_item(MenuItem(menu_s_audio_sfx, 'switch_audio_sfx()', item_size))
     #   video settings
     menu_s_video = Menu(surface, menu_settings, item_size)
     menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
@@ -190,7 +196,7 @@ def init_menu():
     menu_s_video_showfps = "Show FPS <" + bool_to_string(render_thread.show_framerate) + ">"
     menu_s_video.add_menu_item(MenuItem(menu_s_video_showfps, 'switch_showfps()', item_size))
     '''complete the settings menu at the end to store the up to date objects'''
-    menu_settings.add_menu_item(MenuItem("Audio", None, item_size))
+    menu_settings.add_menu_item(MenuItem("Audio", menu_s_audio, item_size))
     menu_settings.add_menu_item(MenuItem("Controls", None, item_size))
     menu_settings.add_menu_item(MenuItem("Video", menu_s_video, item_size))
     '''complete main menu at the end to store the up to date objects'''
@@ -252,7 +258,10 @@ def do_menu_action():
         if type(action) is Menu:
             set_current_menu(action)
         else:
-            eval(action)()
+            try:
+                eval(action)()
+            except NameError:
+                print(action + " is no valid function")
     except TypeError:
         # don't crash on wrong actions, the menu will stay up and nothing will happen
         pass
@@ -314,6 +323,28 @@ def switch_fs_resolution():
     render_thread.fullscreen = False
     write_settings()
     restart_program()
+
+
+def switch_audio_music():
+    new = False if music_thread.play_music else True
+    music_thread.play_music = new
+    item = current_menu.get_menu_item(menu_pos)
+    if item.action == 'switch_audio_music()':
+        item.text = "Music <" + bool_to_string(new) + ">"
+        show_menu(True)
+
+
+def switch_audio_sfx():
+    new = False if music_thread.play_sfx else True
+    music_thread.play_sfx = new
+    item = current_menu.get_menu_item(menu_pos)
+    if item.action == 'switch_audio_sfx()':
+        item.text = "Sound FX <" + bool_to_string(new) + ">"
+        show_menu(True)
+
+
+def switch_audio_volume():
+    pass
 
 
 def quit_game():

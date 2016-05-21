@@ -20,6 +20,7 @@ class MusicMixer(threading.Thread):
         # music related values
         self._background_music = None
         self._music = []
+        self._play_music = None
         self.play_music = play_music
         self._music_volume = None
         self.music_volume = music_volume
@@ -81,7 +82,7 @@ class MusicMixer(threading.Thread):
     def get_full_path_sfx(file):
         return os.path.join(SOUND_PATH, file)
 
-    def stop_background_music(self):
+    def clear_background_music(self):
         pygame.mixer.music.stop()
         self._music = []
 
@@ -118,6 +119,17 @@ class MusicMixer(threading.Thread):
                 print(str("Error loading music file " + str(file)))
                 # pass the exact error
                 raise
+
+    @property
+    def play_music(self):
+        return self._play_music
+
+    @play_music.setter
+    def play_music(self, play_music):
+        self._play_music = play_music
+
+        if not play_music:
+            pygame.mixer.music.fadeout(500)
 
     @property
     def music_volume(self):
