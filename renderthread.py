@@ -248,8 +248,8 @@ class RenderThread(threading.Thread):
         if center:
             s_width = surface.get_width()
             s_height = surface.get_height()
-            scr_width = self._screen.get_width()
-            scr_height = self._screen.get_height()
+            scr_width = self.screen.get_width()
+            scr_height = self.screen.get_height()
             if s_width is not scr_width and s_height is not scr_height:
                 offset_x = s_width - scr_width if s_width > scr_width else scr_width - s_width
                 offset_y = s_height - scr_height if s_height > scr_height else scr_height - s_height
@@ -259,7 +259,7 @@ class RenderThread(threading.Thread):
             else:
                 '''same size'''
                 pos = (0, 0)
-        elif not self.switch_resolution and self.fullscreen:
+        if not self.switch_resolution and self.fullscreen:
             '''calculate offset if rendering surface is smaller than the screen size'''
             margin_x, margin_y = pos
             margin_x += int((self._screen.get_width() - self._surface.get_width()) / 2)
