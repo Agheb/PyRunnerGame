@@ -33,9 +33,16 @@ _CONF_DISPLAY_HEIGHT = "height"
 _CONF_DISPLAY_FULLSCREEN = "fullscreen"
 _CONF_DISPLAY_SWITCH_RES = "switch resolution"
 _CONF_DISPLAY_FPS = "fps"
+_CONF_AUDIO = "Audio"
+_CONF_AUDIO_VOL = " volume"
+_CONF_AUDIO_MUSIC = "music"
+_CONF_AUDIO_MUSIC_VOL = _CONF_AUDIO_MUSIC + _CONF_AUDIO_VOL
+_CONF_AUDIO_SFX = "sfx"
+_CONF_AUDIO_SFX_VOL = _CONF_AUDIO_SFX + _CONF_AUDIO_VOL
 '''global variables'''
 game_is_running = True
 screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = bg_image = None
+play_music = vol_music = play_sfx = vol_sfx = None
 current_menu = None
 menu_pos = 1
 render_thread = None
@@ -57,6 +64,7 @@ def get_config_parser():
 def read_settings():
     """read the settings from config.cfg"""
     global screen_x, screen_y, fps, fullscreen, switch_resolution
+    global play_music, vol_music, play_sfx, vol_sfx
     try:
         config = get_config_parser()
         config.read(CONFIG)
@@ -67,6 +75,10 @@ def read_settings():
         fps = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_FPS)
         fullscreen = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN)
         switch_resolution = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_SWITCH_RES)
+        play_music = config.getboolean(_CONF_AUDIO, _CONF_AUDIO_MUSIC)
+        vol_music = config.getint(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL)
+        play_sfx = config.getboolean(_CONF_AUDIO, _CONF_AUDIO_SFX)
+        vol_sfx = config.getint(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL)
     except configparser.NoSectionError:
         write_settings(True)
     except configparser.NoOptionError:
@@ -86,6 +98,7 @@ def write_settings(default=False):
         default (bool): true to save default values to the disk
     """
     global screen_x, screen_y, fps, fullscreen, switch_resolution
+    global play_music, vol_music, play_sfx, vol_sfx
     config = get_config_parser()
 
     if default:
@@ -95,6 +108,11 @@ def write_settings(default=False):
         fps = 25
         fullscreen = True
         switch_resolution = False
+        # default audio settings
+        play_music = True
+        vol_music = 10
+        play_sfx = True
+        vol_sfx = 10
 
     '''info part'''
     config.add_section(_CONF_INFO)
@@ -106,6 +124,12 @@ def write_settings(default=False):
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_FPS, fps)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN, fullscreen)
     config.set(_CONF_DISPLAY, _CONF_DISPLAY_SWITCH_RES, switch_resolution)
+    '''and audio settings'''
+    config.add_section(_CONF_AUDIO)
+    config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC, play_music)
+    config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL, vol_music)
+    config.set(_CONF_AUDIO, _CONF_AUDIO_SFX, play_sfx)
+    config.set(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL, vol_sfx)
 
     with open(CONFIG, 'w') as configfile:
         config.write(configfile)
@@ -113,7 +137,7 @@ def write_settings(default=False):
 
 def init_audio():
     global music_thread
-    music_thread = MusicMixer()
+    music_thread = MusicMixer(play_music, vol_music, play_sfx, vol_sfx, fps)
     music_thread.background_music = ('time_delay.wav', 1)
     music_thread.start()
 
@@ -121,7 +145,6 @@ def init_audio():
 def init_screen():
     """initialize the main screen"""
     global render_thread
-    read_settings()
     render_thread = RenderThread(NAME, screen_x, screen_y, fps, fullscreen, switch_resolution)
     render_thread.fill_screen(BACKGROUND)
     render_thread.start()
@@ -172,9 +195,9 @@ def init_menu():
     menu_s_audio = Menu(surface, menu_settings, item_size)
     menu_s_audio.add_menu_item(MenuItem("Audio Settings", None, h2_size))
     menu_s_audio_music = get_button_text("Music", music_thread.play_music)
-    menu_s_audio.add_menu_item(MenuItem(menu_s_audio_music, 'switch_audio_music()', item_size))
+    menu_s_audio.add_menu_item(MenuItem(menu_s_audio_music, 'switch_audio_volume(1, 0)', item_size))
     menu_s_audio_sfx = get_button_text("SoundFX", music_thread.play_sfx)
-    menu_s_audio.add_menu_item(MenuItem(menu_s_audio_sfx, 'switch_audio_sfx()', item_size))
+    menu_s_audio.add_menu_item(MenuItem(menu_s_audio_sfx, 'switch_audio_volume(2, 0)', item_size))
     #   video settings
     menu_s_video = Menu(surface, menu_settings, item_size)
     menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
@@ -324,35 +347,31 @@ def switch_fs_resolution():
     restart_program()
 
 
-def switch_audio_music():
-    new = False if music_thread.play_music else True
-    music_thread.play_music = new
-    item = current_menu.get_menu_item(menu_pos)
-    if item.action == 'switch_audio_music()':
-        item.text = get_button_text("Music", new)
-        show_menu(True)
-
-
-def switch_audio_sfx():
-    new = False if music_thread.play_sfx else True
-    music_thread.play_sfx = new
-    item = current_menu.get_menu_item(menu_pos)
-    if item.action == 'switch_audio_sfx()':
-        item.text = get_button_text("SoundFX", new)
-        show_menu(True)
-
-
-def print_audio_volume_bar(vol):
-    ret_str = ""
-    for i in range(10):
-        if i < vol:
-            ret_str += "»"
-        else:
-            ret_str += " "
-    return ret_str
-
-
 def get_button_text(text, text_val):
+    """ this function beautifies menu entries which contain additional information in it's name
+
+    Args:
+        text (str): the base text / name of the MenuItem
+        text_val (str or bool): the value to append to the base text / name
+
+    Returns: a formatted string to use as the MenuItem text
+    """
+
+    def print_audio_volume_bar(vol):
+        """ a little helper function to visualize the volume level of a specific channel
+        Args:
+            vol (int): value from 0 to 10 which get's filled according to the volume level
+
+        Returns: a 10 character long string representing the volume bar
+        """
+        ret_str = ""
+        for i in range(10):
+            if i < vol:
+                ret_str += "»"
+            else:
+                ret_str += " "
+        return ret_str
+
     info_str = False
 
     if type(text_val) is bool:
@@ -372,29 +391,89 @@ def get_button_text(text, text_val):
 
 
 def switch_audio_volume(num, change):
+    """Function to switch the Music and Sound FX volume with the left/right keys
+       when hovering the Music or Sound FX on/off Menu Item
 
+    Args:
+        num (int): number of the audio channel (1) Music (2) Sound FX
+        change (int): value how to change the current volume
+                        -1 decrease volume by 10%
+                         0 turn channel on/off
+                        +1 increase volume by 10%
+
+        additionally this function will turn the channel off if it's volume is 0
+        and turn it back on when the volume get's increased starting at 0
+    """
+    '''wrappers for thread variables which keep a local copy of the settings so they can be saved on exit'''
+    def set_music(m_bol):
+        global play_music
+        play_music = music_thread.play_music = m_bol
+        return m_bol
+
+    def set_music_vol(m_vol):
+        global vol_music
+        vol_music = music_thread.music_volume = m_vol
+
+    def set_sfx(s_bol):
+        global play_sfx
+        play_sfx = music_thread.play_sfx = s_bol
+        return s_bol
+
+    def set_sfx_vol(s_vol):
+        global vol_sfx
+        vol_sfx = music_thread.sfx_volume = s_vol
+
+    # to store the settings so they can be saved on exit
     item = current_menu.get_menu_item(menu_pos)
     txt = bol = vol = None
     if num is 1:
-        txt = "Music"
-        bol = music_thread.play_music
         vol = music_thread.music_volume
     elif num is 2:
-        txt = "SoundFX"
-        bol = music_thread.play_sfx
         vol = music_thread.sfx_volume
+
     if 0 <= vol + change <= 10:
+        '''in/decrease the volume'''
+        old_vol = vol
         vol += change
         if num is 1:
-            music_thread.music_volume = vol
+            txt = "Music"
+            bol = music_thread.play_music
+            '''switch music on or off if 0 is passed'''
+            if change is not 0:
+                set_music_vol(vol)
+                if vol is 0:
+                    bol = set_music(False)
+                if old_vol is 0:
+                    bol = set_music(True)
+            else:
+                bol = False if bol else True
+                set_music(bol)
+                if vol is 0:
+                    set_music_vol(1)
         elif num is 2:
-            music_thread.sfx_volume = vol
+            txt = "SoundFX"
+            bol = music_thread.play_sfx
+            '''switch sfx on or off if 0 is passed'''
+            if change is not 0:
+                set_sfx_vol(vol)
+                if vol is 0:
+                    bol = set_sfx(False)
+                if old_vol is 0:
+                    bol = set_sfx(True)
+            else:
+                bol = False if bol else True
+                set_sfx(bol)
+                if vol is 0:
+                    set_sfx_vol(1)
+        '''update the menu button'''
         item.text = get_button_text(txt, bol)
+        '''and refresh the menu'''
         show_menu(True)
 
 
 def quit_game():
     """quit the game"""
+    write_settings()
     render_thread.stop_thread()
     music_thread.stop_thread()
     pygame.quit()
@@ -410,6 +489,8 @@ def restart_program():
 def init_game():
     global bg_image
     """initialize the game variables"""
+    # first read the settings
+    read_settings()
     # init audio subsystem first to avoid lag
     init_audio()
     # initialize the main screen
@@ -450,16 +531,16 @@ def start_game():
                     if event.key == K_LEFT:
                         if in_menu:
                             action = current_menu.get_menu_item(menu_pos).action
-                            if action == 'switch_audio_music()':
+                            if action == 'switch_audio_volume(1, 0)':
                                 switch_audio_volume(1, -1)
-                            elif action == 'switch_audio_sfx()':
+                            elif action == 'switch_audio_volume(2, 0)':
                                 switch_audio_volume(2, -1)
                     if event.key == K_RIGHT:
                         if in_menu:
                             action = current_menu.get_menu_item(menu_pos).action
-                            if action == 'switch_audio_music()':
+                            if action == 'switch_audio_volume(1, 0)':
                                 switch_audio_volume(1, 1)
-                            elif action == 'switch_audio_sfx()':
+                            elif action == 'switch_audio_volume(2, 0)':
                                 switch_audio_volume(2, 1)
                     if event.key == K_UP:
                         if in_menu:

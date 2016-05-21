@@ -49,20 +49,21 @@ class MusicMixer(threading.Thread):
         pygame.mixer.music.fadeout(1500)
 
     def _play_sounds(self, sound):
-        channel = pygame.mixer.find_channel()
-        if channel:
-            if not channel.get_busy():
-                channel.play(sound)
+        if self.play_sfx:
+            channel = pygame.mixer.find_channel()
+            if channel:
+                if not channel.get_busy():
+                    channel.play(sound)
+                else:
+                    channel.queue(sound)
             else:
-                channel.queue(sound)
-        else:
-            '''if there's no free channels we need to add some more'''
-            num_channels = old_channels = pygame.mixer.get_num_channels()
-            num_channels += 8
-            print("Increased the number of sound channels from " + str(old_channels) + " to " + str(num_channels))
-            pygame.mixer.set_num_channels(num_channels)
-            # retry
-            return self._play_sounds(sound)
+                '''if there's no free channels we need to add some more'''
+                num_channels = old_channels = pygame.mixer.get_num_channels()
+                num_channels += 8
+                print("Increased the number of sound channels from " + str(old_channels) + " to " + str(num_channels))
+                pygame.mixer.set_num_channels(num_channels)
+                # retry
+                return self._play_sounds(sound)
 
     def play_sound(self, file):
         if self.play_sfx:
