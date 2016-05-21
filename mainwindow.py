@@ -258,7 +258,7 @@ def show_menu(boolean=True):
     if boolean:
         in_menu = True
         rects = current_menu.print_menu(menu_pos, menu_pos, True)
-        render_thread.blit(current_menu.surface, (0, 0), False)
+        render_thread.blit(current_menu.surface, None, True)
         render_thread.add_rect_to_update(rects)
     else:
         in_menu = False
@@ -270,7 +270,7 @@ def show_menu(boolean=True):
 def navigate_menu(old_pos, complete=False):
     """helps rerendering the changed menu items for partial screen updates"""
     rects = current_menu.print_menu(menu_pos, old_pos, complete)
-    render_thread.blit(current_menu.surface, (0, 0), False)
+    render_thread.blit(current_menu.surface, None, True)
     render_thread.add_rect_to_update(rects)
 
 

@@ -144,17 +144,17 @@ class RenderThread(threading.Thread):
                 try:
                     while self.rects_to_update:
                         rect = self.rects_to_update.pop()
-                        print(rect)
                         pygame.display.update(rect)
                 except ValueError:
                     print("Error occured parsing " + str(self._rects_to_update))
-                finally:
-                    # pygame.display.update()  # linux debug
-                    '''always clean up the rects_to_update list'''
-                    # self._clean_rects_to_update()
+                except pygame.error:
+                    '''completely refresh the screen'''
+                    print("Error occured parsing " + str(self._rects_to_update))
+                    self._rects_to_update = []
+                    pygame.display.update()
         except pygame.error:
             # OpenGL can only redraw the whole screen
-            # pygame.display.flip()
+            pygame.display.flip()
             raise
 
     def set_resolution(self, width, height):
@@ -246,10 +246,19 @@ class RenderThread(threading.Thread):
             center (bool): if set pos get's ignored and the surface is centered on the screen
         """
         if center:
-            rect = surface.get_rect()
-            rect.centerx = self._screen_x / 2 if self.switch_resolution else self._screen.get_width() / 2
-            rect.centery = self._screen_y / 2 if self.switch_resolution else self._screen.get_height() / 2
-            pos = rect
+            s_width = surface.get_width()
+            s_height = surface.get_height()
+            scr_width = self._screen.get_width()
+            scr_height = self._screen.get_height()
+            if s_width is not scr_width and s_height is not scr_height:
+                offset_x = s_width - scr_width if s_width > scr_width else scr_width - s_width
+                offset_y = s_height - scr_height if s_height > scr_height else scr_height - s_height
+                offset_x = int(offset_x / 2)
+                offset_y = int(offset_y / 2)
+                pos = (offset_x, offset_y)
+            else:
+                '''same size'''
+                pos = (0, 0)
         elif not self.switch_resolution and self.fullscreen:
             '''calculate offset if rendering surface is smaller than the screen size'''
             margin_x, margin_y = pos
