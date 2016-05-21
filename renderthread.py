@@ -143,7 +143,9 @@ class RenderThread(threading.Thread):
                 # only update the changed rects
                 try:
                     while self.rects_to_update:
-                        pygame.display.update(pygame.Rect(0, 0, self._screen_x, self._screen_y))
+                        rect = self.rects_to_update.pop()
+                        print(rect)
+                        pygame.display.update(rect)
                 except ValueError:
                     print("Error occured parsing " + str(self._rects_to_update))
                 finally:
@@ -152,7 +154,8 @@ class RenderThread(threading.Thread):
                     # self._clean_rects_to_update()
         except pygame.error:
             # OpenGL can only redraw the whole screen
-            pygame.display.flip()
+            # pygame.display.flip()
+            raise
 
     def set_resolution(self, width, height):
         """change the screen/window resolution
