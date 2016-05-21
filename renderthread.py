@@ -145,6 +145,7 @@ class RenderThread(threading.Thread):
                     while self.rects_to_update:
                         rect = self.rects_to_update.pop()
                         pygame.display.update(rect)
+                        print("FUCKING LINUX DEBUG STRING 5 (@Refresh): Rect: " + str(rect))
                 except ValueError:
                     print("Error occured parsing " + str(self._rects_to_update))
                 except pygame.error:
@@ -250,6 +251,8 @@ class RenderThread(threading.Thread):
             s_height = surface.get_height()
             scr_width = self.screen.get_width()
             scr_height = self.screen.get_height()
+            print("FUCKING LINUX DEBUG STRING 1: Surface: " + str(s_width) + "x" + str(s_height) +
+                  " Screen: " + str(scr_width) + "x" + str(scr_height))
             if s_width is not scr_width and s_height is not scr_height:
                 offset_x = s_width - scr_width if s_width > scr_width else scr_width - s_width
                 offset_y = s_height - scr_height if s_height > scr_height else scr_height - s_height
@@ -259,6 +262,7 @@ class RenderThread(threading.Thread):
             else:
                 '''same size'''
                 pos = (0, 0)
+            print("FUCKING LINUX DEBUG STRING 2: Pos(Center): " + str(pos))
         if not self.switch_resolution and self.fullscreen:
             '''calculate offset if rendering surface is smaller than the screen size'''
             margin_x, margin_y = pos
@@ -266,8 +270,10 @@ class RenderThread(threading.Thread):
             margin_y += int((self._screen.get_height() - self._surface.get_height()) / 2)
             pos = (margin_x, margin_y)
 
+        print("FUCKING LINUX DEBUG STRING 3: Pos (if margin): " + str(pos))
         rect = surface.get_rect()
         rect.x, rect.y = pos
+        print("FUCKING LINUX DEBUG STRING 4: Surface: " + str(surface) + " / Rect: " + str(rect))
         self._screen.blit(surface, rect)
         # self.rects_to_update.append(rect)
 
