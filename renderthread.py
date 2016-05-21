@@ -240,6 +240,30 @@ class RenderThread(threading.Thread):
         else:
             self._rects_to_update.append(rects)
 
+    def offsets_for_centered_surface(self, surface):
+        s_width = surface.get_width()
+        s_height = surface.get_height()
+        scr_width = self.screen.get_width()
+        scr_height = self.screen.get_height()
+        if s_width is not scr_width and s_height is not scr_height:
+            offset_x = s_width - scr_width if s_width > scr_width else scr_width - s_width
+            offset_y = s_height - scr_height if s_height > scr_height else scr_height - s_height
+            offset_x = int(offset_x / 2)
+            offset_y = int(offset_y / 2)
+            pos = (offset_x, offset_y)
+        else:
+            '''same size'''
+            pos = (0, 0)
+
+        if not self.switch_resolution and self.fullscreen:
+            '''calculate offset if rendering surface is smaller than the screen size'''
+            margin_x, margin_y = pos
+            margin_x += int((self._screen.get_width() - self._surface.get_width()) / 2)
+            margin_y += int((self._screen.get_height() - self._surface.get_height()) / 2)
+            pos = (margin_x, margin_y)
+
+        return pos
+
     def blit(self, surface, pos, center=False):
         """blit a surface to the main screen
 
@@ -248,34 +272,9 @@ class RenderThread(threading.Thread):
             pos (int x, int y): position where to draw it at the screen (also accepts a Rect)
             center (bool): if set pos get's ignored and the surface is centered on the screen
         """
-        if center:
-            s_width = surface.get_width()
-            s_height = surface.get_height()
-            scr_width = self.screen.get_width()
-            scr_height = self.screen.get_height()
-            print("FUCKING LINUX DEBUG STRING 1: Surface: " + str(s_width) + "x" + str(s_height) +
-                  " Screen: " + str(scr_width) + "x" + str(scr_height))
-            if s_width is not scr_width and s_height is not scr_height:
-                offset_x = s_width - scr_width if s_width > scr_width else scr_width - s_width
-                offset_y = s_height - scr_height if s_height > scr_height else scr_height - s_height
-                offset_x = int(offset_x / 2)
-                offset_y = int(offset_y / 2)
-                pos = (offset_x, offset_y)
-            else:
-                '''same size'''
-                pos = (0, 0)
-            print("FUCKING LINUX DEBUG STRING 2: Pos(Center): " + str(pos))
-        if not self.switch_resolution and self.fullscreen:
-            '''calculate offset if rendering surface is smaller than the screen size'''
-            margin_x, margin_y = pos
-            margin_x += int((self._screen.get_width() - self._surface.get_width()) / 2)
-            margin_y += int((self._screen.get_height() - self._surface.get_height()) / 2)
-            pos = (margin_x, margin_y)
-
-        print("FUCKING LINUX DEBUG STRING 3: Pos (if margin): " + str(pos))
+        pos = self.offsets_for_centered_surface(surface)
         rect = surface.get_rect()
         rect.x, rect.y = pos
-        print("FUCKING LINUX DEBUG STRING 4: Surface: " + str(surface) + " / Rect: " + str(rect))
         self._screen.blit(surface, rect)
         # self.rects_to_update.append(rect)
 
