@@ -224,7 +224,6 @@ class RenderThread(threading.Thread):
         Args:
             rects (pygame.Rect or [pygame.Rect]): Rect or List of Rects to add
         """
-        self.lock.acquire(True)
         if type(rects) is not Rect:
             for i in range(0, len(rects)):
                 # add the list one by one because pygame.display.update()
@@ -232,13 +231,10 @@ class RenderThread(threading.Thread):
                 self._rects_to_update.append(rects[i])
         else:
             self._rects_to_update.append(rects)
-        self.lock.release()
 
     def _clean_rects_to_update(self):
         """clear the list of rects to update after successfully updating the screen"""
-        self.lock.acquire(True)
         self._rects_to_update = []
-        self.lock.release()
 
     def blit(self, surface, pos, center=False):
         """blit a surface to the main screen
