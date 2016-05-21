@@ -257,8 +257,9 @@ def show_menu(boolean=True):
 
     if boolean:
         in_menu = True
-        current_menu.print_menu(menu_pos, menu_pos, True)
+        rects = current_menu.print_menu(menu_pos, menu_pos, True)
         render_thread.blit(current_menu.surface, None, True)
+        render_thread.add_rect_to_update(rects)
     else:
         in_menu = False
         menu_pos = 1
