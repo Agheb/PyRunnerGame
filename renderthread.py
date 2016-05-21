@@ -265,7 +265,11 @@ class RenderThread(threading.Thread):
             margin_x += int((self._screen.get_width() - self._surface.get_width()) / 2)
             margin_y += int((self._screen.get_height() - self._surface.get_height()) / 2)
             pos = (margin_x, margin_y)
-        self._screen.blit(surface, pos)
+
+        rect = surface.get_rect()
+        rect.x, rect.y = pos
+        self._screen.blit(surface, rect)
+        # self.rects_to_update.append(rect)
 
     def stop_thread(self):
         """stop the current thread by disabling its run loop"""
