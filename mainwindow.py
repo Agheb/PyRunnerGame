@@ -319,6 +319,7 @@ def switch_fs_resolution():
 def quit_game():
     """quit the game"""
     render_thread.stop_thread()
+    music_thread.stop_thread()
     pygame.quit()
     exit()
 
@@ -365,6 +366,10 @@ def start_game():
             elif event.type == KEYDOWN:
                 '''key pressing events'''
                 if game_is_running:
+                    if event.key == K_SPACE:
+                        music_thread.play_sound('9_mm_gunshot-mike-koenig-123.wav')
+                    if event.key == K_LSHIFT:
+                        music_thread.play_sound('unscrew_lightbulb-mike-koenig.wav')
                     if event.key == K_LEFT:
                         pass
                     if event.key == K_RIGHT:
