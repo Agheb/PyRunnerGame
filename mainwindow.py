@@ -171,16 +171,15 @@ def init_menu():
     menu_settings.add_menu_item(MenuItem("Settings", None, h2_size))
     menu_s_audio = Menu(surface, menu_settings, item_size)
     menu_s_audio.add_menu_item(MenuItem("Audio Settings", None, h2_size))
-    menu_s_audio_music = "Music <" + bool_to_string(music_thread.play_music) + ">"
+    menu_s_audio_music = get_button_text("Music", music_thread.play_music)
     menu_s_audio.add_menu_item(MenuItem(menu_s_audio_music, 'switch_audio_music()', item_size))
-    menu_s_audio_sfx = "Sound FX <" + bool_to_string(music_thread.play_sfx) + ">"
+    menu_s_audio_sfx = get_button_text("SoundFX", music_thread.play_sfx)
     menu_s_audio.add_menu_item(MenuItem(menu_s_audio_sfx, 'switch_audio_sfx()', item_size))
     #   video settings
     menu_s_video = Menu(surface, menu_settings, item_size)
     menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
-    menu_s_video_fullscreen = "Fullscreen <" + bool_to_string(fullscreen) + ">"
-    menu_s_video.add_menu_item(MenuItem(menu_s_video_fullscreen, 'switch_fullscreen()', item_size))
-    menu_s_video_switch_res = "Switch Resolution <" + bool_to_string(switch_resolution) + ">"
+    menu_s_video.add_menu_item(MenuItem(get_button_text("Fullscreen", fullscreen), 'switch_fullscreen()', item_size))
+    menu_s_video_switch_res = get_button_text("Switch Resolution", switch_resolution)
     menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
     # resolutions
     if fullscreen:
@@ -191,9 +190,9 @@ def init_menu():
             res_name = str(width) + "x" + str(height)
             func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
             menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
-        res_name = "<" + str(screen_x) + "x" + str(screen_y) + ">"
-        menu_s_video.add_menu_item(MenuItem("Resolution " + res_name, menu_s_v_resolution, item_size))
-    menu_s_video_showfps = "Show FPS <" + bool_to_string(render_thread.show_framerate) + ">"
+        res_name = str(screen_x) + "x" + str(screen_y)
+        menu_s_video.add_menu_item(MenuItem(get_button_text("Resolution", res_name), menu_s_v_resolution, item_size))
+    menu_s_video_showfps = get_button_text("Show FPS", render_thread.show_framerate)
     menu_s_video.add_menu_item(MenuItem(menu_s_video_showfps, 'switch_showfps()', item_size))
     '''complete the settings menu at the end to store the up to date objects'''
     menu_settings.add_menu_item(MenuItem("Audio", menu_s_audio, item_size))
@@ -310,7 +309,7 @@ def switch_showfps():
     render_thread.show_framerate = new
     item = current_menu.get_menu_item(menu_pos)
     if item.action == 'switch_showfps()':
-        item.text = "Show FPS <" + bool_to_string(new) + ">"
+        item.text = get_button_text("Show FPS", new)
         show_menu(True)
 
 
@@ -330,7 +329,7 @@ def switch_audio_music():
     music_thread.play_music = new
     item = current_menu.get_menu_item(menu_pos)
     if item.action == 'switch_audio_music()':
-        item.text = "Music <" + bool_to_string(new) + ">"
+        item.text = get_button_text("Music", new)
         show_menu(True)
 
 
@@ -339,12 +338,59 @@ def switch_audio_sfx():
     music_thread.play_sfx = new
     item = current_menu.get_menu_item(menu_pos)
     if item.action == 'switch_audio_sfx()':
-        item.text = "Sound FX <" + bool_to_string(new) + ">"
+        item.text = get_button_text("SoundFX", new)
         show_menu(True)
 
 
-def switch_audio_volume():
-    pass
+def print_audio_volume_bar(vol):
+    ret_str = ""
+    for i in range(10):
+        if i < vol:
+            ret_str += "»"
+        else:
+            ret_str += " "
+    return ret_str
+
+
+def get_button_text(text, text_val):
+    info_str = False
+
+    if type(text_val) is bool:
+        text_val = bool_to_string(text_val)
+        if text is "Music":
+            info_str = print_audio_volume_bar(music_thread.music_volume)
+        elif text is "SoundFX":
+            info_str = print_audio_volume_bar(music_thread.sfx_volume)
+    elif type(text_val) is str:
+        if text is "Resolution":
+            return '{:<24s} {:>10s}'.format(text, text_val)
+
+    if info_str:
+        return '{:<10s} {:<4s} {:12s}'.format(text, text_val, info_str)
+    else:
+        return '{:<28s} {:>6s}'.format(text, text_val)
+
+
+def switch_audio_volume(num, change):
+
+    item = current_menu.get_menu_item(menu_pos)
+    txt = bol = vol = None
+    if num is 1:
+        txt = "Music"
+        bol = music_thread.play_music
+        vol = music_thread.music_volume
+    elif num is 2:
+        txt = "SoundFX"
+        bol = music_thread.play_sfx
+        vol = music_thread.sfx_volume
+    if 0 <= vol + change <= 10:
+        vol += change
+        if num is 1:
+            music_thread.music_volume = vol
+        elif num is 2:
+            music_thread.sfx_volume = vol
+        item.text = get_button_text(txt, bol)
+        show_menu(True)
 
 
 def quit_game():
@@ -402,9 +448,19 @@ def start_game():
                     if event.key == K_LSHIFT:
                         music_thread.play_sound('unscrew_lightbulb-mike-koenig.wav')
                     if event.key == K_LEFT:
-                        pass
+                        if in_menu:
+                            action = current_menu.get_menu_item(menu_pos).action
+                            if action == 'switch_audio_music()':
+                                switch_audio_volume(1, -1)
+                            elif action == 'switch_audio_sfx()':
+                                switch_audio_volume(2, -1)
                     if event.key == K_RIGHT:
-                        pass
+                        if in_menu:
+                            action = current_menu.get_menu_item(menu_pos).action
+                            if action == 'switch_audio_music()':
+                                switch_audio_volume(1, 1)
+                            elif action == 'switch_audio_sfx()':
+                                switch_audio_volume(2, 1)
                     if event.key == K_UP:
                         if in_menu:
                             if 1 < menu_pos:
