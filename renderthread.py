@@ -143,7 +143,7 @@ class RenderThread(threading.Thread):
                 # only update the changed rects
                 try:
                     while self.rects_to_update:
-                        pygame.display.update(self.rects_to_update.pop())
+                        pygame.display.update(pygame.Rect(0, 0, self._screen_x, self._screen_y))
                 except ValueError:
                     print("Error occured parsing " + str(self._rects_to_update))
                 finally:
@@ -233,10 +233,6 @@ class RenderThread(threading.Thread):
                 self._rects_to_update.append(rects[i])
         else:
             self._rects_to_update.append(rects)
-
-    def _clean_rects_to_update(self):
-        """clear the list of rects to update after successfully updating the screen"""
-        self._rects_to_update = []
 
     def blit(self, surface, pos, center=False):
         """blit a surface to the main screen
