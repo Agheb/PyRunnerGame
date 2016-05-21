@@ -142,13 +142,14 @@ class RenderThread(threading.Thread):
             else:
                 # only update the changed rects
                 try:
-                    pygame.display.update(self.rects_to_update)
+                    while self.rects_to_update:
+                        pygame.display.update(self.rects_to_update.pop())
                 except ValueError:
                     print("Error occured parsing " + str(self._rects_to_update))
                 finally:
-                    pygame.display.update()  # linux debug
+                    # pygame.display.update()  # linux debug
                     '''always clean up the rects_to_update list'''
-                    self._clean_rects_to_update()
+                    # self._clean_rects_to_update()
         except pygame.error:
             # OpenGL can only redraw the whole screen
             pygame.display.flip()
