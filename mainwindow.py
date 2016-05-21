@@ -196,7 +196,7 @@ def init_menu():
     menu_s_audio.add_menu_item(MenuItem("Audio Settings", None, h2_size))
     menu_s_audio_music = get_button_text("Music", music_thread.play_music)
     menu_s_audio.add_menu_item(MenuItem(menu_s_audio_music, 'switch_audio_volume(1, 0)', item_size))
-    menu_s_audio_sfx = get_button_text("SoundFX", music_thread.play_sfx)
+    menu_s_audio_sfx = get_button_text("Sounds", music_thread.play_sfx)
     menu_s_audio.add_menu_item(MenuItem(menu_s_audio_sfx, 'switch_audio_volume(2, 0)', item_size))
     #   video settings
     menu_s_video = Menu(surface, menu_settings, item_size)
@@ -378,7 +378,7 @@ def get_button_text(text, text_val):
         text_val = bool_to_string(text_val)
         if text is "Music":
             info_str = print_audio_volume_bar(music_thread.music_volume)
-        elif text is "SoundFX":
+        elif text is "Sounds":
             info_str = print_audio_volume_bar(music_thread.sfx_volume)
     elif type(text_val) is str:
         if text is "Resolution":
@@ -451,7 +451,7 @@ def switch_audio_volume(num, change):
                 if vol is 0:
                     set_music_vol(1)
         elif num is 2:
-            txt = "SoundFX"
+            txt = "Sounds"
             bol = music_thread.play_sfx
             '''switch sfx on or off if 0 is passed'''
             if change is not 0:

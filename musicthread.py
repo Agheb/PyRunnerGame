@@ -88,6 +88,8 @@ class MusicMixer(threading.Thread):
                 '''print some informational debugging string to the console'''
                 print("Increased the number of sound channels from " + str(old_channels) + " to " + str(num_channels))
                 pygame.mixer.set_num_channels(num_channels)
+                '''set the volume for all channels, else the new ones differ'''
+                self.sfx_volume = self.sfx_volume
                 # retry
                 return self._play_sounds(sound)
 
