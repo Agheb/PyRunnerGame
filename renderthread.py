@@ -155,8 +155,10 @@ class RenderThread(threading.Thread):
                     self.refresh_screen(True)
         except pygame.error:
             # OpenGL can only redraw the whole screen
-            pygame.display.flip()
-            raise
+            try:
+                pygame.display.flip()
+            except pygame.error:
+                self.refresh_screen(True)
 
     def set_resolution(self, width, height):
         """change the screen/window resolution
