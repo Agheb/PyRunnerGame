@@ -274,11 +274,16 @@ class RenderThread(threading.Thread):
            This is to ensure the FIFO principle because the rendering function always
            pops the last item out of the list.
 
+           This function automatically corrects offsets between the drawing surface
+           and the screen if a surface is provided.
+
+           Providing a surface additionally requires either a pos or centered=True value.
+
         Args:
             rects (pygame.Rect or [pygame.Rect]): Rect or List of Rects to add
             surface (pygame.Surface): the area the rect is drawn to
-            pos (int, int): the offset of that surface on the screen
-            centered (bool): if the surface is centered on the screen or not
+            pos (int, int): the offset of that surface on the screen (obsolete if centered is True)
+            centered (bool): if the surface is centered on the screen or not (pos required if False)
         """
         if surface:
             rects = self._fix_update_rects(rects, surface, pos, centered)
