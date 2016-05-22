@@ -202,7 +202,6 @@ class RenderThread(threading.Thread):
         """adds the ability to keep the last calculated fps value on top on a screen refresh"""
         if self._fps_dirty_rect and self._fps_surface:
             surf, pos = self._fps_surface
-            pos = self.offsets_for_centered_surface(surf, pos, False)
             pos_x, pos_y = pos
             self.blit(self._fps_dirty_rect, (pos_x - 5, pos_y - 5))
             self.blit(surf, pos)
