@@ -66,6 +66,7 @@ class RenderThread(threading.Thread):
         # initialize the screen
         self._screen = None
         self.bg_surface = None
+        self._fps_surface = None
         self._fps_dirty_rect = None
         self.show_framerate = False
         if switch_resolution:
@@ -137,6 +138,10 @@ class RenderThread(threading.Thread):
             print(str("nothing to udpate, refreshing the whole screen; use refresh_screen(True) to avoid this message"))
             complete_screen = True
 
+        '''frame rate persistence'''
+        if self.show_framerate:
+            self.show_fps_blit()
+
         try:
             # redraw the whole screen
             if complete_screen:
@@ -187,12 +192,22 @@ class RenderThread(threading.Thread):
         font_rect = font_rendered.get_rect()
         if not self._fps_dirty_rect and self.bg_surface:
             '''get the clean background rect with some additional security padding around it'''
-            self._fps_dirty_rect = self.bg_surface.subsurface((pos_x - 5, pos_y - 5, font_rect.width + 10, font_rect.height + 10))
-        else:
+            self._fps_dirty_rect = self.bg_surface.subsurface(
+                (pos_x - 5, pos_y - 5, font_rect.width + 10, font_rect.height + 10))
+
+        self._fps_surface = (font_rendered, (pos_x, pos_y))
+        # blit it to the screen
+        self.show_fps_blit()
+
+    def show_fps_blit(self):
+        """adds the ability to keep the last calculated fps value on top on a screen refresh"""
+        if self._fps_dirty_rect and self._fps_surface:
+            surf, pos = self._fps_surface
+            pos_x, pos_y = pos
             self.blit(self._fps_dirty_rect, (pos_x - 5, pos_y - 5))
-        self.blit(font_rendered, (pos_x, pos_y))
-        # update the dirty rect area because it's a little bit bigger
-        self.add_rect_to_update(self._fps_dirty_rect.get_rect())
+            self.blit(surf, pos)
+            # update the dirty rect area because it's a little bit bigger
+            self.add_rect_to_update(self._fps_dirty_rect.get_rect())
 
     @property
     def caption(self):
