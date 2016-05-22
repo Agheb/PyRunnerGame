@@ -18,7 +18,7 @@
 			- [x] Audio @fahrenwalde
 				- [x] Music on/off and volume @fahrenwalde
 				- [x] Sound FX on/off and volume @fahrenwalde
-			- [ ] Controls
+			- [ ] Controls @fahrenwalde
 				- [ ] Keyboard Player 1/2
 				- [ ] Joystick (optional)
 				- [ ] Left
@@ -60,6 +60,10 @@
 		- [x] add audio related settings @fahrenwalde
 		- [ ] add control related settings
 	- [ ] create main network thread @fahrenwalde @wankmueller
+	    - [ ] exchange player and enemy positions (x, y) [old -> new]
+		- [ ] UDP for fast response
+		- [ ] TCP for a synched state
+		- [ ] Zeroconf/Bonjour network browser (optional) @fahrenwalde
 - [ ] game
 	- [ ] create basic game rendering @wankmueller @ghebreweldi @grombach
 		- [ ] player can move
@@ -80,20 +84,35 @@
 				- [ ] stone
 				- [ ] steel/metal
 		- [ ] make tilemaps adjustable to screen size @fahrenwalde
+	- [ ] Sprites
+	    - [ ] Players
+	    - [ ] Enemies
 	- [ ] Multiplayer support
-		- [ ] exchange player and enemy positions (x, y) [old -> new]
-		- [ ] UDP for fast response
-		- [ ] TCP for a synched state
-		- [ ] Zeroconf/Bonjour network browser (optional) @fahrenwalde
+		- [ ] test game modes
+		- [ ] 2 players coop (local and LAN) (priority!)
+		- [ ] 2 - 4 players versus in teams (optional)
+		    - [ ] enemy team can't see holes in the ground
+		- [ ] players can interact
+		    - [ ] taunt
+		    - [ ] carry/throw each other around (optional)
+		- [ ] scoreboard
+		    - [ ] global high score (top 10)
+		    - [ ] Players can set their name
+		    - [ ] teams switch role each round (enemy becomes attacker and the other way round)
+	    - [ ] both attackers need to collect specific keys to get to the next level
+	    - [ ] the players have to collect all coins
+	        - [ ] every coin increases the players/teams score
+	        - [ ] enemies can collect one coin each (or more in mp?)
+	            - [ ] which drops when they fall into a hole
 	- [ ] add more levels with Tiled @grombach
 		- [ ] Indiana Jones style like Lode Runner - The Legend returns
 	- [ ] refine graphics and sprites @ghebreweldi
-- [ ] Documentation and Codeguidlines
-    - [ ] use PEP-8 named functions, classes etc. @all
-    - [ ] write Google Style docstrings for all functions you write @all
-    - [ ] test your code and watch cpu usage @all
-        - [ ] try to provoke crashes through random/fast user input @all
-        - [ ] add sanity checks at critical locations @all
+- Documentation and Codeguidlines
+    - use PEP-8 named functions, classes etc. @all
+    - write Google Style docstrings for all functions you write @all
+    - test your code and watch cpu usage @all
+        - try to provoke crashes through random/fast user input @all
+        - add sanity checks at critical locations @all
 - [ ] package things up to deploy @wankmueller
     - [ ] maintain Python 2.7 compatibility @all
 
