@@ -150,8 +150,7 @@ class RenderThread(threading.Thread):
                 # only update the changed rects
                 try:
                     while self.rects_to_update:
-                        rect = self.rects_to_update.pop()
-                        pygame.display.update(rect)
+                        pygame.display.update(self.rects_to_update.pop())
                 except ValueError or pygame.error:
                     '''completely refresh the screen'''
                     print("Error occured parsing " + str(self._rects_to_update))
@@ -208,7 +207,8 @@ class RenderThread(threading.Thread):
             self.blit(self._fps_dirty_rect, (pos_x - 5, pos_y - 5))
             self.blit(surf, pos)
             # update the dirty rect area because it's a little bit bigger
-            self.add_rect_to_update(self._fps_dirty_rect.get_rect())
+            rects = self.fix_update_rects(surf, pos, False, [self._fps_dirty_rect.get_rect()])
+            self.add_rect_to_update(rects)
 
     @property
     def caption(self):
