@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 00:30 am (UTC +2)
+###### last updated: 2016-05-23 at 00:40 am (UTC +2)
 
 ## TODO
 - [x] create main class / function @fahrenwalde
@@ -122,6 +122,10 @@
     - basic usage of the Render and Music Thread are below
         - make sure your drawing functions return their rects (in a list or single rect) to the main function @all
             - this allows the main function to pass it to the Render Thread for partial screen updates @all
+        - draw to an own surface, not the main screen @all
+            - blit your surface to the main screen from the main through the RenderThread @all
+                - the main function has to be able to get your screen from your class
+            - make the surface resizable if the screen/window size changes @all
 - [ ] package things up to deploy @wankmueller
     - [ ] maintain Python 2.7 compatibility @all
 
