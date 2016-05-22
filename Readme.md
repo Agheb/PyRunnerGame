@@ -51,14 +51,18 @@ class MyClass(object):
 
 	[.. init etc .. ]
 	__init__(self, surface, ...):
-		self.surface = surface
 	# it is important to pass a surface to your class where it can draw on to
+		self.surface = surface
 
 	def draw_something(self, values):
-		rects_to_return[]
+		# create an empty list to store all objects
+		rects_to_return = []
+		# if you only draw one item you can return it's Rect without list
 
+		# add each item you drew to it (use .get_rect() etc. if its no rect)
 		rects_to_return.append(pygame.draw....)
 
+		# return the list of rects to the main function
 		return rects_to_return
 ```
 
@@ -69,8 +73,8 @@ def do_my_stuff():
 	# draw my classes stuff
 	rects = MyClass.draw_something(value)
 
-	# render_thread is the local instance of the RenderThread
-	# draw the surface to the main screen
+	'''render_thread is the local instance of the RenderThread'''
+	# draw the surface centered to the main screen
 	render_thread.blit(MyClass.surface, None, True)
 
 	# tell it to update the whole screen -- use only if the whole screen changed
