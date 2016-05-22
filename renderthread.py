@@ -123,27 +123,28 @@ class RenderThread(threading.Thread):
     def _update_screen(self):
         """switch to windowed or fullscreen mode"""
         display = pygame.display.Info()
+        bitsize = display.bitsize
 
         if self.fullscreen:
             pygame.mouse.set_visible(False)
             '''if switch resolution is False, render to a smaller surface but show it centered on the full screen'''
             if not self.switch_resolution:
-                self._screen = pygame.display.set_mode((display.current_w, display.current_h), FULLSCREEN, display.bitsize)
+                self._screen = pygame.display.set_mode((display.current_w, display.current_h), FULLSCREEN, bitsize)
                 self._surface = pygame.Surface((self._screen_x, self._screen_y))
                 self.blit(self._surface, None, True)
             else:
                 '''switch screen resolution to the desired one'''
-                self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), FULLSCREEN, display.bitsize)
+                self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), FULLSCREEN, bitsize)
         else:
             pygame.mouse.set_visible(True)
-            self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), 0, display.bitsize)    # RESIZABLE
+            self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), 0, bitsize)    # RESIZABLE
 
         self.refresh_screen(True)
 
     def refresh_screen(self, complete_screen=False):
         """refresh the pygame screen/window"""
         if not self.rects_to_update and not complete_screen:
-            print(str("nothing to udpate, refreshing the whole screen; use refresh_screen(True) to avoid this message"))
+            print(str("nothing to update, refreshing the whole screen; use refresh_screen(True) to avoid this message"))
             complete_screen = True
 
         '''frame rate persistence'''
@@ -173,7 +174,7 @@ class RenderThread(threading.Thread):
                         self._updating_screen = False
                 except ValueError or pygame.error:
                     '''completely refresh the screen'''
-                    print("Error occured parsing " + str(self._rects_to_update))
+                    print("Error occurred parsing " + str(self._rects_to_update))
                     self._rects_to_update = []
                     self.refresh_screen()
         except pygame.error:
@@ -196,13 +197,6 @@ class RenderThread(threading.Thread):
         else:
             self._screen_x = WINDOW_MIN_X if width < WINDOW_MIN_X else width
             self._screen_y = WINDOW_MIN_Y if height < WINDOW_MIN_Y else height
-
-        # TODO: fix background misplacement if the window get's manually resized
-        # if self.bg_surface.get_width() is not self._screen_x or self.bg_surface.get_height() is not self._screen_y:
-        #    '''redraw the background'''
-        #    self.bg_surface = pygame.transform.scale(self.bg_surface, (self._screen_x, self._screen_y))
-        #    self._fps_dirty_rect = None
-        #    self.blit(self.bg_surface, (0, 0))
 
         # update the screen
         self._update_screen()
@@ -433,4 +427,3 @@ class RenderThread(threading.Thread):
         Returns: display_modes ([(x, y)]): tuples of width and heights in a list
         """
         return self._display_modes
-

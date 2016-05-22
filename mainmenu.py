@@ -197,7 +197,7 @@ class Menu(object):
         '''bug fix the rects positions and pass the changed rects to the render thread / pygame'''
         return rects
 
-    def _draw_background(self, bgcolor):
+    def _draw_background(self, bg_color):
         """draws a custom shaped background to the main surface"""
         if not self.background:
             '''only draw it once'''
@@ -209,7 +209,7 @@ class Menu(object):
             height -= radius
 
             background_rect = pygame.Rect(10, 10, width, height)
-            background_rect.union_ip(pygame.draw.rect(bg_surface, bgcolor, background_rect, 0))
+            background_rect.union_ip(pygame.draw.rect(bg_surface, bg_color, background_rect, 0))
             background_rect.union_ip(pygame.draw.rect(bg_surface, RED, background_rect, 5))
             background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (radius, radius), radius))
             background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (width, radius), radius))
@@ -242,7 +242,7 @@ class Menu(object):
 
         return ratio
 
-    def _draw_arrow(self, pos_x, pos_y, size, down=True, color=GRAY):
+    def _draw_arrow(self, pos_x, pos_y, size, down=True, arrow_color=GRAY):
         """draw an up or down facing arrow used to indicate scrolling capabilities
 
         Args:
@@ -250,7 +250,7 @@ class Menu(object):
             pos_y (int): the arrows vertical position
             size (int): draws the arrow in this size in pixels (e.g. font size)
             down (bool): downward facing arrow if true, upwards if false
-            color (Pygame.Color): the color of the arrow
+            arrow_color (Pygame.Color): the color of the arrow
 
         Returns: pygame.Rect
         """
@@ -267,8 +267,8 @@ class Menu(object):
         arrow_h_p2 = (arrow_botm_x + width + size // 5, pos_y + height)
         arrow_h_p3 = (arrow_botm_x + width // 2 - 1, arr_down_tip_y)  # compensate int rounding
 
-        arrow_base = pygame.draw.rect(self.surface, color, arrow_bottom, 0)
-        tip = pygame.draw.polygon(self.surface, color, (arrow_h_p1, arrow_h_p2, arrow_h_p3), 0)
+        arrow_base = pygame.draw.rect(self.surface, arrow_color, arrow_bottom, 0)
+        tip = pygame.draw.polygon(self.surface, arrow_color, (arrow_h_p1, arrow_h_p2, arrow_h_p3), 0)
         arrow_base.union_ip(tip)
 
         '''return the complete arrow'''
@@ -318,9 +318,9 @@ class MenuItem(object):
         Returns: RGB tuple: white if hovered, red else
         """
         if self.hovered:
-            return (255, 255, 255)
+            return 255, 255, 255
         else:
-            return (100, 0, 0)
+            return 100, 0, 0
 
     def set_rect(self):
         """draw the pygame.Rect containing this menu item"""
