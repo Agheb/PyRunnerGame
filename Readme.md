@@ -2,7 +2,7 @@
 ###### last updated: 2016-05-22 at 11:15 pm (UTC +2)
 
 ## TODO
-- [ ] create main class / function
+- [ ] create main class / function @fahrenwalde
 	- [ ] create object orientated menu @fahrenwalde
 		- [ ] New Game
 			- [ ] Single Player
@@ -15,7 +15,7 @@
 				- [ ] versus (only LAN)
 				- [ ] Join Game
 		- [ ] Settings
-			- [x] Audio
+			- [x] Audio @fahrenwalde
 				- [x] Music on/off and volume @fahrenwalde
 				- [x] Sound FX on/off and volume @fahrenwalde
 			- [ ] Controls
@@ -29,14 +29,32 @@
 				- [ ] Shoot/Dig Right
 				- [ ] Interact
 				- [ ] ...
-			- [x] Video
+			- [x] Video @fahrenwalde
 				- [x] fullscreen on/off @fahrenwalde
 				- [x] screen resolutions @fahrenwalde
 				- [x] switch resolutions @fahrenwalde
 				- [x] show fps @fahrenwalde
-		- [x] Exit
+		- [x] Exit for top level, Back for sub menus @fahrenwalde
 	- [x] create main render thread @fahrenwalde
+	    - [x] reduce screen flickering @fahrenwalde
+	    - [x] avoid crashes @fahrenwalde
+	    - [x] watch cpu usage @fahrenwalde
+	    - [x] screen modes @fahrenwalde
+	        - [x] windowed @fahrenwalde
+	        - [x] fullscreen @fahrenwalde
+	        - [x] fullscreen with smaller main surface (don't switch resolution) @fahrenwalde
+	    - [x] allow window resizing @fahrenwalde
+	        - [ ] fix background surface resizing bug @fahrenwalde
+	    - [x] only update changed rects @fahrenwalde
+	    - [x] update the whole screen if needed @fahrenwalde
+	    - [x] allow other classes to blit surfaces to the screen @fahrenwalde
+	        - [x] calculate offsets for smaller surfaces @fahrenwalde
 	- [x] create sound and music thread @fahrenwalde
+	    - [x] allow sound playback @fahrenwalde
+	        - [x] create more sound channels if too many sounds are played at once @fahrenwalde
+	    - [x] allow music playback @fahrenwalde
+	        - [x] playlist and loops @fahrenwalde
+	    - [x] allow user to mute music/sfx and change the volume @fahrenwalde
 	- [x] add config parser to read and write configs @fahrenwalde
 		- [x] add screen related settings @fahrenwalde
 		- [x] add audio related settings @fahrenwalde
@@ -70,8 +88,14 @@
 	- [ ] add more levels with Tiled @grombach
 		- [ ] Indiana Jones style like Lode Runner - The Legend returns
 	- [ ] refine graphics and sprites @ghebreweldi
-	- [ ] package things up to deploy @wankmueller
-
+- [ ] Documentation and Codeguidlines
+    - [ ] use PEP-8 named functions, classes etc. @all
+    - [ ] write Google Style docstrings for all functions you write @all
+    - [ ] test your code and watch cpu usage @all
+        - [ ] try to provoke crashes through random/fast user input @all
+        - [ ] add sanity checks at critical locations @all
+- [ ] package things up to deploy @wankmueller
+    - [ ] maintain Python 2.7 compatibility @all
 
 
 ## Requirements
