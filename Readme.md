@@ -75,6 +75,10 @@ and in the 'mainwindow.py'
 
 ```python
 def do_my_stuff():
+	# create an instance of your class, if it's used more often think
+	# about saving it in a global variable
+	global my_class
+	my_class = MyClass(Pygame.Surface, values)
 	# draw my classes stuff
 	rects = MyClass.draw_something(value)
 
