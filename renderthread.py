@@ -78,13 +78,13 @@ class RenderThread(threading.Thread):
             self._surface = None
         # initialize pygame in case it's not already
         try:
-            self.update_screen()
+            self._update_screen()
         except pygame.error:
             pygame.init()
-            self.update_screen()
+            self._update_screen()
         # in fullscreen mode: save all available modes for the settings
         self._display_modes = None
-        self.check_display_modes()
+        self._check_display_modes()
         # set the window title
         self.caption = caption
 
@@ -113,13 +113,13 @@ class RenderThread(threading.Thread):
 
             if self.show_framerate:
                 if fps_counter >= fps_interval:
-                    self.render_current_fps()
+                    self._render_current_fps()
                     fps_counter = 0
                 else:
                     fps_counter += 1
             self.clock.tick(self.fps)
 
-    def update_screen(self):
+    def _update_screen(self):
         """switch to windowed or fullscreen mode"""
         display = pygame.display.Info()
 
@@ -147,7 +147,7 @@ class RenderThread(threading.Thread):
 
         '''frame rate persistence'''
         if self.show_framerate:
-            self.show_fps_blit()
+            self._show_fps_blit()
 
         try:
             # redraw the whole screen
@@ -204,9 +204,9 @@ class RenderThread(threading.Thread):
         #    self.blit(self.bg_surface, (0, 0))
 
         # update the screen
-        self.update_screen()
+        self._update_screen()
 
-    def render_current_fps(self):
+    def _render_current_fps(self):
         """draws the current frame rate in the screens up right corner"""
         width = self.screen.get_width()
         pos_x = width - 60
@@ -226,9 +226,9 @@ class RenderThread(threading.Thread):
 
         self._fps_surface = (font_rendered, (pos_x, pos_y))
         # blit it to the screen
-        self.show_fps_blit()
+        self._show_fps_blit()
 
-    def show_fps_blit(self):
+    def _show_fps_blit(self):
         """adds the ability to keep the last calculated fps value on top on a screen refresh"""
         if self._fps_dirty_rect and self._fps_surface:
             surf, pos = self._fps_surface
@@ -236,7 +236,7 @@ class RenderThread(threading.Thread):
             self.blit(self._fps_dirty_rect, (pos_x - 5, pos_y - 5))
             self.blit(surf, pos)
             # update the dirty rect area because it's a little bit bigger
-            rects = self.fix_update_rects(surf, pos, False, [self._fps_dirty_rect.get_rect()])
+            rects = self._fix_update_rects(surf, pos, False, [self._fps_dirty_rect.get_rect()])
             self.add_rect_to_update(rects)
 
     @property
@@ -285,14 +285,14 @@ class RenderThread(threading.Thread):
                 if not surface:
                     self._rects_to_update.insert(0, rects[i])
                 else:
-                    self.add_rect_to_update(self.fix_update_rects(surface, pos, centered, rects))
+                    self.add_rect_to_update(self._fix_update_rects(surface, pos, centered, rects))
         else:
             if not surface:
                 self._rects_to_update.insert(0, rects)
             else:
-                self.add_rect_to_update(self.fix_update_rects(surface, pos, centered, rects))
+                self.add_rect_to_update(self._fix_update_rects(surface, pos, centered, rects))
 
-    def offsets_for_centered_surface(self, surface, pos, centered):
+    def _offsets_for_centered_surface(self, surface, pos, centered):
         """This function calculates the offsets to center smaller surfaces on the main screen
            and to determine the offsets to pass the correct rects to pygame.display.update().
            This is mainly important because MacOS X takes the smaller surface offset into account
@@ -330,7 +330,7 @@ class RenderThread(threading.Thread):
 
         return pos
 
-    def fix_update_rects(self, surface, pos, centered, rects):
+    def _fix_update_rects(self, surface, pos, centered, rects):
         """calculate the correct rects to update and add a small margin
 
         Args:
@@ -344,7 +344,7 @@ class RenderThread(threading.Thread):
         m_dim = 4   # 2 pixels wider in each direction
         m_pos = m_dim // 2
         rects_fixed = []
-        diff_x, diff_y = self.offsets_for_centered_surface(surface, pos, centered)
+        diff_x, diff_y = self._offsets_for_centered_surface(surface, pos, centered)
         while rects:
             x, y, width, height = rects.pop()
             rect = pygame.Rect(x + diff_x - m_pos, y + diff_y - m_pos, width + m_dim, height + m_dim)
@@ -360,7 +360,7 @@ class RenderThread(threading.Thread):
             pos (int x, int y): position where to draw it at the screen (also accepts a Rect)
             center (bool): if set pos get's ignored and the surface is centered on the screen
         """
-        pos = self.offsets_for_centered_surface(surface, pos, center)
+        pos = self._offsets_for_centered_surface(surface, pos, center)
         rect = surface.get_rect()
         rect.x, rect.y = pos
         self._screen.blit(surface, rect)
@@ -395,9 +395,9 @@ class RenderThread(threading.Thread):
         """
         if self.fullscreen is not fullscreen:
             self._fullscreen = fullscreen
-            self.update_screen()
+            self._update_screen()
 
-    def check_display_modes(self):
+    def _check_display_modes(self):
         """store all available display modes in fullscreen
 
         Cave: should only be run once on (full)screen initialization because it causes heavy flickering
