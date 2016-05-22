@@ -47,7 +47,7 @@
         - [x] fullscreen @fahrenwalde
         - [x] fullscreen with smaller main surface (don't switch resolution) @fahrenwalde
     - [x] allow window resizing @fahrenwalde
-        - ~~[ ] fix background surface resizing bug in windowed mode @fahrenwalde~~
+        - [x] ~~fix background surface resizing bug in windowed mode @fahrenwalde~~
         - [x] or turn off the window resizing feature and add resolution selection for windows @fahrenwalde
     - [x] only update changed rects @fahrenwalde
         - [x] add basic dirty_rect support @fahrenwalde
