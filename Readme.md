@@ -19,7 +19,9 @@ function. The RenderThread, as all other classes get's instantiated in
 'mainwindow.py'.
 
 ### Important RenderThread functions:
-#### ```python blit(surface, pos, center=False)```
+```python
+blit(surface, pos, center=False)
+```
 Requires two arguments. The surface you drew onto which you want to get
 rendered to the main screen (pygame.Surface) and either a position
 tuple (int, int) with the offset of your surface on the screen ((0, 0) if
@@ -29,7 +31,9 @@ If it's centered you should provide None as position to make it clear for others
 that you don't intend to use it.
 
 
-#### ```python add_rect_to_update(rects, surface=None, pos=None, centered=None)```
+```python
+add_rect_to_update(rects, surface=None, pos=None, centered=None)
+```
 The RenderThread _only_ updates the screen part that changed. Therefore
 _all_ of your functions have to collect the rects that changed and return it
 to the main class ('mainwindow.py'), where it will get sent to this function.
