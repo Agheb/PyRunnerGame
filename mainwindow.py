@@ -168,7 +168,7 @@ def init_menu():
     h2_size = 48
     item_size = 36
     '''first create the root menu'''
-    menu_main = Menu(surface, screen)
+    menu_main = Menu(surface)
     '''then calculate the ratio to adjust font sizes accordingly'''
     ratio = menu_main.calc_font_size(h1_size, item_size)
     h1_size = int(h1_size * ratio)
@@ -177,40 +177,40 @@ def init_menu():
     '''then begin adding items and pass them the font sizes'''
     menu_main.add_menu_item(MenuItem(NAME, None, h1_size))
     # new game menu
-    menu_new_game = Menu(surface, screen, menu_main, item_size)
+    menu_new_game = Menu(surface, menu_main, item_size)
     menu_new_game.add_menu_item(MenuItem("Start Game", None, h2_size))
     menu_new_game.add_menu_item(MenuItem("Singleplayer", None, item_size))
     menu_new_game.add_menu_item(MenuItem("Multiplayer", None, item_size))
     #   single player
-    menu_ng_singleplayer = Menu(surface, screen, menu_new_game, item_size)
+    menu_ng_singleplayer = Menu(surface, menu_new_game, item_size)
     menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, h2_size))
     menu_ng_singleplayer.add_menu_item(MenuItem("New Game", None, item_size))
     menu_ng_singleplayer.add_menu_item(MenuItem("Resume", None, item_size))
     menu_ng_singleplayer.add_menu_item(MenuItem("Difficulty", None, item_size))
     #   multiplayer
-    menu_ng_multiplayer = Menu(surface, screen, menu_new_game, item_size)
+    menu_ng_multiplayer = Menu(surface, menu_new_game, item_size)
     menu_ng_multiplayer.add_menu_item(MenuItem("Multiplayer", None, h2_size))
     menu_ng_multiplayer.add_menu_item(MenuItem("Local Game", None, item_size))
     menu_ng_multiplayer.add_menu_item(MenuItem("Network Game", None, item_size))
     menu_ng_multiplayer.add_menu_item(MenuItem("Game Settings", None, item_size))
     # settings menu
-    menu_settings = Menu(surface, screen, menu_main, item_size)
+    menu_settings = Menu(surface, menu_main, item_size)
     menu_settings.add_menu_item(MenuItem("Settings", None, h2_size))
-    menu_s_audio = Menu(surface, screen, menu_settings, item_size)
+    menu_s_audio = Menu(surface, menu_settings, item_size)
     menu_s_audio.add_menu_item(MenuItem("Audio Settings", None, h2_size))
     menu_s_audio_music = get_button_text("Music", music_thread.play_music)
     menu_s_audio.add_menu_item(MenuItem(menu_s_audio_music, 'switch_audio_volume(1, 0)', item_size))
     menu_s_audio_sfx = get_button_text("Sounds", music_thread.play_sfx)
     menu_s_audio.add_menu_item(MenuItem(menu_s_audio_sfx, 'switch_audio_volume(2, 0)', item_size))
     #   video settings
-    menu_s_video = Menu(surface, screen, menu_settings, item_size)
+    menu_s_video = Menu(surface, menu_settings, item_size)
     menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
     menu_s_video.add_menu_item(MenuItem(get_button_text("Fullscreen", fullscreen), 'switch_fullscreen()', item_size))
     menu_s_video_switch_res = get_button_text("Switch Resolution", switch_resolution)
     menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
     # resolutions
     if fullscreen:
-        menu_s_v_resolution = Menu(surface, screen, menu_s_video, item_size)
+        menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
         menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, h2_size))
         for res in render_thread.display_modes:
             width, height = res
@@ -274,7 +274,7 @@ def navigate_menu(old_pos, complete=False):
     """helps rerendering the changed menu items for partial screen updates"""
     rects = current_menu.print_menu(menu_pos, old_pos, complete)
     render_thread.blit(current_menu.surface, None, True)
-    render_thread.add_rect_to_update(rects)
+    render_thread.add_rect_to_update(rects, current_menu.surface, None, True)
 
 
 def do_menu_action():

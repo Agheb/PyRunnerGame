@@ -65,9 +65,8 @@ class Menu(object):
         font_size (int): size which is used for the "Back" Button if it's a sub menu
     """
 
-    def __init__(self, surface, render_thread, parent=None, font_size=36):
+    def __init__(self, surface, parent=None, font_size=36):
         self.surface = surface
-        self.render_thread = render_thread
         # self.surface.set_alpha(0)
         self.parent = parent
         self.font_size = font_size
@@ -195,7 +194,7 @@ class Menu(object):
             rects.append(self.draw_item(new_option, new_pos, new_pos))
             rects.append(self.draw_item(old_option, old_pos, new_pos))
         '''bug fix the rects positions and pass the changed rects to the render thread / pygame'''
-        return self.render_thread.fix_update_rects(self.surface, None, True, rects)
+        return rects
 
     def draw_background(self, bgcolor):
         """draws a custom shaped background to the main surface"""

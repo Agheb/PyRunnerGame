@@ -165,7 +165,8 @@ class RenderThread(threading.Thread):
                     if not self._updating_screen:
                         # only one function call is allowed to update the screen at once
                         self._updating_screen = True
-                        '''force refresh has priority, avoid flickering by not allowing multiple display updates ot once'''
+                        '''force refresh has priority to avoid flickering
+                           by not allowing multiple display updates ot once'''
                         while self.rects_to_update and not self._force_refresh:
                             pygame.display.update(self.rects_to_update.pop())
                         self._updating_screen = False
@@ -269,7 +270,7 @@ class RenderThread(threading.Thread):
     def rects_to_update(self):
         return self._rects_to_update
 
-    def add_rect_to_update(self, rects):
+    def add_rect_to_update(self, rects, surface=None, pos=None, centered=None):
         """Add a rect or list of rects at the beginning of the rects_to_update list.
            This is to ensure the FIFO principle because the rendering function always
            pops the last item out of the list.
@@ -281,9 +282,15 @@ class RenderThread(threading.Thread):
             for i in range(0, len(rects)):
                 # add the list one by one because pygame.display.update()
                 # doesn't allow multi dimensional lists
-                self._rects_to_update.insert(0, rects[i])
+                if not surface:
+                    self._rects_to_update.insert(0, rects[i])
+                else:
+                    self.add_rect_to_update(self.fix_update_rects(surface, pos, centered, rects))
         else:
-            self._rects_to_update.insert(0, rects)
+            if not surface:
+                self._rects_to_update.insert(0, rects)
+            else:
+                self.add_rect_to_update(self.fix_update_rects(surface, pos, centered, rects))
 
     def offsets_for_centered_surface(self, surface, pos, centered):
         """This function calculates the offsets to center smaller surfaces on the main screen
