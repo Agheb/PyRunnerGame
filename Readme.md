@@ -13,13 +13,14 @@ The main class to run until this whole project is packed up is the
 and written and passed to other classes etc.
 
 ## Important Classes:
-### RenderThread
-RenderThread in 'renderthread.py' does all the screen refresh's, screen
-size calculation etc. If you want your drawings to get rendered utilize this
-function. The RenderThread, as all other classes get's instantiated in
-'mainwindow.py'.
+## RenderThread
+RenderThread in 'renderthread.py' is a daemon thread that does all
+the screen refreshes, screen size calculation etc.
+If you want your drawings to get rendered utilize this class.
 
-#### Important RenderThread functions:
+The RenderThread, as all other classes get's instantiated in 'mainwindow.py'.
+
+### Important RenderThread functions:
 ```python
 def blit(surface, pos, center=False):
 ```
@@ -35,11 +36,11 @@ that you don't intend to use it.
 ```python
 def add_rect_to_update(rects, surface=None, pos=None, centered=None):
 ```
-The RenderThread _only_ updates the screen part that changed. Therefore
+The RenderThread _only_ updates the screen parts that have changed. Therefore
 _all_ of your functions have to collect the rects that changed and return it
 to the main class ('mainwindow.py'), where it will get sent to this function.
 No matter if you draw on a surface that's the same size as the screen size or
-not, it is suggested to provide the surface you drew to as well as either
+not, it is suggested to provide the surface you drew to as well and either
 the position or centered value you used with the blit function.
 
 The RenderThread is only able to get the correct rects to update positions
@@ -89,5 +90,116 @@ def do_my_stuff():
 	# tell it to update the whole screen -- use only if the whole screen changed
 	render_thread.render_thread.refresh_screen(True)
 	# tell it to update only the changed parts (way less cpu intensive)
-	render_thread.add_rect_to_update(rects, surface, None, True)
+	render_thread.add_rect_to_update(rects, my_class.surface, None, True)
 ```
+
+
+## MusicMixer
+MusicMixer in 'musicthread.py' is a daemon thread that takes care of all
+the music and sound output.
+
+It creates additional pygame.mixer.Channels if the current amount of
+sounds exceeds the available channels - therefore no sound get's lost and
+no sound lag should occur.
+
+As any other classes/threads it get's instantiated at the main class.
+
+### Important MusicMixer functions:
+```python
+def play_sound(file)
+```
+This function takes either a string with the file name of a sound file
+in _/resources/sound_fx/_ or a pygame.mixer.Sound file and passes it to the next
+available channel to be played. If there's not enough channels it will
+dynamically create more.
+
+
+```python
+def get_full_path_sfx(file)
+```
+returns the full path for a sound file located in _/resources/sound_fx/_ to
+be used if you intent to play this sound more than once -- you can get the
+full path and create a stored pygame.mixer.Sound which you can pass to
+MusicMixer.play_sound each time.
+
+
+Example usage
+```python
+# music_thread is the local instantiated object in 'mainwindow.py'
+music_thread.play_sound('my_super_loud_sound.wav')
+
+# or the disk I/O saving solution
+global super_sound
+super_sound = pygame.mixer.Sound(music_thread.get_full_path_sfx('sound.wav'))
+music_thread.play_sound(super_sound)
+```
+
+There are similar functions for *Music Playback* as well:
+```python
+def background_music(self, file_loops):
+```
+this is the main object to add a music file to the music playlist.
+Other than the play_sound option this is no function it's rather an object
+accepting a tuple as arguements:
+
+```python
+music_thread.background_music = ('my_sweet_music.mp3', loops)
+```
+note that the loops is always one more as you expect it to be
+(3 loops 4 times etc). -1 would cause an endless loop but it's suggested not
+to use this -- the playlist get's repeated so if you want to endless loop a
+song, just don't add another one! (and use clear_background_music before
+if needed).
+
+
+```python
+def clear_background_music()
+```
+is the only way to stop an endless looping music file.
+This option clears the current playlist as well so it's suggested to
+call this if you change the level and want to change the sound atmosphere.
+
+```python
+def get_full_path_music(file)
+```
+is the same as get_full_path_sfx above but files are located in
+_/resources/music_
+
+```python
+@property
+def play_music():
+```
+You can use this to start/stop music playback. You should only use this
+to temporary disable playback if it was enabled before - because this value
+is one that can be set by a user (in the settings - audio - music on/off).
+If this is disabled the user probably doesn't want to listen to any music.
+
+
+Example usage
+```python
+def my_super_duper_playlist():
+
+	# add some music to the playlist
+	# just play this once as a small starter
+    music_thread.background_music = ('Modern Talking - You're my heart, you're my soul.mp3', 0)
+    # loop this classic 6 times
+    music_thread.background_music = ('Modern Talking - Cherry cherry lady.mp3', 5)
+    music_thread.background_music = ('Kiss - I was made for lovin' you.mp3', 5)
+	# loop my favorite song 10 times
+	music_thread.background_music = ('Rick Astley - Never Gonna Give You Up.mp3', 9)
+
+```
+this will play those songs in the order they were added, repeat each song
+according to it's loop setting (+1) and start again at the beginning if
+everything was played.
+
+This will continue until
+```python
+	# ...
+	music_thread.clear_background_music()
+	# or
+	music_thread.play_music = False
+```
+are called / set.
+
+
