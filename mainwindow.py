@@ -253,14 +253,13 @@ def show_menu(boolean=True):
     # surface = pygame.Surface((screen_x, screen_y))
     if bg_image.get_width() is not screen_x or bg_image.get_height() is not screen_y:
         bg_image = pygame.transform.scale(bg_image, (screen_x, screen_y))
-    surface = bg_image
     # save this as background surface for dirty rects
     render_thread.bg_surface = bg_image
-    render_thread.blit(surface, None, True)
+    render_thread.blit(bg_image, (0, 0))
 
     if boolean:
         in_menu = True
-        rects = current_menu.print_menu(menu_pos, menu_pos, True)
+        current_menu.print_menu(menu_pos, menu_pos, True)
         render_thread.blit(current_menu.surface, None, True)
         # render_thread.add_rect_to_update(rects)
     else:

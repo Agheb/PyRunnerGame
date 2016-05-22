@@ -137,21 +137,19 @@ class Menu(object):
         Returns: list(pygame.Rect) for pygame to update the screen parts
         """
         length = self.length
-        arrow_pos_x = self.surface.get_width() - self.font_size * 2.25
-        arrow_pos_y = self.surface.get_height() - self.font_size * 2
         rects = []
         max_items_view = MAX_ITEMS_NO_SCROLL - 2  # including 2 for the header
-        stop_pos = start_pos + max_items_view if start_pos + max_items_view < length else length
 
-        # limit the cursor
-        if new_pos is length:
-            new_pos = length - 1
-
-        margin_top = self.menu_items[0].size
+        # limit the cursor - is done in mainwindow.py
+        # if new_pos is length:
+        #    new_pos = length - 1
 
         if complete:
+            stop_pos = start_pos + max_items_view if start_pos + max_items_view < length else length
             # draw the fancy background
             rects.append(self.draw_background(BACKGROUND))
+            # don't overwrite the header
+            margin_top = self.menu_items[0].size
             # always draw the first item (header)
             rects.append(self.draw_item(self.menu_items[0], 0, new_pos, margin_top))
             margin_top += self.menu_items[1].size
@@ -163,6 +161,10 @@ class Menu(object):
 
             '''draw arrows if the menu is too long to notify about that'''
             if length > MAX_ITEMS_NO_SCROLL:
+                # arrow positions
+                arrow_pos_x = self.surface.get_width() - self.font_size * 2.25
+                arrow_pos_y = self.surface.get_height() - self.font_size * 2
+
                 if start_pos is not 1:
                     # up facing arrow
                     rects.append(self.draw_arrow(arrow_pos_x, self.font_size * 2, self.font_size, False))
@@ -264,7 +266,6 @@ class Menu(object):
 
         arrow_base = pygame.draw.rect(self.surface, color, arrow_bottom, 0)
         tip = pygame.draw.polygon(self.surface, color, (arrow_h_p1, arrow_h_p2, arrow_h_p3), 0)
-
         arrow_base.union_ip(tip)
 
         '''return the complete arrow'''

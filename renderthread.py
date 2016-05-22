@@ -179,6 +179,12 @@ class RenderThread(threading.Thread):
             self._screen_x = WINDOW_MIN_X if width < WINDOW_MIN_X else width
             self._screen_y = WINDOW_MIN_Y if height < WINDOW_MIN_Y else height
 
+        if self.bg_surface.get_width() is not self._screen_x or self.bg_surface.get_height() is not self._screen_y:
+            '''redraw the background'''
+            self.bg_surface = pygame.transform.scale(self.bg_surface, (self._screen_x, self._screen_y))
+            self._fps_dirty_rect = None
+            self.blit(self.bg_surface, (0, 0))
+
         # update the screen
         self.update_screen()
 
@@ -193,8 +199,12 @@ class RenderThread(threading.Thread):
         font_rect = font_rendered.get_rect()
         if not self._fps_dirty_rect and self.bg_surface:
             '''get the clean background rect with some additional security padding around it'''
-            self._fps_dirty_rect = self.bg_surface.subsurface(
-                (pos_x - 5, pos_y - 5, font_rect.width + 10, font_rect.height + 10))
+            try:
+                self._fps_dirty_rect = self.bg_surface.subsurface(
+                    (pos_x - 5, pos_y - 5, font_rect.width + 10, font_rect.height + 10))
+            except ValueError:
+                '''if the subsurface bounces out of the main surface disable fps to avoid a render thread crash'''
+                self.show_framerate = False
 
         self._fps_surface = (font_rendered, (pos_x, pos_y))
         # blit it to the screen
