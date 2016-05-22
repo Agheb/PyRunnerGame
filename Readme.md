@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 00:05 am (UTC +2)
+###### last updated: 2016-05-23 at 00:15 am (UTC +2)
 
 ## TODO
 - [ ] create main class / function @fahrenwalde
@@ -46,6 +46,8 @@
 	    - [x] allow window resizing @fahrenwalde
 	        - [ ] fix background surface resizing bug @fahrenwalde
 	    - [x] only update changed rects @fahrenwalde
+	        - [x] add basic dirty_rect support @fahrenwalde
+	            - [ ] improve it for the main game @fahrenwalde
 	    - [x] update the whole screen if needed @fahrenwalde
 	    - [x] allow other classes to blit surfaces to the screen @fahrenwalde
 	        - [x] calculate offsets for smaller surfaces @fahrenwalde
@@ -112,9 +114,14 @@
 - Documentation and Codeguidlines
     - use PEP-8 named functions, classes etc. @all
     - write Google Style docstrings for all functions you write @all
+    - create own branches for new features @all
+        - don't push to master (ask @fahrenwalde to pull/merge your changes)
     - test your code and watch cpu usage @all
         - try to provoke crashes through random/fast user input @all
         - add sanity checks at critical locations @all
+    - basic usage of the Render and Music Thread are below
+        - make sure your drawing functions return their rects (in a list or single rect) to the main function @all
+            - this allows the main function to pass it to the Render Thread for partial screen updates @all
 - [ ] package things up to deploy @wankmueller
     - [ ] maintain Python 2.7 compatibility @all
 
