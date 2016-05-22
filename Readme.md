@@ -80,11 +80,11 @@ def do_my_stuff():
 	global my_class
 	my_class = MyClass(Pygame.Surface, values)
 	# draw my classes stuff
-	rects = MyClass.draw_something(value)
+	rects = my_class.draw_something(value)
 
 	'''render_thread is the local instance of the RenderThread'''
 	# draw the surface centered to the main screen
-	render_thread.blit(MyClass.surface, None, True)
+	render_thread.blit(my_class.surface, None, True)
 
 	# tell it to update the whole screen -- use only if the whole screen changed
 	render_thread.render_thread.refresh_screen(True)
