@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 01:11 am (UTC +2)
+###### last updated: 2016-05-23 at 01:13 am (UTC +2)
 
 ## TODO
 - [x] create main class / function @fahrenwalde
@@ -23,14 +23,15 @@
         - [ ] Controls @fahrenwalde
             - [ ] Keyboard Player 1/2
             - [ ] Joystick (optional)
-            - [ ] Left
-            - [ ] Right
-            - [ ] Up
-            - [ ] Down
-            - [ ] Shoot/Dig Left
-            - [ ] Shoot/Dig Right
-            - [ ] Interact
-            - [ ] ...
+            - [ ] Actions
+                - [ ] Left
+                - [ ] Right
+                - [ ] Up
+                - [ ] Down
+                - [ ] Shoot/Dig Left
+                - [ ] Shoot/Dig Right
+                - [ ] Interact
+                - [ ] ...
         - [x] Video @fahrenwalde
             - [x] fullscreen on/off @fahrenwalde
             - [x] screen resolutions @fahrenwalde
