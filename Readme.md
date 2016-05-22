@@ -11,8 +11,8 @@
 				- [ ] Difficulty
 			- [ ] Multiplayer
 				- [ ] Start Game
-					- [ ] cooperative (local and LAN)
-					- [ ] versus (only LAN)
+				- [ ] cooperative (local and LAN)
+				- [ ] versus (only LAN)
 				- [ ] Join Game
 		- [ ] Settings
 			- [x] Audio
@@ -20,23 +20,22 @@
 				- [x] Sound FX on/off and volume @fahrenwalde
 			- [ ] Controls
 				- [ ] Keyboard Player 1/2
-					- [ ] Left
-					- [ ] Right
-					- [ ] Up
-					- [ ] Down
-					- [ ] Shoot/Dig Left
-					- [ ] Shoot/Dig Right
-					- [ ] Interact
-					- [ ] ...
 				- [ ] Joystick (optional)
-					- [ ] same options as keyboard
+				- [ ] Left
+				- [ ] Right
+				- [ ] Up
+				- [ ] Down
+				- [ ] Shoot/Dig Left
+				- [ ] Shoot/Dig Right
+				- [ ] Interact
+				- [ ] ...
 			- [x] Video
 				- [x] fullscreen on/off @fahrenwalde
 				- [x] screen resolutions @fahrenwalde
 				- [x] switch resolutions @fahrenwalde
 				- [x] show fps @fahrenwalde
 		- [x] Exit
-	- [x] create main render thread @fahrenwale
+	- [x] create main render thread @fahrenwalde
 	- [x] create sound and music thread @fahrenwalde
 	- [x] add config parser to read and write configs @fahrenwalde
 		- [x] add screen related settings @fahrenwalde
