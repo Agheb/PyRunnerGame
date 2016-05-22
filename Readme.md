@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-22 at 11:55 pm (UTC +2)
+###### last updated: 2016-05-23 at 00:05 am (UTC +2)
 
 ## TODO
 - [ ] create main class / function @fahrenwalde
@@ -66,6 +66,8 @@
 		- [ ] Zeroconf/Bonjour network browser (optional) @fahrenwalde
 - [ ] game
 	- [ ] create basic game rendering @wankmueller @ghebreweldi @grombach
+	    - [ ] don't use fps for movement speed
+	        - [ ] use a seperate clock!! (fps should be changeable)
 		- [ ] player can move
 			- [ ] left/right
 			- [ ] up/down
