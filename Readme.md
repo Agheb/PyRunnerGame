@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 01:05 am (UTC +2)
+###### last updated: 2016-05-23 at 01:11 am (UTC +2)
 
 ## TODO
 - [x] create main class / function @fahrenwalde
@@ -107,7 +107,7 @@
 		    - [ ] global high score (top 10)
 		    - [ ] Players can set their name
 		    - [ ] teams switch role each round (enemy becomes attacker and the other way round)
-	    - [ ] both attackers need to collect specific keys to get to the next level
+	    - [ ] both players need to collect specific keys to get to the next level
 	    - [ ] the players have to collect all coins
 	        - [ ] every coin increases the players/teams score
 	        - [ ] enemies can collect one coin each (or more in mp?)
@@ -117,11 +117,11 @@
 	- [ ] refine graphics, textures and sprites @ghebreweldi
 - Documentation and Codeguidlines
     - regulary check this file for updates or update it yourself
-        - * https://github.com/gitlabhq/gitlabhq/blob/master/doc/markdown/markdown.md
+        - https://github.com/gitlabhq/gitlabhq/blob/master/doc/markdown/markdown.md
     - use PEP-8 named functions, classes etc.
-        - * https://www.python.org/dev/peps/pep-0008/
+        - https://www.python.org/dev/peps/pep-0008/
     - write Google Style docstrings for all functions you write
-        - * http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+        - http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
     - create own branches for new features
         - don't push to master (ask @fahrenwalde to pull/merge your changes)
     - test your code and watch cpu usage!!
@@ -135,7 +135,7 @@
                 - the main function has to be able to get your screen from your class
             - make sure your surface is resizable/exchangable if the screen/window size changes
                 - I might remove the resize window feature and add the resolution selection in windowed mode
-                    - this would ensure that the screen resolution doesn't change if the game is running
+                - this would ensure that the screen resolution doesn't change if the game is running
 - [ ] package things up to deploy @wankmueller
     - [ ] maintain Python 2.7 compatibility @all
 
