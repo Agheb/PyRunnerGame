@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# Python 2 related fixes
+from __future__ import division
+# universal imports
 import threading
 import os
 import pygame

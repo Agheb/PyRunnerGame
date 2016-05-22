@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# Python 2 related fixes
+from __future__ import division
+# universal imports
 import pygame
 import threading
 from pygame.locals import *
@@ -88,10 +91,10 @@ class RenderThread(threading.Thread):
 
         Overrides: threading.Thread.run()
         """
-        run_counter = 0
+        # run_counter = 0
+        # refresh_time = self.fps * 10
         fps_counter = 0
         fps_interval = self.fps
-        refresh_time = self.fps * 10
 
         while self.thread_is_running:
             '''this might provoke screen flickering
@@ -101,14 +104,14 @@ class RenderThread(threading.Thread):
                 run_counter = 0
             else:
             '''
-            # else only if necessary
+            # only update screen parts that changed
             if self._rects_to_update:
                 self.refresh_screen()
             #   run_counter += 1
 
             if self.show_framerate:
                 if fps_counter >= fps_interval:
-                    self.show_fps()
+                    self.render_current_fps()
                     fps_counter = 0
                 else:
                     fps_counter += 1
@@ -179,16 +182,17 @@ class RenderThread(threading.Thread):
             self._screen_x = WINDOW_MIN_X if width < WINDOW_MIN_X else width
             self._screen_y = WINDOW_MIN_Y if height < WINDOW_MIN_Y else height
 
-        if self.bg_surface.get_width() is not self._screen_x or self.bg_surface.get_height() is not self._screen_y:
-            '''redraw the background'''
-            self.bg_surface = pygame.transform.scale(self.bg_surface, (self._screen_x, self._screen_y))
-            self._fps_dirty_rect = None
-            self.blit(self.bg_surface, (0, 0))
+        # TODO: fix background misplacement if the window get's manually resized
+        # if self.bg_surface.get_width() is not self._screen_x or self.bg_surface.get_height() is not self._screen_y:
+        #    '''redraw the background'''
+        #    self.bg_surface = pygame.transform.scale(self.bg_surface, (self._screen_x, self._screen_y))
+        #    self._fps_dirty_rect = None
+        #    self.blit(self.bg_surface, (0, 0))
 
         # update the screen
         self.update_screen()
 
-    def show_fps(self):
+    def render_current_fps(self):
         """draws the current frame rate in the screens up right corner"""
         width = self.screen.get_width()
         pos_x = width - 60
@@ -288,8 +292,8 @@ class RenderThread(threading.Thread):
             if s_width is not scr_width and s_height is not scr_height:
                 offset_x = s_width - scr_width if s_width > scr_width else scr_width - s_width
                 offset_y = s_height - scr_height if s_height > scr_height else scr_height - s_height
-                offset_x = int(offset_x / 2)
-                offset_y = int(offset_y / 2)
+                offset_x //= 2
+                offset_y //= 2
                 pos = (offset_x, offset_y)
             else:
                 '''same size'''
@@ -298,8 +302,8 @@ class RenderThread(threading.Thread):
         if not self.switch_resolution and self.fullscreen:
             '''calculate offset if rendering surface is smaller than the screen size'''
             margin_x, margin_y = pos
-            margin_x += int((self._screen.get_width() - self._surface.get_width()) / 2)
-            margin_y += int((self._screen.get_height() - self._surface.get_height()) / 2)
+            margin_x += (self._screen.get_width() - self._surface.get_width()) // 2
+            margin_y += (self._screen.get_height() - self._surface.get_height()) // 2
             pos = (margin_x, margin_y)
 
         return pos
@@ -316,15 +320,15 @@ class RenderThread(threading.Thread):
         Returns: list(pygame.Rect) with all altered rects
         """
         m_dim = 4   # 2 pixels wider in each direction
-        m_pos = int(m_dim / 2)
-        rects_fix = []
+        m_pos = m_dim // 2
+        rects_fixed = []
         diff_x, diff_y = self.offsets_for_centered_surface(surface, pos, centered)
         while rects:
             x, y, width, height = rects.pop()
             rect = pygame.Rect(x + diff_x - m_pos, y + diff_y - m_pos, width + m_dim, height + m_dim)
-            rects_fix.append(rect)
+            rects_fixed.append(rect)
         '''pass the changed rects to the render thread / pygame'''
-        return rects_fix
+        return rects_fixed
 
     def blit(self, surface, pos, center=False):
         """blit a surface to the main screen

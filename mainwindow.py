@@ -1,16 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# Python 2 related fixes
+from __future__ import division
+try:
+    import configparser     # Python 3
+except ImportError:
+    import ConfigParser     # Python 2
+# universal imports
 import pygame
 from pygame.locals import *
 import sys
 import os
 from sys import exit
-try:
-    # Python 3
-    import configparser
-except ImportError:
-    # Python 2
-    import ConfigParser
 from mainmenu import Menu, MenuItem
 from renderthread import RenderThread
 from musicthread import MusicMixer
@@ -158,8 +159,8 @@ def init_menu():
     Cave: menus need to be saved in the reverse order (bottom to top) so that
           the top menus contain all up to date sub-menu objects
     """
-    s_width = int(render_thread.screen.get_width() / 4) * 3
-    s_height = int(render_thread.screen.get_height() / 3) * 2
+    s_width = (render_thread.screen.get_width() // 4) * 3
+    s_height = (render_thread.screen.get_height() // 3) * 2
     surface = pygame.Surface((s_width, s_height), SRCALPHA)
     screen = render_thread
     # regular font sizes
@@ -370,9 +371,10 @@ def get_button_text(text, text_val):
         ret_str = ""
         for i in range(10):
             if i < vol:
-                ret_str += "»"
+                ret_str += ">"
             else:
                 ret_str += " "
+
         return ret_str
 
     info_str = False

@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# Python 2 related fixes
+from __future__ import division
+# universal imports
 import pygame
 from pygame.locals import *
 '''
@@ -251,8 +254,8 @@ class Menu(object):
 
         Returns: pygame.Rect
         """
-        width = size / 3
-        height = size / 2
+        width = size // 3
+        height = size // 2
         arrow_botm_x = pos_x + width + height
         arr_down_y = pos_y
         arr_down_tip_y = pos_y + height + height
@@ -260,9 +263,9 @@ class Menu(object):
             arr_down_y += height
             arr_down_tip_y = pos_y
         arrow_bottom = pygame.Rect(arrow_botm_x, arr_down_y, width, height)
-        arrow_h_p1 = (arrow_botm_x - size / 5 - 1, pos_y + height)  # compensate int rounding
-        arrow_h_p2 = (arrow_botm_x + width + size / 5, pos_y + height)
-        arrow_h_p3 = (arrow_botm_x + width / 2 - 1, arr_down_tip_y)  # compensate int rounding
+        arrow_h_p1 = (arrow_botm_x - size // 5 - 1, pos_y + height)  # compensate int rounding
+        arrow_h_p2 = (arrow_botm_x + width + size // 5, pos_y + height)
+        arrow_h_p3 = (arrow_botm_x + width // 2 - 1, arr_down_tip_y)  # compensate int rounding
 
         arrow_base = pygame.draw.rect(self.surface, color, arrow_bottom, 0)
         tip = pygame.draw.polygon(self.surface, color, (arrow_h_p1, arrow_h_p2, arrow_h_p3), 0)
