@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 00:15 am (UTC +2)
+###### last updated: 2016-05-23 at 00:30 am (UTC +2)
 
 ## TODO
 - [x] create main class / function @fahrenwalde
@@ -208,12 +208,12 @@ def do_my_stuff():
 	# draw my classes stuff
 	rects = my_class.draw_something(value)
 
-	'''render_thread is the local instance of the RenderThread'''
+	'''render_thread is the global instance of the RenderThread in mainwindow.py'''
 	# draw the surface centered to the main screen
 	render_thread.blit(my_class.surface, None, True)
 
 	# tell it to update the whole screen -- use only if the whole screen changed
-	render_thread.render_thread.refresh_screen(True)
+	render_thread.refresh_screen(True)
 	# tell it to update only the changed parts (way less cpu intensive)
 	render_thread.add_rect_to_update(rects, my_class.surface, None, True)
 ```
@@ -250,7 +250,7 @@ MusicMixer.play_sound each time.
 
 Example usage
 ```python
-# music_thread is the local instantiated object in 'mainwindow.py'
+'''music_thread is the global instance of the MusicMixer Thread in mainwindow.py'''
 music_thread.play_sound('my_super_loud_sound.wav')
 
 # or the disk I/O saving solution
@@ -261,7 +261,7 @@ music_thread.play_sound(super_sound)
 
 There are similar functions for *Music Playback* as well:
 ```python
-def background_music(self, file_loops):
+def background_music(self, file_loops)
 ```
 this is the main object to add a music file to the music playlist.
 Other than the play_sound option this is no function it's rather an object
@@ -292,7 +292,7 @@ _/resources/music_
 
 ```python
 @property
-def play_music():
+def play_music()
 ```
 You can use this to start/stop music playback. You should only use this
 to temporary disable playback if it was enabled before - because this value
@@ -307,7 +307,7 @@ def my_super_duper_playlist():
 	# add some music to the playlist
 	# just play this once as a small starter
     music_thread.background_music = ("Modern Talking - You're my heart, you're my soul.mp3", 0)
-    # loop this classic 6 times
+    # loop those classics 6 times
     music_thread.background_music = ("Modern Talking - Cherry cherry lady.mp3", 5)
     music_thread.background_music = ("Kiss - I was made for lovin' you.mp3", 5)
 	# loop my favorite song 10 times
@@ -320,7 +320,7 @@ everything was played.
 
 This will continue until
 ```python
-	# ...
+	# either
 	music_thread.clear_background_music()
 	# or
 	music_thread.play_music = False
