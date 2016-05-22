@@ -262,7 +262,7 @@ def show_menu(boolean=True):
         in_menu = True
         rects = current_menu.print_menu(menu_pos, menu_pos, True)
         render_thread.blit(current_menu.surface, None, True)
-        render_thread.add_rect_to_update(rects)
+        # render_thread.add_rect_to_update(rects)
     else:
         in_menu = False
         menu_pos = 1

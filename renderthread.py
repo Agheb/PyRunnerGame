@@ -90,19 +90,21 @@ class RenderThread(threading.Thread):
         """
         run_counter = 0
         fps_counter = 0
-        fps_interval = self.fps / 3
+        fps_interval = self.fps
         refresh_time = self.fps * 10
 
         while self.thread_is_running:
+            '''this might provoke screen flickering
             if refresh_time <= run_counter:
                 # completely refresh screen once every 10 seconds
                 self.refresh_screen(True)
                 run_counter = 0
             else:
-                # else only if necessary
-                if self._rects_to_update:
-                    self.refresh_screen()
-                run_counter += 1
+            '''
+            # else only if necessary
+            if self._rects_to_update:
+                self.refresh_screen()
+            #   run_counter += 1
 
             if self.show_framerate:
                 if fps_counter >= fps_interval:
@@ -155,7 +157,7 @@ class RenderThread(threading.Thread):
                     '''completely refresh the screen'''
                     print("Error occured parsing " + str(self._rects_to_update))
                     self._rects_to_update = []
-                    self.refresh_screen(True)
+                    self.refresh_screen()
         except pygame.error:
             # OpenGL can only redraw the whole screen
             try:
