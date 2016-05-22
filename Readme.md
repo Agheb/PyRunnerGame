@@ -13,12 +13,13 @@ The main class to run until this whole project is packed up is the
 and written and passed to other classes etc.
 
 ## Important Classes:
+### RenderThread
 RenderThread in 'renderthread.py' does all the screen refresh's, screen
 size calculation etc. If you want your drawings to get rendered utilize this
 function. The RenderThread, as all other classes get's instantiated in
 'mainwindow.py'.
 
-### Important RenderThread functions:
+#### Important RenderThread functions:
 ```python
 def blit(surface, pos, center=False):
 ```
@@ -84,6 +85,5 @@ def do_my_stuff():
 	# tell it to update the whole screen -- use only if the whole screen changed
 	render_thread.render_thread.refresh_screen(True)
 	# tell it to update only the changed parts (way less cpu intensive)
-	render_thread.add_rect_to_update(rects)
+	render_thread.add_rect_to_update(rects, surface, None, True)
 ```
-
