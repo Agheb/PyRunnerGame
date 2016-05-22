@@ -105,7 +105,7 @@ class Menu(object):
         """
         return self.menu_items[index]
 
-    def draw_item(self, menu_item, index, pos, margin_top=None):
+    def _draw_item(self, menu_item, index, pos, margin_top=None):
         """draw a specific MenuItem
 
         Args:
@@ -149,17 +149,17 @@ class Menu(object):
         if complete:
             stop_pos = start_pos + max_items_view if start_pos + max_items_view < length else length
             # draw the fancy background
-            rects.append(self.draw_background(BACKGROUND))
+            rects.append(self._draw_background(BACKGROUND))
             # don't overwrite the header
             margin_top = self.menu_items[0].size
             # always draw the first item (header)
-            rects.append(self.draw_item(self.menu_items[0], 0, new_pos, margin_top))
+            rects.append(self._draw_item(self.menu_items[0], 0, new_pos, margin_top))
             margin_top += self.menu_items[1].size
 
             for menu_index in range(start_pos, stop_pos):
                 menu_item = self.menu_items[menu_index]
                 margin_top += menu_item.size * LINE_SPACING
-                rects.append(self.draw_item(self.menu_items[menu_index], menu_index, new_pos, margin_top))
+                rects.append(self._draw_item(self.menu_items[menu_index], menu_index, new_pos, margin_top))
 
             '''draw arrows if the menu is too long to notify about that'''
             if length > MAX_ITEMS_NO_SCROLL:
@@ -169,10 +169,10 @@ class Menu(object):
 
                 if start_pos is not 1:
                     # up facing arrow
-                    rects.append(self.draw_arrow(arrow_pos_x, self.font_size * 2, self.font_size, False))
+                    rects.append(self._draw_arrow(arrow_pos_x, self.font_size * 2, self.font_size, False))
                 if stop_pos is not length:
                     # down facing arrow
-                    rects.append(self.draw_arrow(arrow_pos_x, arrow_pos_y - self.font_size, self.font_size))
+                    rects.append(self._draw_arrow(arrow_pos_x, arrow_pos_y - self.font_size, self.font_size))
         else:
             '''partial screen update'''
             new_option = self.menu_items[new_pos]
@@ -191,12 +191,12 @@ class Menu(object):
                         return self.print_menu(new_pos, old_pos, True, new_pos)
 
             # update the changed items
-            rects.append(self.draw_item(new_option, new_pos, new_pos))
-            rects.append(self.draw_item(old_option, old_pos, new_pos))
+            rects.append(self._draw_item(new_option, new_pos, new_pos))
+            rects.append(self._draw_item(old_option, old_pos, new_pos))
         '''bug fix the rects positions and pass the changed rects to the render thread / pygame'''
         return rects
 
-    def draw_background(self, bgcolor):
+    def _draw_background(self, bgcolor):
         """draws a custom shaped background to the main surface"""
         if not self.background:
             '''only draw it once'''
@@ -241,7 +241,7 @@ class Menu(object):
 
         return ratio
 
-    def draw_arrow(self, pos_x, pos_y, size, down=True, color=GRAY):
+    def _draw_arrow(self, pos_x, pos_y, size, down=True, color=GRAY):
         """draw an up or down facing arrow used to indicate scrolling capabilities
 
         Args:
