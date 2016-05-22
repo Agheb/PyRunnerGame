@@ -2,76 +2,76 @@
 ###### last updated: 2016-05-22 at 11:15 pm (UTC +2)
 
 ## TODO
-	- [ ] create main class / function
-		- [ ] create object orientated menu @fahrenwalde
-			- [ ] New Game
-				- [ ] Single Player
-					- [ ] New Game
-					- [ ] Resume
-					- [ ] Difficulty
-				- [ ] Multiplayer
-					- [ ] Start Game
-						- [ ] cooperative (local and LAN)
-						- [ ] versus (only LAN)
-					- [ ] Join Game
-			- [ ] Settings
-				- [x] Audio
-					- [x] Music on/off and volume @fahrenwalde
-					- [x] Sound FX on/off and volume @fahrenwalde
-				- [ ] Controls
-					- [ ] Keyboard Player 1/2
-						- [ ] Left
-						- [ ] Right
-						- [ ] Up
-						- [ ] Down
-						- [ ] Shoot/Dig Left
-						- [ ] Shoot/Dig Right
-						- [ ] Interact
-						- [ ] ...
-					- [ ] Joystick (optional)
-					 	- [ ] same options as keyboard
-				- [x] Video
-					- [x] fullscreen on/off @fahrenwalde
-					- [x] screen resolutions @fahrenwalde
-					- [x] switch resolutions @fahrenwalde
-					- [x] show fps @fahrenwalde
-			- [x] Exit
-		- [x] create main render thread @fahrenwale
-		- [x] create sound and music thread @fahrenwalde
-		- [x] add config parser to read and write configs @fahrenwalde
-			- [x] add screen related settings @fahrenwalde
-			- [x] add audio related settings @fahrenwalde
-			- [ ] add control related settings
-		- [ ] create main network thread @fahrenwalde @wankmueller
-	- [ ] game
-	 	- [ ] create basic game rendering @wankmueller @ghebreweldi @grombach
-	 		- [ ] player can move
-	 			- [ ] left/right
-	 			- [ ] up/down
-	 		- [ ] colission detection
-	 		- [ ] add enemies
-	 			- [ ] shortest path algorithm thread @fahrenwalde @wankmueller
-	 		- [ ] add extras (optional)
-	 			- [ ] weapon's
-	 				- [ ] honey to glue enemies to non diggable grounds
-	 	- [ ] add tile map support @wankmueller @ghebreweldi @grombach
-	 		- [ ] different tiles for different floors
-	 		 	- [ ] diggable
-	 		 		- [ ] grass
-	 		 		- [ ] dirt
-	 		 	- [ ] non digabble
-	 		 	 	- [ ] stone
-	 		 	 	- [ ] steel/metal
-			- [ ] make tilemaps adjustable to screen size @fahrenwalde
-	 	- [ ] Multiplayer support
-	 		- [ ] exchange player and enemy positions (x, y) [old -> new]
-	 		- [ ] UDP for fast response
-	 		- [ ] TCP for a synched state
-	 		- [ ] Zeroconf/Bonjour network browser (optional) @fahrenwalde
-	 	- [ ] add more levels with Tiled @grombach
-	 		- [ ] Indiana Jones style like Lode Runner - The Legend returns
-	 	- [ ] refine graphics and sprites @ghebreweldi
-		- [ ] package things up to deploy @wankmueller
+- [ ] create main class / function
+	- [ ] create object orientated menu @fahrenwalde
+		- [ ] New Game
+			- [ ] Single Player
+				- [ ] New Game
+				- [ ] Resume
+				- [ ] Difficulty
+			- [ ] Multiplayer
+				- [ ] Start Game
+					- [ ] cooperative (local and LAN)
+					- [ ] versus (only LAN)
+				- [ ] Join Game
+		- [ ] Settings
+			- [x] Audio
+				- [x] Music on/off and volume @fahrenwalde
+				- [x] Sound FX on/off and volume @fahrenwalde
+			- [ ] Controls
+				- [ ] Keyboard Player 1/2
+					- [ ] Left
+					- [ ] Right
+					- [ ] Up
+					- [ ] Down
+					- [ ] Shoot/Dig Left
+					- [ ] Shoot/Dig Right
+					- [ ] Interact
+					- [ ] ...
+				- [ ] Joystick (optional)
+					- [ ] same options as keyboard
+			- [x] Video
+				- [x] fullscreen on/off @fahrenwalde
+				- [x] screen resolutions @fahrenwalde
+				- [x] switch resolutions @fahrenwalde
+				- [x] show fps @fahrenwalde
+		- [x] Exit
+	- [x] create main render thread @fahrenwale
+	- [x] create sound and music thread @fahrenwalde
+	- [x] add config parser to read and write configs @fahrenwalde
+		- [x] add screen related settings @fahrenwalde
+		- [x] add audio related settings @fahrenwalde
+		- [ ] add control related settings
+	- [ ] create main network thread @fahrenwalde @wankmueller
+- [ ] game
+	- [ ] create basic game rendering @wankmueller @ghebreweldi @grombach
+		- [ ] player can move
+			- [ ] left/right
+			- [ ] up/down
+		- [ ] colission detection
+		- [ ] add enemies
+			- [ ] shortest path algorithm thread @fahrenwalde @wankmueller
+		- [ ] add extras (optional)
+			- [ ] weapon's
+				- [ ] honey to glue enemies to non diggable grounds
+	- [ ] add tile map support @wankmueller @ghebreweldi @grombach
+		- [ ] different tiles for different floors
+			- [ ] diggable
+				- [ ] grass
+				- [ ] dirt
+			- [ ] non digabble
+				- [ ] stone
+				- [ ] steel/metal
+		- [ ] make tilemaps adjustable to screen size @fahrenwalde
+	- [ ] Multiplayer support
+		- [ ] exchange player and enemy positions (x, y) [old -> new]
+		- [ ] UDP for fast response
+		- [ ] TCP for a synched state
+		- [ ] Zeroconf/Bonjour network browser (optional) @fahrenwalde
+	- [ ] add more levels with Tiled @grombach
+		- [ ] Indiana Jones style like Lode Runner - The Legend returns
+	- [ ] refine graphics and sprites @ghebreweldi
+	- [ ] package things up to deploy @wankmueller
 
 
 
