@@ -136,7 +136,7 @@ class RenderThread(threading.Thread):
                 self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), FULLSCREEN, display.bitsize)
         else:
             pygame.mouse.set_visible(True)
-            self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), RESIZABLE, display.bitsize)
+            self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), 0, display.bitsize)    # RESIZABLE
 
         self.refresh_screen(True)
 
@@ -424,8 +424,7 @@ class RenderThread(threading.Thread):
 
         Cave: should only be run once on (full)screen initialization because it causes heavy flickering
         """
-        if self.fullscreen:
-            self._display_modes = pygame.display.list_modes()
+        self._display_modes = pygame.display.list_modes()
 
     @property
     def display_modes(self):

@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 01:13 am (UTC +2)
+###### last updated: 2016-05-23 at 01:30 am (UTC +2)
 
 ## TODO
 - [x] create main class / function @fahrenwalde
@@ -47,8 +47,8 @@
         - [x] fullscreen @fahrenwalde
         - [x] fullscreen with smaller main surface (don't switch resolution) @fahrenwalde
     - [x] allow window resizing @fahrenwalde
-        - [ ] fix background surface resizing bug in windowed mode @fahrenwalde
-        - [ ] or turn off the window resizing feature and add resolution selection for windows @fahrenwalde
+        - ~~[ ] fix background surface resizing bug in windowed mode @fahrenwalde~~
+        - [x] or turn off the window resizing feature and add resolution selection for windows @fahrenwalde
     - [x] only update changed rects @fahrenwalde
         - [x] add basic dirty_rect support @fahrenwalde
             - [ ] improve it for the main game @fahrenwalde
@@ -134,9 +134,9 @@
         - draw to an own surface, not the main screen
             - blit your surface to the main screen from the main through the RenderThread
                 - the main function has to be able to get your screen from your class
-            - make sure your surface is resizable/exchangable if the screen/window size changes
-                - I might remove the resize window feature and add the resolution selection in windowed mode
-                - this would ensure that the screen resolution doesn't change if the game is running
+            - make sure your surface is ~~resizable/exchangable if the screen/window size changes~~ working with different resolutions
+                - ~~I might remove the resize window feature and add the resolution selection in windowed mode~~
+                - this ~~would~~ ensures that the screen resolution doesn't change if the game is running (restarts on resolution change)
 - [ ] package things up to deploy @wankmueller
     - [ ] maintain Python 2.7 compatibility @all
 

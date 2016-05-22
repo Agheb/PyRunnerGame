@@ -208,16 +208,15 @@ def init_menu():
     menu_s_video_switch_res = get_button_text("Switch Resolution", switch_resolution)
     menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
     # resolutions
-    if fullscreen:
-        menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
-        menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, h2_size))
-        for res in render_thread.display_modes:
-            width, height = res
-            res_name = str(width) + "x" + str(height)
-            func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
-            menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
-        res_name = str(screen_x) + "x" + str(screen_y)
-        menu_s_video.add_menu_item(MenuItem(get_button_text("Resolution", res_name), menu_s_v_resolution, item_size))
+    menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
+    menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, h2_size))
+    for res in render_thread.display_modes:
+        width, height = res
+        res_name = str(width) + "x" + str(height)
+        func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
+        menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
+    res_name = str(screen_x) + "x" + str(screen_y)
+    menu_s_video.add_menu_item(MenuItem(get_button_text("Resolution", res_name), menu_s_v_resolution, item_size))
     menu_s_video_showfps = get_button_text("Show FPS", render_thread.show_framerate)
     menu_s_video.add_menu_item(MenuItem(menu_s_video_showfps, 'switch_showfps()', item_size))
     '''complete the settings menu at the end to store the up to date objects'''
@@ -522,11 +521,12 @@ def start_game():
         for event in pygame.event.get():
             if event.type == QUIT:
                 quit_game()
-            elif event.type == VIDEORESIZE:
-                '''notice window size changes in windowed mode'''
+            # elif event.type == VIDEORESIZE:
+                '''notice window size changes in windowed mode
                 x, y = event.dict['size']
                 render_thread.set_resolution(x, y)
                 init_menu()
+                '''
             elif event.type == KEYDOWN:
                 '''key pressing events'''
                 if game_is_running:
