@@ -5,43 +5,6 @@ from __future__ import division
 # universal imports
 import pygame
 from pygame.locals import *
-'''
-Main Menu
-    - Start New Game
-        - Singleplayer
-            - New Game              -> start_game()
-            - Resume                -> ?
-            - Difficulty            -> options_difficulty() -> left/right switch easy medium hard
-        - Multiplayer
-            - cooperative
-                - Local             -> start_coop_local()
-                - LAN               -> start_coop_lan()
-            - versus
-                - LAN               -> start_versus()
-    - Settings
-        - Video
-            - Resolution        -> pygame.display.list_modes() as list left/right switchable
-            - Fullscreen        -> on/off
-            - Upscaling         -> on/off
-            - FPS               -> ?
-        - Audio                 -> ?
-            - Music             -> on/off
-            - Music Volume      -> options_volume_music()   -> bar 0 - 100% -> grayed out if off
-            - Effects Volume    -> options_volume_fx()      -> bar 0 - 100%
-        - Controls
-            - Key Mapping       -> options_controls_keys()
-                - Left
-                - Right
-                - Up
-                - Down
-                - Jump          -> ?
-                - Shoot
-                - Interact      -> ?
-            - Gamepad           -> options_controls_gamepad()
-                - same as keys
-        - Reset Settings        -> ask(yes/no) -> options_config_reset() -> settings.write_settings(True)
-    - Exit
-'''
 
 '''constants'''
 # Colors
