@@ -20,7 +20,7 @@ function. The RenderThread, as all other classes get's instantiated in
 
 ### Important RenderThread functions:
 ```python
-blit(surface, pos, center=False)
+def blit(surface, pos, center=False):
 ```
 Requires two arguments. The surface you drew onto which you want to get
 rendered to the main screen (pygame.Surface) and either a position
@@ -32,7 +32,7 @@ that you don't intend to use it.
 
 
 ```python
-add_rect_to_update(rects, surface=None, pos=None, centered=None)
+def add_rect_to_update(rects, surface=None, pos=None, centered=None):
 ```
 The RenderThread _only_ updates the screen part that changed. Therefore
 _all_ of your functions have to collect the rects that changed and return it
