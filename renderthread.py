@@ -281,7 +281,7 @@ class RenderThread(threading.Thread):
             centered (bool): if the surface is centered on the screen or not
         """
         if surface:
-            return self.add_rect_to_update(self._fix_update_rects(rects, surface, pos, centered))
+            rects = self._fix_update_rects(rects, surface, pos, centered)
 
         rect_type = type(rects)
 
