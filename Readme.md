@@ -2,8 +2,8 @@
 ###### last updated: 2016-05-23 at 00:15 am (UTC +2)
 
 ## TODO
-- [ ] create main class / function @fahrenwalde
-	- [ ] create object orientated menu @fahrenwalde
+- [x] create main class / function @fahrenwalde
+	- [x] create object orientated menu @fahrenwalde
 		- [ ] New Game
 			- [ ] Single Player
 				- [ ] New Game
