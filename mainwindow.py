@@ -475,17 +475,19 @@ def switch_audio_volume(num, change):
         show_menu(True)
 
 
-def quit_game():
+def quit_game(shutdown=True):
     """quit the game"""
     write_settings()
     render_thread.stop_thread()
     music_thread.stop_thread()
     pygame.quit()
-    exit()
+    if shutdown:
+        exit()
 
 
 def restart_program():
     """Restarts the current program"""
+    quit_game(False)
     python = sys.executable
     os.execl(python, python, * sys.argv)
 
