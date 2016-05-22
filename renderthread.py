@@ -68,6 +68,8 @@ class RenderThread(threading.Thread):
         self._rects_to_update = []
         # initialize the screen
         self._screen = None
+        self._force_refresh = False
+        self._updating_screen = False
         self.bg_surface = None
         self._fps_surface = None
         self._fps_dirty_rect = None
@@ -149,13 +151,24 @@ class RenderThread(threading.Thread):
 
         try:
             # redraw the whole screen
-            if complete_screen:
+            if complete_screen and not self._force_refresh:
+                # lock the screen update process
+                self._force_refresh = True
+                # clear the rects to update list
+                self._rects_to_update = []
+                # and update the whole screen
                 pygame.display.update()
+                self._force_refresh = False
             else:
                 # only update the changed rects
                 try:
-                    while self.rects_to_update:
-                        pygame.display.update(self.rects_to_update.pop())
+                    if not self._updating_screen:
+                        # only one function call is allowed to update the screen at once
+                        self._updating_screen = True
+                        '''force refresh has priority, avoid flickering by not allowing multiple display updates ot once'''
+                        while self.rects_to_update and not self._force_refresh:
+                            pygame.display.update(self.rects_to_update.pop())
+                        self._updating_screen = False
                 except ValueError or pygame.error:
                     '''completely refresh the screen'''
                     print("Error occured parsing " + str(self._rects_to_update))
@@ -257,7 +270,9 @@ class RenderThread(threading.Thread):
         return self._rects_to_update
 
     def add_rect_to_update(self, rects):
-        """add a rect or list of rects to the rects_to_update list
+        """Add a rect or list of rects at the beginning of the rects_to_update list.
+           This is to ensure the FIFO principle because the rendering function always
+           pops the last item out of the list.
 
         Args:
             rects (pygame.Rect or [pygame.Rect]): Rect or List of Rects to add
@@ -266,9 +281,9 @@ class RenderThread(threading.Thread):
             for i in range(0, len(rects)):
                 # add the list one by one because pygame.display.update()
                 # doesn't allow multi dimensional lists
-                self._rects_to_update.append(rects[i])
+                self._rects_to_update.insert(0, rects[i])
         else:
-            self._rects_to_update.append(rects)
+            self._rects_to_update.insert(0, rects)
 
     def offsets_for_centered_surface(self, surface, pos, centered):
         """This function calculates the offsets to center smaller surfaces on the main screen
