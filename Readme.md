@@ -1,72 +1,75 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 00:40 am (UTC +2)
+###### last updated: 2016-05-23 at 01:05 am (UTC +2)
 
 ## TODO
 - [x] create main class / function @fahrenwalde
-	- [x] create object orientated menu @fahrenwalde
-		- [ ] New Game
-			- [ ] Single Player
-				- [ ] New Game
-				- [ ] Resume
-				- [ ] Difficulty
-			- [ ] Multiplayer
-				- [ ] Start Game
-				- [ ] cooperative (local and LAN)
-				- [ ] versus (only LAN)
-				- [ ] Join Game
-		- [ ] Settings
-			- [x] Audio @fahrenwalde
-				- [x] Music on/off and volume @fahrenwalde
-				- [x] Sound FX on/off and volume @fahrenwalde
-			- [ ] Controls @fahrenwalde
-				- [ ] Keyboard Player 1/2
-				- [ ] Joystick (optional)
-				- [ ] Left
-				- [ ] Right
-				- [ ] Up
-				- [ ] Down
-				- [ ] Shoot/Dig Left
-				- [ ] Shoot/Dig Right
-				- [ ] Interact
-				- [ ] ...
-			- [x] Video @fahrenwalde
-				- [x] fullscreen on/off @fahrenwalde
-				- [x] screen resolutions @fahrenwalde
-				- [x] switch resolutions @fahrenwalde
-				- [x] show fps @fahrenwalde
-		- [x] Exit for top level, Back for sub menus @fahrenwalde
-	- [x] create main render thread @fahrenwalde
-	    - [x] reduce screen flickering @fahrenwalde
-	    - [x] avoid crashes @fahrenwalde
-	    - [x] watch cpu usage @fahrenwalde
-	    - [x] screen modes @fahrenwalde
-	        - [x] windowed @fahrenwalde
-	        - [x] fullscreen @fahrenwalde
-	        - [x] fullscreen with smaller main surface (don't switch resolution) @fahrenwalde
-	    - [x] allow window resizing @fahrenwalde
-	        - [ ] fix background surface resizing bug @fahrenwalde
-	    - [x] only update changed rects @fahrenwalde
-	        - [x] add basic dirty_rect support @fahrenwalde
-	            - [ ] improve it for the main game @fahrenwalde
-	    - [x] update the whole screen if needed @fahrenwalde
-	    - [x] allow other classes to blit surfaces to the screen @fahrenwalde
-	        - [x] calculate offsets for smaller surfaces @fahrenwalde
-	- [x] create sound and music thread @fahrenwalde
-	    - [x] allow sound playback @fahrenwalde
-	        - [x] create more sound channels if too many sounds are played at once @fahrenwalde
-	    - [x] allow music playback @fahrenwalde
-	        - [x] playlist and loops @fahrenwalde
-	    - [x] allow user to mute music/sfx and change the volume @fahrenwalde
-	- [x] add config parser to read and write configs @fahrenwalde
-		- [x] add screen related settings @fahrenwalde
-		- [x] add audio related settings @fahrenwalde
-		- [ ] add control related settings
-	- [ ] create main network thread @fahrenwalde @wankmueller
-	    - [ ] exchange player and enemy positions (x, y) [old -> new]
-		- [ ] UDP for fast response
-		- [ ] TCP for a synched state
-		- [ ] Zeroconf/Bonjour network browser (optional) @fahrenwalde
-- [ ] game
+- [x] create object orientated menu class @fahrenwalde
+    - [x] ESC shows/hides the menu
+- [ ] Menu Items
+    - [ ] New Game
+        - [ ] Single Player
+            - [ ] New Game
+            - [ ] Resume
+            - [ ] Difficulty
+        - [ ] Multiplayer
+            - [ ] Start Game
+            - [ ] cooperative (local and LAN)
+            - [ ] versus (only LAN)
+            - [ ] Join Game
+    - [ ] Settings
+        - [x] Audio @fahrenwalde
+            - [x] Music on/off and volume @fahrenwalde
+            - [x] Sound FX on/off and volume @fahrenwalde
+        - [ ] Controls @fahrenwalde
+            - [ ] Keyboard Player 1/2
+            - [ ] Joystick (optional)
+            - [ ] Left
+            - [ ] Right
+            - [ ] Up
+            - [ ] Down
+            - [ ] Shoot/Dig Left
+            - [ ] Shoot/Dig Right
+            - [ ] Interact
+            - [ ] ...
+        - [x] Video @fahrenwalde
+            - [x] fullscreen on/off @fahrenwalde
+            - [x] screen resolutions @fahrenwalde
+            - [x] switch resolutions @fahrenwalde
+            - [x] show fps @fahrenwalde
+    - [x] Exit for top level, Back for sub menus @fahrenwalde
+- [x] create main render thread @fahrenwalde
+    - [x] reduce screen flickering by blocking screen updates @fahrenwalde
+    - [x] avoid crashes @fahrenwalde
+    - [x] aim for low cpu usage @fahrenwalde
+    - [x] screen modes @fahrenwalde
+        - [x] windowed @fahrenwalde
+        - [x] fullscreen @fahrenwalde
+        - [x] fullscreen with smaller main surface (don't switch resolution) @fahrenwalde
+    - [x] allow window resizing @fahrenwalde
+        - [ ] fix background surface resizing bug in windowed mode @fahrenwalde
+        - [ ] or turn off the window resizing feature and add resolution selection for windows @fahrenwalde
+    - [x] only update changed rects @fahrenwalde
+        - [x] add basic dirty_rect support @fahrenwalde
+            - [ ] improve it for the main game @fahrenwalde
+    - [x] update the whole screen if needed @fahrenwalde
+    - [x] allow other classes to blit surfaces to the screen @fahrenwalde
+        - [x] calculate offsets for smaller surfaces @fahrenwalde
+- [x] create sound and music thread @fahrenwalde
+    - [x] allow sound playback @fahrenwalde
+        - [x] create more sound channels if too many sounds are played at once @fahrenwalde
+    - [x] allow music playback @fahrenwalde
+        - [x] playlist and loops @fahrenwalde
+    - [x] allow user to mute music/sfx and change the volume @fahrenwalde
+- [x] add config parser to read and write configs @fahrenwalde
+    - [x] add screen related settings @fahrenwalde
+    - [x] add audio related settings @fahrenwalde
+    - [ ] add control related settings @fahrenwalde
+- [ ] create main network thread @fahrenwalde @wankmueller
+    - [ ] exchange player and enemy positions (x, y) [old -> new]
+    - [ ] UDP for fast response
+    - [ ] TCP for a synched state
+    - [ ] Zeroconf/Bonjour network browser (optional) @fahrenwalde
+- [ ] Game
 	- [ ] create basic game rendering @wankmueller @ghebreweldi @grombach
 	    - [ ] don't use fps for movement speed
 	        - [ ] use a seperate clock!! (fps should be changeable)
@@ -88,9 +91,10 @@
 				- [ ] stone
 				- [ ] steel/metal
 		- [ ] make tilemaps adjustable to screen size @fahrenwalde
-	- [ ] Sprites
-	    - [ ] Players
-	    - [ ] Enemies
+	- [ ] Sprites @ghebreweldi
+	    - [ ] Players @ghebreweldi
+	    - [ ] Enemies @ghebreweldi
+	- [ ] World Textures @ghebreweldi
 	- [ ] Multiplayer support
 		- [ ] test game modes
 		- [ ] 2 players coop (local and LAN) (priority!)
@@ -110,22 +114,28 @@
 	            - [ ] which drops when they fall into a hole
 	- [ ] add more levels with Tiled @grombach
 		- [ ] Indiana Jones style like Lode Runner - The Legend returns
-	- [ ] refine graphics and sprites @ghebreweldi
+	- [ ] refine graphics, textures and sprites @ghebreweldi
 - Documentation and Codeguidlines
-    - use PEP-8 named functions, classes etc. @all
-    - write Google Style docstrings for all functions you write @all
-    - create own branches for new features @all
+    - regulary check this file for updates or update it yourself
+        - * https://github.com/gitlabhq/gitlabhq/blob/master/doc/markdown/markdown.md
+    - use PEP-8 named functions, classes etc.
+        - * https://www.python.org/dev/peps/pep-0008/
+    - write Google Style docstrings for all functions you write
+        - * http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+    - create own branches for new features
         - don't push to master (ask @fahrenwalde to pull/merge your changes)
-    - test your code and watch cpu usage @all
-        - try to provoke crashes through random/fast user input @all
-        - add sanity checks at critical locations @all
+    - test your code and watch cpu usage!!
+        - try to provoke crashes through random/fast user input
+        - add sanity checks at critical locations
     - basic usage of the Render and Music Thread are below
-        - make sure your drawing functions return their rects (in a list or single rect) to the main function @all
-            - this allows the main function to pass it to the Render Thread for partial screen updates @all
-        - draw to an own surface, not the main screen @all
-            - blit your surface to the main screen from the main through the RenderThread @all
+        - make sure your drawing functions return their rects (in a list or single rect) to the main function
+            - this allows the main function to pass it to the Render Thread for partial screen updates
+        - draw to an own surface, not the main screen
+            - blit your surface to the main screen from the main through the RenderThread
                 - the main function has to be able to get your screen from your class
-            - make the surface resizable if the screen/window size changes @all
+            - make sure your surface is resizable/exchangable if the screen/window size changes
+                - I might remove the resize window feature and add the resolution selection in windowed mode
+                    - this would ensure that the screen resolution doesn't change if the game is running
 - [ ] package things up to deploy @wankmueller
     - [ ] maintain Python 2.7 compatibility @all
 
@@ -184,7 +194,6 @@ Example usage
 ```python
 class MyClass(object):
 
-	[.. init etc .. ]
 	__init__(self, surface, ...):
 	# it is important to pass a surface to your class where it can draw on to
 		self.surface = surface
@@ -216,10 +225,11 @@ def do_my_stuff():
 	# draw the surface centered to the main screen
 	render_thread.blit(my_class.surface, None, True)
 
-	# tell it to update the whole screen -- use only if the whole screen changed
-	render_thread.refresh_screen(True)
-	# tell it to update only the changed parts (way less cpu intensive)
+    # tell it to update only the changed parts (way less cpu intensive)
 	render_thread.add_rect_to_update(rects, my_class.surface, None, True)
+
+	# tell it to update the whole screen -- use only if the whole screen changed!!
+	render_thread.refresh_screen(True)
 ```
 
 
