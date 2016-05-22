@@ -43,13 +43,14 @@ Main Menu
     - Exit
 '''
 
-'''Constants'''
-BLACK = pygame.Color(0, 0, 0)
-GRAY = pygame.Color(150, 150, 150)
-WHITE = pygame.Color(255, 255, 255)
-RED = pygame.Color(150, 0, 0)
+'''constants'''
+# Colors
+BLACK = (0, 0, 0)
+GRAY = (150, 150, 150)
+WHITE = (255, 255, 255)
+RED = (150, 0, 0)
 MENU_FONT = "./resources/fonts/Mikodacs.otf"
-BACKGROUND = pygame.Color(100, 100, 100)
+BACKGROUND = (100, 100, 100)
 # including 2 for the header
 MAX_ITEMS_NO_SCROLL = 7
 # space between two entries

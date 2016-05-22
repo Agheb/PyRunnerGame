@@ -7,6 +7,7 @@ import pygame
 import threading
 from pygame.locals import *
 
+'''constants'''
 # Minimum Fullscreen Resolution
 SCREEN_MIN_X = 640
 SCREEN_MIN_Y = 480
@@ -15,7 +16,7 @@ WINDOW_MIN_X = SCREEN_MIN_X - 40
 WINDOW_MIN_Y = SCREEN_MIN_Y - 80
 # Colors
 WHITE = (255, 255, 255)
-BACKGROUND = pygame.Color(200, 200, 200)
+BACKGROUND = (200, 200, 200)
 
 
 class RenderThread(threading.Thread):

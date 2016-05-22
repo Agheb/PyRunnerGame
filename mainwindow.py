@@ -20,12 +20,12 @@ from musicthread import MusicMixer
 NAME = "pyRunner"
 CONFIG = "config.cfg"
 # Colors
-BLUE = pygame.Color(30, 144, 255)
-YELLOW = pygame.Color(255, 255, 0)
-RED = pygame.Color(255, 0, 0)
-BLACK = pygame.Color(0, 0, 0)
-BACKGROUND = pygame.Color(200, 200, 200)
-GRAY = pygame.Color(100, 100, 100)
+BLUE = (30, 144, 255)
+YELLOW = (255, 255, 0)
+RED = (255, 0, 0)
+BLACK = (0, 0, 0)
+BACKGROUND = (200, 200, 200)
+GRAY = (100, 100, 100)
 WHITE = (255, 255, 255)
 # Settings
 _CONF_INFO = "Info"
@@ -162,7 +162,6 @@ def init_menu():
     s_width = (render_thread.screen.get_width() // 4) * 3
     s_height = (render_thread.screen.get_height() // 3) * 2
     surface = pygame.Surface((s_width, s_height), SRCALPHA)
-    screen = render_thread
     # regular font sizes
     h1_size = 72
     h2_size = 48

@@ -7,7 +7,8 @@ import threading
 import os
 import pygame
 
-'''relative folder paths'''
+'''constants'''
+# relative folder paths
 MUSIC_PATH = "./resources/music/"
 SOUND_PATH = "./resources/sound_fx/"
 
