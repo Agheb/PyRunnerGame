@@ -285,20 +285,23 @@ class RenderThread(threading.Thread):
             pos (int, int): the offset of that surface on the screen (obsolete if centered is True)
             centered (bool): if the surface is centered on the screen or not (pos required if False)
         """
+        def add_rect(single_rect):
+            # make sure not to add something wrong because pygame.display.update is very sensible
+            if type(single_rect) is pygame.Rect:
+                self._rects_to_update.insert(0, single_rect)
+            else:
+                print(str(single_rect) + " is no valid pygame.Rect")
+
         if surface:
             rects = self._fix_update_rects(rects, surface, pos, centered)
 
-        rect_type = type(rects)
-
-        if rect_type is list:
+        if type(rects) is list:
             for i in range(0, len(rects)):
                 # add the list one by one because pygame.display.update()
                 # doesn't allow multi dimensional lists
-                self._rects_to_update.insert(0, rects[i])
-        elif rect_type is pygame.Rect:
-            self._rects_to_update.insert(0, rects)
+                add_rect(rects[i])
         else:
-            print(str(rects) + " is no valid pygame.Rect")
+            add_rect(rects)
 
     def _offsets_for_centered_surface(self, surface, pos, centered):
         """This function calculates the offsets to center smaller surfaces on the main screen
