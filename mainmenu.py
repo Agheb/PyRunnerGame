@@ -189,15 +189,8 @@ class Menu(object):
             # update the changed items
             rects.append(self.draw_item(new_option, new_pos, new_pos))
             rects.append(self.draw_item(old_option, old_pos, new_pos))
-        '''bug fix for fucking linux not taking into account that the smaller surface is centered on the bigger one'''
-        rects_fix = []
-        diff_x, diff_y = self.render_thread.offsets_for_centered_surface(self.surface, None, True)
-        while rects:
-            x, y, width, height = rects.pop()
-            rect = pygame.Rect(x + diff_x, y + diff_y, width, height)
-            rects_fix.append(rect)
-        '''pass the changed rects to the render thread / pygame'''
-        return rects_fix
+        '''bug fix the rects positions and pass the changed rects to the render thread / pygame'''
+        return self.render_thread.fix_update_rects(self.surface, None, True, rects)
 
     def draw_background(self, bgcolor):
         """draws a custom shaped background to the main surface"""

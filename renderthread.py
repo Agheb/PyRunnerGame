@@ -277,6 +277,28 @@ class RenderThread(threading.Thread):
 
         return pos
 
+    def fix_update_rects(self, surface, pos, centered, rects):
+        """calculate the correct rects to update and add a small margin
+
+        Args:
+            surface (pygame.Surface): the smaller surface that was rendered to
+            pos (int, int) or None: the position the surface was placed
+            centered: if the surface is centered on screen (ignores pos)
+            rects: the rects that changed on the smaller surface
+
+        Returns: list(pygame.Rect) with all altered rects
+        """
+        m_dim = 4   # 2 pixels wider in each direction
+        m_pos = int(m_dim / 2)
+        rects_fix = []
+        diff_x, diff_y = self.offsets_for_centered_surface(surface, pos, centered)
+        while rects:
+            x, y, width, height = rects.pop()
+            rect = pygame.Rect(x + diff_x - m_pos, y + diff_y - m_pos, width + m_dim, height + m_dim)
+            rects_fix.append(rect)
+        '''pass the changed rects to the render thread / pygame'''
+        return rects_fix
+
     def blit(self, surface, pos, center=False):
         """blit a surface to the main screen
 
