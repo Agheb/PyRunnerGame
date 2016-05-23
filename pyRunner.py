@@ -504,6 +504,8 @@ def start_game():
 
     # switch music (test)
     music_thread.background_music = ('summers_end_acoustic.aif', 0)
+    # we should probably save all game sounds as variables
+    sound_shoot = pygame.mixer.Sound(music_thread.get_full_path_sfx('9_mm_gunshot-mike-koenig-123.wav'))
 
     while True:
         for event in pygame.event.get():
@@ -544,7 +546,7 @@ def start_game():
                         elif action == 'switch_audio_volume(2, 0)':
                             switch_audio_volume(2, 1)
                     elif key == K_SPACE:
-                        music_thread.play_sound('9_mm_gunshot-mike-koenig-123.wav')
+                        music_thread.play_sound(sound_shoot)
                     elif key == K_LSHIFT:
                         music_thread.play_sound('unscrew_lightbulb-mike-koenig.wav')
                 else:

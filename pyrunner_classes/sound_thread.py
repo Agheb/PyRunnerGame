@@ -77,24 +77,24 @@ class MusicMixer(threading.Thread):
             file (str or pygame.mixer.Sound): file which should be played (instantly)
         """
         if self.play_sfx:
-            if not isinstance(file, pygame.mixer.Sound):
+            try:
+                channel = pygame.mixer.find_channel()
+                if channel:
+                    channel.play(file)
+                else:
+                    '''if there's no free channels we need to add some more'''
+                    num_channels = old_channels = pygame.mixer.get_num_channels()
+                    num_channels += 8
+                    '''print some informational debugging string to the console'''
+                    print("Increased the number of sound channels from %(old_channels)s to %(num_channels)s" % locals())
+                    pygame.mixer.set_num_channels(num_channels)
+                    '''set the volume for all channels, else the new ones differ'''
+                    self.sfx_volume = self.sfx_volume
+                    # retry
+                    self.play_sound(file)
+            except TypeError:
                 '''if necessary parse a filename string to a full path and load it as pygame.mixer.Sound'''
-                file = pygame.mixer.Sound(self.get_full_path_sfx(file))
-
-            channel = pygame.mixer.find_channel()
-            if channel:
-                channel.play(file)
-            else:
-                '''if there's no free channels we need to add some more'''
-                num_channels = old_channels = pygame.mixer.get_num_channels()
-                num_channels += 8
-                '''print some informational debugging string to the console'''
-                print("Increased the number of sound channels from %(old_channels)s to %(num_channels)s" % locals())
-                pygame.mixer.set_num_channels(num_channels)
-                '''set the volume for all channels, else the new ones differ'''
-                self.sfx_volume = self.sfx_volume
-                # retry
-                self.play_sound(file)
+                self.play_sound(pygame.mixer.Sound(self.get_full_path_sfx(file)))
 
     @staticmethod
     def get_full_path_music(file):

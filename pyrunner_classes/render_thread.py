@@ -316,10 +316,10 @@ class RenderThread(threading.Thread):
             rects = self._fix_update_rects(rects, surface, pos, centered)
 
         if isinstance(rects, list):
-            for i in range(0, len(rects)):
+            for item in rects:
                 # add the list one by one because pygame.display.update()
                 # doesn't allow multi dimensional lists
-                add_rect(rects[i])
+                add_rect(item)
         else:
             add_rect(rects)
 
@@ -381,13 +381,13 @@ class RenderThread(threading.Thread):
 
         rects_fixed = []
 
-        if isinstance(rects, list):
+        try:
+            x, y, width, height = rects
+            fix_rect()
+        except ValueError:
             while rects:
                 x, y, width, height = rects.pop()
                 fix_rect()
-        elif isinstance(rects, pygame.Rect):
-            x, y, width, height = rects
-            fix_rect()
 
         '''pass the changed rects to the render thread / pygame'''
         return rects_fixed
