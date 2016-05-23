@@ -31,7 +31,8 @@ class Menu(object):
 
     def __init__(self, surface, parent=None, font_size=36):
         self.surface = surface
-        # self.surface.set_alpha(0)
+        self.width = surface.get_width()
+        self.height = surface.get_height()
         self.parent = parent
         self.font_size = font_size
         self.menu_items = []
@@ -128,16 +129,17 @@ class Menu(object):
             '''draw arrows if the menu is too long to notify about that'''
             if length > MAX_ITEMS_NO_SCROLL:
                 # arrow positions
-                size_2 = (self.font_size + self.font_size)  # faster then * 2
-                arrow_pos_x = self.surface.get_width() - self.font_size * 2.25
-                arrow_pos_y = self.surface.get_height() - size_2
+                font_size = self.font_size
+                size_2 = font_size + font_size  # faster then * 2
+                arrow_pos_x = self.width - font_size * 2.25
+                arrow_pos_y = self.height - size_2
 
                 if start_pos is not 1:
                     # up facing arrow
-                    rects.append(self._draw_arrow(arrow_pos_x, size_2, self.font_size, False))
+                    rects.append(self._draw_arrow(arrow_pos_x, size_2, font_size, False))
                 if stop_pos is not length:
                     # down facing arrow
-                    rects.append(self._draw_arrow(arrow_pos_x, arrow_pos_y - self.font_size, self.font_size))
+                    rects.append(self._draw_arrow(arrow_pos_x, arrow_pos_y - font_size, font_size))
         else:
             '''partial screen update'''
             new_option = self.menu_items[new_pos]
@@ -165,8 +167,8 @@ class Menu(object):
         """draws a custom shaped background to the main surface"""
         if not self.background:
             '''only draw it once'''
-            width = self.surface.get_width()
-            height = self.surface.get_height()
+            width = self.width
+            height = self.height
             bg_surface = pygame.Surface((width, height), SRCALPHA)
             radius = 20
             width -= radius
@@ -198,8 +200,8 @@ class Menu(object):
 
         Returns: ratio to multiply your favored font sizes with, which then can be passed to MenuItems and sub menus
         """
-        height = self.surface.get_height()
-        width = self.surface.get_width()
+        width = self.width
+        height = self.height
         size = height if height < width else width
         text_space = font_size * LINE_SPACING * MAX_ITEMS_NO_SCROLL
         ratio = round((size - header_size) / text_space, 2)

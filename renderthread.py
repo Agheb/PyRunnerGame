@@ -127,20 +127,23 @@ class RenderThread(threading.Thread):
         """switch to windowed or fullscreen mode"""
         display = pygame.display.Info()
         bitsize = display.bitsize
+        screen_x, screen_y = self._screen_x, self._screen_y
 
         if self.fullscreen:
+            # HWSURFACE and DOUBLEBUF probably only work on Windows
+            fs_options = FULLSCREEN | HWSURFACE | DOUBLEBUF
             pygame.mouse.set_visible(False)
             '''if switch resolution is False, render to a smaller surface but show it centered on the full screen'''
             if not self.switch_resolution:
-                self._screen = pygame.display.set_mode((display.current_w, display.current_h), FULLSCREEN, bitsize)
-                self._surface = pygame.Surface((self._screen_x, self._screen_y))
+                self._screen = pygame.display.set_mode((display.current_w, display.current_h), fs_options, bitsize)
+                self._surface = pygame.Surface((screen_x, screen_y))
                 self.blit(self._surface, None, True)
             else:
                 '''switch screen resolution to the desired one'''
-                self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), FULLSCREEN, bitsize)
+                self._screen = pygame.display.set_mode((screen_x, screen_y), fs_options, bitsize)
         else:
             pygame.mouse.set_visible(True)
-            self._screen = pygame.display.set_mode((self._screen_x, self._screen_y), 0, bitsize)    # RESIZABLE
+            self._screen = pygame.display.set_mode((screen_x, screen_y), 0, bitsize)    # RESIZABLE
 
         self.refresh_screen(True)
 
