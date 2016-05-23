@@ -82,9 +82,7 @@ def read_settings():
         vol_music = config.getint(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL)
         play_sfx = config.getboolean(_CONF_AUDIO, _CONF_AUDIO_SFX)
         vol_sfx = config.getint(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL)
-    except configparser.NoSectionError:
-        write_settings(True)
-    except configparser.NoOptionError:
+    except configparser.NoSectionError or configparser.NoOptionError:
         write_settings(True)
 
     # controls
@@ -102,40 +100,43 @@ def write_settings(default=False):
     """
     global screen_x, screen_y, fps, fullscreen, switch_resolution
     global play_music, vol_music, play_sfx, vol_sfx
-    config = get_config_parser()
+    try:
+        config = get_config_parser()
 
-    if default:
-        # default display values
-        screen_x = 800
-        screen_y = 600
-        fps = 25
-        fullscreen = True
-        switch_resolution = False
-        # default audio settings
-        play_music = True
-        vol_music = 10
-        play_sfx = True
-        vol_sfx = 10
+        if default:
+            # default display values
+            screen_x = 800
+            screen_y = 600
+            fps = 25
+            fullscreen = True
+            switch_resolution = False
+            # default audio settings
+            play_music = True
+            vol_music = 10
+            play_sfx = True
+            vol_sfx = 10
 
-    '''info part'''
-    config.add_section(_CONF_INFO)
-    config.set(_CONF_INFO, _CONF_INFO_NAME, NAME)
-    '''write display configuration'''
-    config.add_section(_CONF_DISPLAY)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH, screen_x)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT, screen_y)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_FPS, fps)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN, fullscreen)
-    config.set(_CONF_DISPLAY, _CONF_DISPLAY_SWITCH_RES, switch_resolution)
-    '''and audio settings'''
-    config.add_section(_CONF_AUDIO)
-    config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC, play_music)
-    config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL, vol_music)
-    config.set(_CONF_AUDIO, _CONF_AUDIO_SFX, play_sfx)
-    config.set(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL, vol_sfx)
+        '''info part'''
+        config.add_section(_CONF_INFO)
+        config.set(_CONF_INFO, _CONF_INFO_NAME, NAME)
+        '''write display configuration'''
+        config.add_section(_CONF_DISPLAY)
+        config.set(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH, screen_x)
+        config.set(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT, screen_y)
+        config.set(_CONF_DISPLAY, _CONF_DISPLAY_FPS, fps)
+        config.set(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN, fullscreen)
+        config.set(_CONF_DISPLAY, _CONF_DISPLAY_SWITCH_RES, switch_resolution)
+        '''and audio settings'''
+        config.add_section(_CONF_AUDIO)
+        config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC, play_music)
+        config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL, vol_music)
+        config.set(_CONF_AUDIO, _CONF_AUDIO_SFX, play_sfx)
+        config.set(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL, vol_sfx)
 
-    with open(CONFIG, 'w') as configfile:
-        config.write(configfile)
+        with open(CONFIG, 'w') as configfile:
+            config.write(configfile)
+    except PermissionError:
+        print("The config file is locked or not writable. Please delete config.cfg or make sure you have write access")
 
 
 def init_audio():
