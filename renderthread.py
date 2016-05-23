@@ -74,6 +74,9 @@ class RenderThread(threading.Thread):
         self.bg_surface = None
         self._fps_surface = None
         self._fps_dirty_rect = None
+        self._fps_pos = None
+        self._fps_margin = None
+        self._fps_font_size = width >> 5    # results in 25 pt at 800x600, 32 at 1024x768
         self.show_framerate = False
         if switch_resolution:
             self._surface = None
@@ -203,23 +206,38 @@ class RenderThread(threading.Thread):
 
     def _render_current_fps(self):
         """draws the current frame rate in the screens up right corner"""
-        width = self.screen.get_width()
-        pos_x = width - 60
-        pos_y = 30
-        font = pygame.font.Font(None, 24)
+        font = pygame.font.Font(None, self._fps_font_size)
         text = '%.2f' % self.clock.get_fps()
         font_rendered = font.render(text, True, WHITE, SRCALPHA)
         font_rect = font_rendered.get_rect()
+
+        if not (self._fps_pos and self._fps_margin):
+            width = self.screen.get_width()
+            height = self.screen.get_height()
+            f_width = font_rect.width
+            f_height = font_rect.height
+            x_pos = width - width // 15
+            y_pos = 0 + height // 20
+            m_x = f_width + 20
+            m_y = f_height + 20
+            x = x_pos - 10 if x_pos - 10 + f_width + m_x < width else x_pos - 20
+            y = y_pos - 10 if y_pos - 10 > 0 else y_pos
+            self._fps_pos = (x, y)
+            self._fps_margin = (m_x, m_y)
+
+        x, y, = self._fps_pos
+        m_x, m_y = self._fps_margin
+
         if not self._fps_dirty_rect and self.bg_surface:
             '''get the clean background rect with some additional security padding around it'''
             try:
                 self._fps_dirty_rect = self.bg_surface.subsurface(
-                    (pos_x - 5, pos_y - 5, font_rect.width + 10, font_rect.height + 10))
+                    (x, y, m_x, m_y))
             except ValueError:
                 '''if the subsurface bounces out of the main surface disable fps to avoid a render thread crash'''
                 self.show_framerate = False
 
-        self._fps_surface = (font_rendered, (pos_x, pos_y))
+        self._fps_surface = (font_rendered, (x, y))
         # blit it to the screen
         self._show_fps_blit()
 
@@ -227,8 +245,9 @@ class RenderThread(threading.Thread):
         """adds the ability to keep the last calculated fps value on top on a screen refresh"""
         if self._fps_dirty_rect and self._fps_surface:
             surf, pos = self._fps_surface
-            pos_x, pos_y = pos
-            self.blit(self._fps_dirty_rect, (pos_x - 5, pos_y - 5))
+            x, y = self._fps_pos
+            pos = (x, y)
+            self.blit(self._fps_dirty_rect, pos)
             self.blit(surf, pos)
             # update the dirty rect area because it's a little bit bigger
             self.add_rect_to_update(self._fps_dirty_rect.get_rect(), surf, pos, False)
