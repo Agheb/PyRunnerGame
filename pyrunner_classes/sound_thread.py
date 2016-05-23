@@ -30,8 +30,8 @@ class MusicMixer(threading.Thread):
         """
         threading.Thread.__init__(self)
         # pre-init the mixer to avoid sound lag
-        # had to reduce the buffer to 512 for Linux not to lag too much
-        pygame.mixer.pre_init(22050, -16, 2, 512)
+        # had to reduce the buffer to 1024 for Linux not to lag too much
+        pygame.mixer.pre_init(22050, -16, 2, 1024)
         pygame.mixer.init()
         self.thread_is_running = True
         self.fps = fps
@@ -68,33 +68,6 @@ class MusicMixer(threading.Thread):
         self.thread_is_running = False
         pygame.mixer.music.fadeout(1500)
 
-    def _play_sounds(self, sound):
-        """private class which handles the sound fx playback.
-           It will dynamically create sound channels if the current number is too low for
-           the amount of sounds played at the same time
-
-        Args:
-            sound (Pygame.mixer.Sound): the sound file which should be played
-
-        Returns: nothing but may recursively call itself after creating additional channels so no sound is lost
-        """
-        '''get the next free channel'''
-        # note: play_sound already does all sanity checks
-        channel = pygame.mixer.find_channel()
-        if channel:
-            channel.play(sound)
-        else:
-            '''if there's no free channels we need to add some more'''
-            num_channels = old_channels = pygame.mixer.get_num_channels()
-            num_channels += 8
-            '''print some informational debugging string to the console'''
-            print("Increased the number of sound channels from %(old_channels)s to %(num_channels)s" % locals())
-            pygame.mixer.set_num_channels(num_channels)
-            '''set the volume for all channels, else the new ones differ'''
-            self.sfx_volume = self.sfx_volume
-            # retry
-            return self._play_sounds(sound)
-
     def play_sound(self, file):
         """use this class to make this thread play a sound file.
            either pass a string containing the file name (the file must be located in SOUND_PATH)
@@ -108,9 +81,20 @@ class MusicMixer(threading.Thread):
                 '''if necessary parse a filename string to a full path and load it as pygame.mixer.Sound'''
                 file = pygame.mixer.Sound(self.get_full_path_sfx(file))
 
-            # if isinstance(file, pygame.mixer.Sound):
-            #     '''only add pygame.mixer.Sound files to the queue'''
-            self._play_sounds(file)
+            channel = pygame.mixer.find_channel()
+            if channel:
+                channel.play(file)
+            else:
+                '''if there's no free channels we need to add some more'''
+                num_channels = old_channels = pygame.mixer.get_num_channels()
+                num_channels += 8
+                '''print some informational debugging string to the console'''
+                print("Increased the number of sound channels from %(old_channels)s to %(num_channels)s" % locals())
+                pygame.mixer.set_num_channels(num_channels)
+                '''set the volume for all channels, else the new ones differ'''
+                self.sfx_volume = self.sfx_volume
+                # retry
+                self.play_sound(file)
 
     @staticmethod
     def get_full_path_music(file):
