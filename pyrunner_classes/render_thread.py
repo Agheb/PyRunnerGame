@@ -3,8 +3,8 @@
 # Python 2 related fixes
 from __future__ import division
 # universal imports
-import pygame
 import threading
+import pygame
 from pygame.locals import *
 
 '''constants'''

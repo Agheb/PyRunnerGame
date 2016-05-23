@@ -4,8 +4,8 @@
 from __future__ import division
 # universal imports
 import threading
-import os
 import pygame
+import os
 
 '''constants'''
 # relative folder paths
