@@ -46,6 +46,8 @@ _CONF_AUDIO_SFX_VOL = _CONF_AUDIO_SFX + _CONF_AUDIO_VOL
 game_is_running = True
 screen_x = screen_y = fps = fullscreen = switch_resolution = in_menu = bg_image = None
 play_music = vol_music = play_sfx = vol_sfx = None
+p1_left = p1_right = p1_up = p1_down = p1_action_left = p1_action_right = p1_interact = p1_taunt = None
+p2_left = p2_right = p2_up = p2_down = p2_action_left = p2_action_right = p2_interact = p2_taunt = None
 current_menu = None
 menu_pos = 1
 render_thread = None
@@ -507,9 +509,79 @@ def init_game():
     init_menu()
 
 
+def player_actions(key):
+    """controls and key settings if the game is in foreground
+
+    Args:
+        key (pygame.event.key): the key that was pressed
+
+    Returns: action which will be executed immediately
+     """
+    if key is K_ESCAPE:
+        return show_menu(True)
+    '''
+    if key == (p1_left or p1_right or p1_up or p1_down or p2_left or p2_right or p2_up or p2_down):
+        # TODO move player 1/2 direction
+        return pass
+
+    elif key == (p1_action_left or p1_action_right or p2_action_left or p2_action_right):
+        # TODO action player 1/2 left/right
+        return pass
+
+    elif key == (p1_interact or p1_taunt or p2_interact or p2_taunt):
+        # TODO taunt/interact player 1/2
+        return pass
+    '''
+
+
+def menu_actions(key):
+    """key settings if the main menu is active
+
+    Args:
+        key (pygame.event.key): the key that was pressed
+
+    Returns: action which will be executed immediately
+    """
+    global menu_pos
+
+    if key == K_ESCAPE:
+        back_item = current_menu.get_menu_item(current_menu.length - 1).action
+        if type(back_item) is Menu:
+            return set_current_menu(back_item)
+        else:
+            return show_menu(False)
+    elif key == K_RETURN:
+        if in_menu:
+            return do_menu_action()
+    elif key == K_UP:
+        if 1 < menu_pos:
+            menu_pos -= 1
+            return navigate_menu(menu_pos + 1)
+    elif key == K_DOWN:
+        if menu_pos < current_menu.length - 1:
+            menu_pos += 1
+            return navigate_menu(menu_pos - 1)
+    elif key == K_LEFT:
+        action = current_menu.get_menu_item(menu_pos).action
+        if action == 'switch_audio_volume(1, 0)':
+            return switch_audio_volume(1, -1)
+        elif action == 'switch_audio_volume(2, 0)':
+            return switch_audio_volume(2, -1)
+    elif key == K_RIGHT:
+        action = current_menu.get_menu_item(menu_pos).action
+        if action == 'switch_audio_volume(1, 0)':
+            return switch_audio_volume(1, 1)
+        elif action == 'switch_audio_volume(2, 0)':
+            return switch_audio_volume(2, 1)
+    elif key == K_SPACE:
+        return music_thread.play_sound('9_mm_gunshot-mike-koenig-123.wav')
+    elif key == K_LSHIFT:
+        return music_thread.play_sound('unscrew_lightbulb-mike-koenig.wav')
+
+
 def start_game():
     """start the game"""
-    global screen_x, screen_y, fps, menu_pos
+    global fps
     # PyGame initialization
     init_game()
     # Main loop relevant vars
@@ -522,58 +594,12 @@ def start_game():
         for event in pygame.event.get():
             if event.type == QUIT:
                 quit_game()
-            # elif event.type == VIDEORESIZE:
-                '''notice window size changes in windowed mode
-                x, y = event.dict['size']
-                render_thread.set_resolution(x, y)
-                init_menu()
-                '''
             elif event.type == KEYDOWN:
                 '''key pressing events'''
-                if game_is_running:
-                    if event.key == K_SPACE:
-                        music_thread.play_sound('9_mm_gunshot-mike-koenig-123.wav')
-                    if event.key == K_LSHIFT:
-                        music_thread.play_sound('unscrew_lightbulb-mike-koenig.wav')
-                    if event.key == K_LEFT:
-                        if in_menu:
-                            action = current_menu.get_menu_item(menu_pos).action
-                            if action == 'switch_audio_volume(1, 0)':
-                                switch_audio_volume(1, -1)
-                            elif action == 'switch_audio_volume(2, 0)':
-                                switch_audio_volume(2, -1)
-                    if event.key == K_RIGHT:
-                        if in_menu:
-                            action = current_menu.get_menu_item(menu_pos).action
-                            if action == 'switch_audio_volume(1, 0)':
-                                switch_audio_volume(1, 1)
-                            elif action == 'switch_audio_volume(2, 0)':
-                                switch_audio_volume(2, 1)
-                    if event.key == K_UP:
-                        if in_menu:
-                            if 1 < menu_pos:
-                                menu_pos -= 1
-                                navigate_menu(menu_pos + 1)
-                    if event.key == K_DOWN:
-                        if in_menu:
-                            if menu_pos < current_menu.length - 1:
-                                menu_pos += 1
-                                navigate_menu(menu_pos - 1)
-                    if event.key == K_RETURN:
-                        if in_menu:
-                            do_menu_action()
-                    if event.key == K_ESCAPE:
-                        if in_menu:
-                            back_item = current_menu.get_menu_item(current_menu.length - 1).action
-                            if type(back_item) is Menu:
-                                set_current_menu(back_item)
-                            else:
-                                show_menu(False)
-                        else:
-                            show_menu()
+                if in_menu:
+                    menu_actions(event.key)
                 else:
-                    if event.key == K_ESCAPE:
-                        quit_game()
+                    player_actions(event.key)
 
         # save cpu resources
         clock.tick(fps)
