@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 01:30 am (UTC +2)
+###### last updated: 2016-05-23 at 10:55 am (UTC +2)
 
 ## To-Do
 
@@ -158,6 +158,9 @@
     - http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
 - create own branches for new features
     - don't push to master (ask @fahrenwalde to pull/merge your changes)
+        - Exception: this file should be updated by @all @master
+    - the 'stable' branch is write protected for developers
+        - https://about.gitlab.com/2014/11/26/keeping-your-code-protected/
 - test your code and watch cpu usage!!
     - try to provoke crashes through random/fast user input
     - add sanity checks at critical locations
