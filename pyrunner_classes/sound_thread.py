@@ -30,7 +30,8 @@ class MusicMixer(threading.Thread):
         """
         threading.Thread.__init__(self)
         # pre-init the mixer to avoid sound lag
-        pygame.mixer.pre_init()
+        pygame.mixer.pre_init(22050, -16, 2, 1024)
+        pygame.mixer.init()
         self.thread_is_running = True
         self.fps = fps
         self.clock = pygame.time.Clock()
@@ -46,7 +47,6 @@ class MusicMixer(threading.Thread):
         self.play_sfx = play_sfx
         self._sound_fx_volume = None
         self.sfx_volume = sfx_volume
-        pygame.mixer.init()
 
     def run(self):
         """Thread main run function
