@@ -11,12 +11,12 @@ import pygame
 from pygame.locals import *
 import sys
 import os
-from sys import exit
-from pyrunner_classes import Menu, MenuItem, RenderThread, MusicMixer
+# pyRunner subclasses
+from pyrunner_classes import *
 
 '''constants'''
 NAME = "pyRunner"
-CONFIG = "config.cfg"
+CONFIG = "resources/config.cfg"
 # Colors
 BLUE = (30, 144, 255)
 YELLOW = (255, 255, 0)
