@@ -213,7 +213,7 @@ and written and passed to other classes etc.
 
 ## Important Classes:
 ## RenderThread
-RenderThread in 'renderthread.py' is a daemon thread that does all
+RenderThread in 'pyrunner_classes/render_thread.py' is a daemon thread that does all
 the screen refreshes, screen size calculation etc.
 If you want your drawings to get rendered utilize this class.
 
@@ -294,7 +294,7 @@ def do_my_stuff():
 
 
 ## MusicMixer
-MusicMixer in 'musicthread.py' is a daemon thread that takes care of all
+MusicMixer in 'pyrunner_classes/sound_thread.py' is a daemon thread that takes care of all
 the music and sound output.
 
 It creates additional pygame.mixer.Channels if the current amount of
