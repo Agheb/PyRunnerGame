@@ -305,7 +305,7 @@ class RenderThread(threading.Thread):
         """
         def add_rect(single_rect):
             # make sure not to add something wrong because pygame.display.update is very sensible
-            if type(single_rect) is pygame.Rect:
+            if isinstance(single_rect, pygame.Rect):
                 self._rects_to_update.insert(0, single_rect)
             else:
                 print("%s is no valid pygame.Rect" % single_rect)
@@ -315,7 +315,7 @@ class RenderThread(threading.Thread):
                 raise ValueError('Either a position (int, int) or centered bool is required if a surface is provided')
             rects = self._fix_update_rects(rects, surface, pos, centered)
 
-        if type(rects) is list:
+        if isinstance(rects, list):
             for i in range(0, len(rects)):
                 # add the list one by one because pygame.display.update()
                 # doesn't allow multi dimensional lists
@@ -380,13 +380,12 @@ class RenderThread(threading.Thread):
             rects_fixed.append(rect)
 
         rects_fixed = []
-        rect_type = type(rects)
 
-        if rect_type is list:
+        if isinstance(rects, list):
             while rects:
                 x, y, width, height = rects.pop()
                 fix_rect()
-        elif rect_type is pygame.Rect:
+        elif isinstance(rects, pygame.Rect):
             x, y, width, height = rects
             fix_rect()
 

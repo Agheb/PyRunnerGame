@@ -280,7 +280,7 @@ def do_menu_action():
     """try to evaluate if a menu action is either a sub-menu or a function to call"""
     try:
         action = current_menu.get_menu_item(menu_pos).action
-        if type(action) is Menu:
+        if isinstance(action, Menu):
             set_current_menu(action)
         else:
             try:
@@ -365,13 +365,13 @@ def get_button_text(text, text_val):
 
     info_str = False
 
-    if type(text_val) is bool:
+    if isinstance(text_val, bool):
         text_val = bool_to_string(text_val)
         if text is "Music":
             info_str = print_audio_volume_bar(music_thread.music_volume)
         elif text is "Sounds":
             info_str = print_audio_volume_bar(music_thread.sfx_volume)
-    elif type(text_val) is str:
+    elif isinstance(text_val, str):
         if text is "Resolution":
             return '{:<24s} {:>10s}'.format(text, text_val)
 
@@ -516,7 +516,7 @@ def start_game():
                     """key settings if the main menu is active"""
                     if key == K_ESCAPE:
                         back_item = current_menu.get_menu_item(current_menu.length - 1).action
-                        if type(back_item) is Menu:
+                        if isinstance(back_item, Menu):
                             set_current_menu(back_item)
                         else:
                             show_menu(False)
