@@ -30,7 +30,8 @@ class MusicMixer(threading.Thread):
         """
         threading.Thread.__init__(self)
         # pre-init the mixer to avoid sound lag
-        pygame.mixer.pre_init(22050, -16, 2, 1024)
+	# had to reduce the buffer to 512 for Linux not to lag too much
+        pygame.mixer.pre_init(22050, -16, 2, 512)
         pygame.mixer.init()
         self.thread_is_running = True
         self.fps = fps
@@ -81,12 +82,7 @@ class MusicMixer(threading.Thread):
             '''get the next free channel'''
             channel = pygame.mixer.find_channel()
             if channel:
-                '''make sure it's not busy'''
-                if not channel.get_busy():
-                    channel.play(sound)
-                else:
-                    '''else enqueue the file to be played next'''
-                    channel.queue(sound)
+                channel.play(sound)
             else:
                 '''if there's no free channels we need to add some more'''
                 num_channels = old_channels = pygame.mixer.get_num_channels()
