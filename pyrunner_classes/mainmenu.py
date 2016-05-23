@@ -107,7 +107,7 @@ class Menu(object):
         rects = []
         max_items_view = MAX_ITEMS_NO_SCROLL - 2  # including 2 for the header
 
-        # limit the cursor - is done in mainwindow.py
+        # limit the cursor - is done in pyRunner.py
         # if new_pos is length:
         #    new_pos = length - 1
 

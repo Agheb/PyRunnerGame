@@ -208,7 +208,7 @@ as most PyGame installers are still linked against Python 2.
 
 ## Main Class
 The main class to run until this whole project is packed up is the
-'mainwindow.py'. Here all sub threads get instantiated, settings are read
+'pyRunner.py'. Here all sub threads get instantiated, settings are read
 and written and passed to other classes etc.
 
 ## Important Classes:
@@ -217,7 +217,7 @@ RenderThread in 'renderthread.py' is a daemon thread that does all
 the screen refreshes, screen size calculation etc.
 If you want your drawings to get rendered utilize this class.
 
-The RenderThread, as all other classes get's instantiated in 'mainwindow.py'.
+The RenderThread, as all other classes get's instantiated in 'pyRunner.py'.
 
 ### Important RenderThread functions:
 ```python
@@ -237,7 +237,7 @@ def add_rect_to_update(rects, surface=None, pos=None, centered=None):
 ```
 The RenderThread _only_ updates the screen parts that have changed. Therefore
 _all_ of your functions have to collect the rects that changed and return it
-to the main class ('mainwindow.py'), where it will get sent to this function.
+to the main class ('pyRunner.py'), where it will get sent to this function.
 No matter if you draw on a surface that's the same size as the screen size or
 not, it is suggested to provide the surface you drew to as well and either
 the position or centered value you used with the blit function.
@@ -270,7 +270,7 @@ class MyClass(object):
 		return rects_to_return
 ```
 
-and in the 'mainwindow.py'
+and in the 'pyRunner.py'
 
 ```python
 def do_my_stuff():
@@ -281,7 +281,7 @@ def do_my_stuff():
 	# draw my classes stuff
 	rects = my_class.draw_something(value)
 
-	'''render_thread is the global instance of the RenderThread in mainwindow.py'''
+	pyRunner.py
 	# draw the surface centered to the main screen
 	render_thread.blit(my_class.surface, None, True)
 
@@ -324,7 +324,7 @@ MusicMixer.play_sound each time.
 
 Example usage
 ```python
-'''music_thread is the global instance of the MusicMixer Thread in mainwindow.py'''
+pyRunner.py
 music_thread.play_sound('my_super_loud_sound.wav')
 
 # or the disk I/O saving solution

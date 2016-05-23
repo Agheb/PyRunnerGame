@@ -12,9 +12,7 @@ from pygame.locals import *
 import sys
 import os
 from sys import exit
-from mainmenu import Menu, MenuItem
-from renderthread import RenderThread
-from musicthread import MusicMixer
+from pyrunner_classes import Menu, MenuItem, RenderThread, MusicMixer
 
 '''constants'''
 NAME = "pyRunner"
