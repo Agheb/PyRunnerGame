@@ -128,12 +128,13 @@ class Menu(object):
             '''draw arrows if the menu is too long to notify about that'''
             if length > MAX_ITEMS_NO_SCROLL:
                 # arrow positions
+                size_2 = (self.font_size + self.font_size)  # faster then * 2
                 arrow_pos_x = self.surface.get_width() - self.font_size * 2.25
-                arrow_pos_y = self.surface.get_height() - self.font_size * 2
+                arrow_pos_y = self.surface.get_height() - size_2
 
                 if start_pos is not 1:
                     # up facing arrow
-                    rects.append(self._draw_arrow(arrow_pos_x, self.font_size * 2, self.font_size, False))
+                    rects.append(self._draw_arrow(arrow_pos_x, size_2, self.font_size, False))
                 if stop_pos is not length:
                     # down facing arrow
                     rects.append(self._draw_arrow(arrow_pos_x, arrow_pos_y - self.font_size, self.font_size))

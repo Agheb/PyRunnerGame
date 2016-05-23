@@ -369,12 +369,8 @@ def get_button_text(text, text_val):
 
         Returns: a 10 character long string representing the volume bar
         """
-        ret_str = ""
-        for i in range(10):
-            if i < vol:
-                ret_str += ">"
-            else:
-                ret_str += " "
+        ret_list = [">" if i < vol else " " for i in range(10)]
+        ret_str = "".join(ret_list)
 
         return ret_str
 
