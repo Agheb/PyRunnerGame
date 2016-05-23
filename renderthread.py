@@ -130,7 +130,8 @@ class RenderThread(threading.Thread):
         screen_x, screen_y = self._screen_x, self._screen_y
 
         if self.fullscreen:
-            # HWSURFACE and DOUBLEBUF probably only work on Windows
+            # HWSURFACE and DOUBLEBUF probably only work on Windows, maybe on Linux if the moons are aligned correctly
+            # http://www.pygame.org/docs/tut/newbieguide.html
             fs_options = FULLSCREEN | HWSURFACE | DOUBLEBUF
             pygame.mouse.set_visible(False)
             '''if switch resolution is False, render to a smaller surface but show it centered on the full screen'''
