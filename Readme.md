@@ -5,7 +5,7 @@
 
 ### Slack
 - https://pyberries.slack.com
-/
+
 ### Trello
 - https://trello.com/b/VtSg0iUi/
 
