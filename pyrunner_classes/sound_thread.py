@@ -104,13 +104,13 @@ class MusicMixer(threading.Thread):
             file (str or pygame.mixer.Sound): file which should be played (instantly)
         """
         if self.play_sfx:
-            if isinstance(file, str):
+            if not isinstance(file, pygame.mixer.Sound):
                 '''if necessary parse a filename string to a full path and load it as pygame.mixer.Sound'''
                 file = pygame.mixer.Sound(self.get_full_path_sfx(file))
 
-            if isinstance(file, pygame.mixer.Sound):
-                '''only add pygame.mixer.Sound files to the queue'''
-                self._play_sounds(file)
+            # if isinstance(file, pygame.mixer.Sound):
+            #     '''only add pygame.mixer.Sound files to the queue'''
+            self._play_sounds(file)
 
     @staticmethod
     def get_full_path_music(file):
