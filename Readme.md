@@ -1,5 +1,14 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 10:55 am (UTC +2)
+###### last updated: 2016-05-23 at 11:11 am (UTC +2)
+
+## Team Communication:
+
+### Slack
+- https://pyberries.slack.com
+/
+### Trello
+- https://trello.com/b/VtSg0iUi/
+
 
 ## To-Do
 
@@ -102,6 +111,7 @@
             - [ ] honey to glue enemies to non diggable grounds
 
 ### Tile Map Support
+#### every tile measures 32x32, the World Size is 32x24 which results in a resolution of 1024x768
 - [ ] add tile map support @wankmueller @ghebreweldi @grombach
     - [ ] different tiles for different floors
         - [ ] diggable
@@ -180,6 +190,21 @@ This game is tested with Python 3.5.1 and Python 2.7.11, both with the
 latest version of PyGame (1.9.2) installed. Although Python 2 is no
 requirement at the SEP, it would be great if we can keep compatibility,
 as most PyGame installers are still linked against Python 2.
+
+## External Libraries
+
+### PyGame 1.9.2 linked against Python 3.5
+- http://www.pygame.org/wiki/Compilation
+
+### PyMTX for TileMap Support
+- https://github.com/bitcraft/PyTMX
+
+
+## Editors
+
+### Tiled
+- http://www.mapeditor.org/
+
 
 ## Main Class
 The main class to run until this whole project is packed up is the
