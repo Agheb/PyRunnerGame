@@ -288,6 +288,8 @@ class RenderThread(threading.Thread):
                 print("%s is no valid pygame.Rect" % single_rect)
 
         if surface:
+            if not pos and not centered:
+                raise ValueError('Either a position (int, int) or centered bool is required if a surface is provided')
             rects = self._fix_update_rects(rects, surface, pos, centered)
 
         if type(rects) is list:
