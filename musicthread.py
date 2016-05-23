@@ -92,7 +92,7 @@ class MusicMixer(threading.Thread):
                 num_channels = old_channels = pygame.mixer.get_num_channels()
                 num_channels += 8
                 '''print some informational debugging string to the console'''
-                print("Increased the number of sound channels from " + str(old_channels) + " to " + str(num_channels))
+                print("Increased the number of sound channels from %(old_channels)s to %(num_channels)s" % locals())
                 pygame.mixer.set_num_channels(num_channels)
                 '''set the volume for all channels, else the new ones differ'''
                 self.sfx_volume = self.sfx_volume
@@ -185,7 +185,7 @@ class MusicMixer(threading.Thread):
                     # pygame.mixer.music.stop()
                     # pygame.mixer.music.load(self._background_music)
             except pygame.error:
-                print("Error loading music file " + str(file))
+                print("Error loading music file %s" % file)
                 # pass the exact error
                 # raise
 

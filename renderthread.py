@@ -144,7 +144,7 @@ class RenderThread(threading.Thread):
     def refresh_screen(self, complete_screen=False):
         """refresh the pygame screen/window"""
         if not self.rects_to_update and not complete_screen:
-            print(str("nothing to update, refreshing the whole screen; use refresh_screen(True) to avoid this message"))
+            print("nothing to update, refreshing the whole screen; use refresh_screen(True) to avoid this message")
             complete_screen = True
 
         '''frame rate persistence'''
@@ -174,7 +174,7 @@ class RenderThread(threading.Thread):
                         self._updating_screen = False
                 except ValueError or pygame.error:
                     '''completely refresh the screen'''
-                    print("Error occurred parsing " + str(self._rects_to_update))
+                    print("Error occurred parsing %s" % self._rects_to_update)
                     self._rects_to_update = []
                     self.refresh_screen()
         except pygame.error:
@@ -285,7 +285,7 @@ class RenderThread(threading.Thread):
             if type(single_rect) is pygame.Rect:
                 self._rects_to_update.insert(0, single_rect)
             else:
-                print(str(single_rect) + " is no valid pygame.Rect")
+                print("%s is no valid pygame.Rect" % single_rect)
 
         if surface:
             rects = self._fix_update_rects(rects, surface, pos, centered)
