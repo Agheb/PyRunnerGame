@@ -224,9 +224,9 @@ class RenderThread(threading.Thread):
             y = y_pos - 10 if y_pos - 10 > 0 else y_pos
             self._fps_pos = (x, y)
             self._fps_margin = (m_x, m_y)
-
-        x, y, = self._fps_pos
-        m_x, m_y = self._fps_margin
+        else:
+            x, y, = self._fps_pos
+            m_x, m_y = self._fps_margin
 
         if not self._fps_dirty_rect and self.bg_surface:
             '''get the clean background rect with some additional security padding around it'''
