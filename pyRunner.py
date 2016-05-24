@@ -40,6 +40,16 @@ _CONF_AUDIO_MUSIC = "music"
 _CONF_AUDIO_MUSIC_VOL = _CONF_AUDIO_MUSIC + _CONF_AUDIO_VOL
 _CONF_AUDIO_SFX = "sfx"
 _CONF_AUDIO_SFX_VOL = _CONF_AUDIO_SFX + _CONF_AUDIO_VOL
+_CONF_CONT_P1 = "Player 1 Controls"
+_CONF_CONT_P2 = "Player 2 Controls"
+_CONF_CONT_LEFT = "left"
+_CONF_CONT_RIGHT = "right"
+_CONF_CONT_UP = "up"
+_CONF_CONT_DOWN = "down"
+_CONF_CONT_AL = "action left"
+_CONF_CONT_AR = "action right"
+_CONF_CONT_INT = "interact"
+_CONF_CONT_TAUNT = "taunt"
 
 
 class PyRunner(object):
@@ -50,7 +60,6 @@ class PyRunner(object):
 
     def __init__(self):
         """initialize the game"""
-        self.name = "PyRunner"
         '''important settings'''
         self.game_is_running = True
         '''screen settings'''
@@ -116,11 +125,14 @@ class PyRunner(object):
 
     def read_settings(self):
         """read the settings from config.cfg"""
+
         try:
             config = self.config_parser
-
             config.read(CONFIG)
+        except NameError:
+            raise
 
+        try:
             '''get display configuration'''
             self.screen_x = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH)
             self.screen_y = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT)
@@ -132,17 +144,32 @@ class PyRunner(object):
             self.vol_music = config.getint(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL)
             self.play_sfx = config.getboolean(_CONF_AUDIO, _CONF_AUDIO_SFX)
             self.vol_sfx = config.getint(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL)
-        except configparser.NoSectionError or configparser.NoOptionError:
+            '''controls for player 1'''
+            self.p1_left = config.getint(_CONF_CONT_P1, _CONF_CONT_LEFT)
+            self.p1_right = config.getint(_CONF_CONT_P1, _CONF_CONT_RIGHT)
+            self.p1_up = config.getint(_CONF_CONT_P1, _CONF_CONT_UP)
+            self.p1_down = config.getint(_CONF_CONT_P1, _CONF_CONT_DOWN)
+            self.p1_action_l = config.getint(_CONF_CONT_P1, _CONF_CONT_AL)
+            self.p1_action_r = config.getint(_CONF_CONT_P1, _CONF_CONT_AR)
+            self.p1_interact = config.getint(_CONF_CONT_P1, _CONF_CONT_INT)
+            self.p1_taunt = config.getint(_CONF_CONT_P1, _CONF_CONT_TAUNT)
+            '''controls for player 2'''
+            self.p2_left = config.getint(_CONF_CONT_P2, _CONF_CONT_LEFT)
+            self.p2_right = config.getint(_CONF_CONT_P2, _CONF_CONT_RIGHT)
+            self.p2_up = config.getint(_CONF_CONT_P2, _CONF_CONT_UP)
+            self.p2_down = config.getint(_CONF_CONT_P2, _CONF_CONT_DOWN)
+            self.p2_action_l = config.getint(_CONF_CONT_P2, _CONF_CONT_AL)
+            self.p2_action_r = config.getint(_CONF_CONT_P2, _CONF_CONT_AR)
+            self.p2_interact = config.getint(_CONF_CONT_P2, _CONF_CONT_INT)
+            self.p2_taunt = config.getint(_CONF_CONT_P2, _CONF_CONT_TAUNT)
+        except (configparser.NoSectionError, configparser.NoOptionError, TypeError, ValueError, AttributeError):
             self.write_settings(True)
-
-        # controls
-        # TODO
 
     def write_settings(self, default=False):
         """save the current used settings
 
         Args:
-            default (bool): true to save default values to the disk
+            default (bool): true to save all default values to the disk
         """
         '''Python 3 vs Python 2 error handling'''
         try:
@@ -169,6 +196,24 @@ class PyRunner(object):
                 self.vol_music = 10
                 self.play_sfx = True
                 self.vol_sfx = 10
+                # controls for player 1
+                self.p1_left = K_LEFT
+                self.p1_right = K_RIGHT
+                self.p1_up = K_UP
+                self.p1_down = K_DOWN
+                self.p1_action_l = K_RALT
+                self.p1_action_r = K_RSHIFT
+                self.p1_interact = K_BACKSPACE
+                self.p1_taunt = K_RETURN
+                # controls for player 2
+                self.p2_left = K_a
+                self.p2_right = K_d
+                self.p2_up = K_w
+                self.p2_down = K_s
+                self.p2_action_l = K_q
+                self.p2_action_r = K_e
+                self.p2_interact = K_LSHIFT
+                self.p2_taunt = K_TAB
 
             '''info part'''
             try:
@@ -195,9 +240,36 @@ class PyRunner(object):
             config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL, self.vol_music)
             config.set(_CONF_AUDIO, _CONF_AUDIO_SFX, self.play_sfx)
             config.set(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL, self.vol_sfx)
+            '''controls for player 1'''
+            try:
+                config.add_section(_CONF_CONT_P1)
+            except cp_duplicate_section_error:
+                pass
+            config.set(_CONF_CONT_P1, _CONF_CONT_LEFT, self.p1_left)
+            config.set(_CONF_CONT_P1, _CONF_CONT_RIGHT, self.p1_right)
+            config.set(_CONF_CONT_P1, _CONF_CONT_UP, self.p1_up)
+            config.set(_CONF_CONT_P1, _CONF_CONT_DOWN, self.p1_down)
+            config.set(_CONF_CONT_P1, _CONF_CONT_AL, self.p1_action_l)
+            config.set(_CONF_CONT_P1, _CONF_CONT_AR, self.p1_action_r)
+            config.set(_CONF_CONT_P1, _CONF_CONT_INT, self.p1_interact)
+            config.set(_CONF_CONT_P1, _CONF_CONT_TAUNT, self.p1_taunt)
+            '''controls for player 2'''
+            try:
+                config.add_section(_CONF_CONT_P2)
+            except cp_duplicate_section_error:
+                pass
+            config.set(_CONF_CONT_P2, _CONF_CONT_LEFT, self.p2_left)
+            config.set(_CONF_CONT_P2, _CONF_CONT_RIGHT, self.p2_right)
+            config.set(_CONF_CONT_P2, _CONF_CONT_UP, self.p2_up)
+            config.set(_CONF_CONT_P2, _CONF_CONT_DOWN, self.p2_down)
+            config.set(_CONF_CONT_P2, _CONF_CONT_AL, self.p2_action_l)
+            config.set(_CONF_CONT_P2, _CONF_CONT_AR, self.p2_action_r)
+            config.set(_CONF_CONT_P2, _CONF_CONT_INT, self.p2_interact)
+            config.set(_CONF_CONT_P2, _CONF_CONT_TAUNT, self.p2_taunt)
 
             with open(CONFIG, 'w') as configfile:
                 config.write(configfile)
+
         except cp_permission_error:
             print("The config file is locked or not writable.")
             print("Please delete config.cfg or make sure you have write access")
@@ -511,6 +583,25 @@ class PyRunner(object):
         os.execl(python, python, * sys.argv)
 
     def start_game(self):
+        """main game loop"""
+        '''save as local variable to save lookups'''
+        p1_l = self.p1_left
+        p1_r = self.p1_right
+        p1_u = self.p1_up
+        p1_d = self.p1_down
+        p1_al = self.p1_action_l
+        p1_ar = self.p1_action_r
+        p1_i = self.p1_interact
+        p1_t = self.p1_taunt
+        p2_l = self.p2_left
+        p2_r = self.p2_right
+        p2_u = self.p2_up
+        p2_d = self.p2_down
+        p2_al = self.p2_action_l
+        p2_ar = self.p2_action_r
+        p2_i = self.p2_interact
+        p2_t = self.p2_taunt
+
         """start the game"""
         # Main loop relevant vars
         clock = pygame.time.Clock()
@@ -565,19 +656,42 @@ class PyRunner(object):
                         """controls and key settings if the game is in foreground"""
                         if key == K_ESCAPE:
                             self.show_menu(True)
-                        '''
-                        if key == (p1_left or p1_right or p1_up or p1_down or p2_left or p2_right or p2_up or p2_down):
-                            # TODO move player 1/2 direction
-                            return pass
-
-                        elif key == (p1_action_left or p1_action_right or p2_action_left or p2_action_right):
-                            # TODO action player 1/2 left/right
-                            return pass
-
-                        elif key == (p1_interact or p1_taunt or p2_interact or p2_taunt):
-                            # TODO taunt/interact player 1/2
-                            return pass
-                        '''
+                        # TODO move both players
+                        elif key == p1_l:
+                            print("Player 1 moves left")
+                        elif key == p1_r:
+                            print("Player 1 moves right")
+                        elif key == p1_u:
+                            print("Player 1 moves up")
+                        elif key == p1_d:
+                            print("Player 1 moves down")
+                        # TODO actions for both players
+                        elif key == p1_al:
+                            print("Player 1 digs left")
+                        elif key == p1_ar:
+                            print("Player 1 digs right")
+                        elif key == p1_i:
+                            print("Player 1 interacts")
+                        elif key == p1_t:
+                            print("Player 1 taunts")
+                        # TODO the same for player 2
+                        elif key == p2_l:
+                            print("Player 2 moves left")
+                        elif key == p2_r:
+                            print("Player 2 moves right")
+                        elif key == p2_u:
+                            print("Player 2 moves up")
+                        elif key == p2_d:
+                            print("Player 2 moves down")
+                        # TODO actions for both players
+                        elif key == p2_al:
+                            print("Player 2 digs left")
+                        elif key == p2_ar:
+                            print("Player 2 digs right")
+                        elif key == p2_i:
+                            print("Player 2 interacts")
+                        elif key == p2_t:
+                            print("Player 2 taunts")
 
             # save cpu resources
             clock.tick(self.fps)
