@@ -144,6 +144,16 @@ class PyRunner(object):
         Args:
             default (bool): true to save default values to the disk
         """
+        '''Python 3 vs Python 2 error handling'''
+        try:
+            cp_duplicate_section_error = configparser.DuplicateSectionError
+        except NameError:
+            cp_duplicate_section_error = ConfigParser.DuplicateSectionError
+        try:
+            cp_permission_error = PermissionError
+        except NameError:
+            cp_permission_error = (IOError, OSError)
+
         try:
             config = self.config_parser
 
@@ -163,13 +173,13 @@ class PyRunner(object):
             '''info part'''
             try:
                 config.add_section(_CONF_INFO)
-            except configparser.DuplicateSectionError:
+            except cp_duplicate_section_error:
                 pass
             config.set(_CONF_INFO, _CONF_INFO_NAME, NAME)
             '''write display configuration'''
             try:
                 config.add_section(_CONF_DISPLAY)
-            except configparser.DuplicateSectionError:
+            except cp_duplicate_section_error:
                 pass
             config.set(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH, self.screen_x)
             config.set(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT, self.screen_y)
@@ -179,7 +189,7 @@ class PyRunner(object):
             '''and audio settings'''
             try:
                 config.add_section(_CONF_AUDIO)
-            except configparser.DuplicateSectionError:
+            except cp_duplicate_section_error:
                 pass
             config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC, self.play_music)
             config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL, self.vol_music)
@@ -188,7 +198,7 @@ class PyRunner(object):
 
             with open(CONFIG, 'w') as configfile:
                 config.write(configfile)
-        except PermissionError:
+        except cp_permission_error:
             print("The config file is locked or not writable.")
             print("Please delete config.cfg or make sure you have write access")
 
