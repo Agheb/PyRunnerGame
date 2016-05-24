@@ -342,9 +342,13 @@ class PyRunner(object):
         menu_s_video.add_menu_item(MenuItem(self.get_button_text("Resolution", res_name), menu_s_v_resolution, item_size))
         menu_s_video_show_fps = self.get_button_text("Show FPS", self.render_thread.show_framerate)
         menu_s_video.add_menu_item(MenuItem(menu_s_video_show_fps, 'switch_show_fps()', item_size))
+        menu_controls = Menu(surface, menu_settings, item_size)
+        menu_controls.add_menu_item(MenuItem("Controls", None, h2_size))
+        menu_controls.add_menu_item(MenuItem("Player 1", None, item_size))
+        menu_controls.add_menu_item(MenuItem("Player 2", None, item_size))
         '''complete the settings menu at the end to store the up to date objects'''
         menu_settings.add_menu_item(MenuItem("Audio", menu_s_audio, item_size))
-        menu_settings.add_menu_item(MenuItem("Controls", None, item_size))
+        menu_settings.add_menu_item(MenuItem("Controls", menu_controls, item_size))
         menu_settings.add_menu_item(MenuItem("Video", menu_s_video, item_size))
         '''complete main menu at the end to store the up to date objects'''
         menu_main.add_menu_item(MenuItem("Start Game", menu_new_game, item_size))
@@ -399,7 +403,8 @@ class PyRunner(object):
             if isinstance(action, Menu):
                 self.set_current_menu(action)
             else:
-                eval('self.%s' % action)
+                if action:
+                    eval('self.%s' % action)
         except TypeError:
             # don't crash on wrong actions, the menu will stay up and nothing will happen
             pass
