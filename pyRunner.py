@@ -589,25 +589,6 @@ class PyRunner(object):
 
     def start_game(self):
         """main game loop"""
-        '''save as local variable to save lookups'''
-        p1_l = self.p1_left
-        p1_r = self.p1_right
-        p1_u = self.p1_up
-        p1_d = self.p1_down
-        p1_al = self.p1_action_l
-        p1_ar = self.p1_action_r
-        p1_i = self.p1_interact
-        p1_t = self.p1_taunt
-        p2_l = self.p2_left
-        p2_r = self.p2_right
-        p2_u = self.p2_up
-        p2_d = self.p2_down
-        p2_al = self.p2_action_l
-        p2_ar = self.p2_action_r
-        p2_i = self.p2_interact
-        p2_t = self.p2_taunt
-
-        """start the game"""
         # Main loop relevant vars
         clock = pygame.time.Clock()
 
@@ -662,40 +643,40 @@ class PyRunner(object):
                         if key == K_ESCAPE:
                             self.show_menu(True)
                         # TODO move both players
-                        elif key == p1_l:
+                        elif key == self.p1_left:
                             print("Player 1 moves left")
-                        elif key == p1_r:
+                        elif key == self.p1_right:
                             print("Player 1 moves right")
-                        elif key == p1_u:
+                        elif key == self.p1_up:
                             print("Player 1 moves up")
-                        elif key == p1_d:
+                        elif key == self.p1_down:
                             print("Player 1 moves down")
                         # TODO actions for both players
-                        elif key == p1_al:
+                        elif key == self.p1_action_l:
                             print("Player 1 digs left")
-                        elif key == p1_ar:
+                        elif key == self.p1_action_r:
                             print("Player 1 digs right")
-                        elif key == p1_i:
+                        elif key == self.p1_interact:
                             print("Player 1 interacts")
-                        elif key == p1_t:
+                        elif key == self.p1_taunt:
                             print("Player 1 taunts")
                         # TODO the same for player 2
-                        elif key == p2_l:
+                        elif key == self.p2_left:
                             print("Player 2 moves left")
-                        elif key == p2_r:
+                        elif key == self.p2_right:
                             print("Player 2 moves right")
-                        elif key == p2_u:
+                        elif key == self.p2_up:
                             print("Player 2 moves up")
-                        elif key == p2_d:
+                        elif key == self.p2_down:
                             print("Player 2 moves down")
                         # TODO actions for both players
-                        elif key == p2_al:
+                        elif key == self.p2_action_l:
                             print("Player 2 digs left")
-                        elif key == p2_ar:
+                        elif key == self.p2_action_r:
                             print("Player 2 digs right")
-                        elif key == p2_i:
+                        elif key == self.p2_interact:
                             print("Player 2 interacts")
-                        elif key == p2_t:
+                        elif key == self.p2_taunt:
                             print("Player 2 taunts")
 
             # save cpu resources
