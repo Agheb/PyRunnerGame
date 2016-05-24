@@ -1,5 +1,5 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-23 at 11:11 am (UTC +2)
+###### last updated: 2016-05-24 at 06:15 pm (UTC +2)
 
 ## Team Communication:
 
@@ -20,6 +20,7 @@
             - [ ] sub menu must be generic enough to support two players @fahrenwalde
             - [ ] sub menu must be generic enough to support game pads as well @fahrenwalde
             - [ ] key setting changes must be possible without restarting the game @fahrenwalde
+                - [ ] but still stored as local variables afterwards???
 
 ### Menu
 - [x] create object orientated menu class @fahrenwalde
