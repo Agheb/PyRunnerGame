@@ -85,7 +85,7 @@ class PyRunner(object):
         self.p2_interact = None
         self.p2_taunt = None
         # initialize the settings
-        self.config_parser = None
+        self.config_parser = self.init_config_parser()
         self.read_settings()
         '''init the audio subsystem prior to anything else'''
         self.music_thread = MusicMixer(self.play_music, self.vol_music, self.play_sfx, self.vol_sfx, self.fps)
@@ -106,22 +106,20 @@ class PyRunner(object):
     def __repr__(self):
         return "element(\"{0}\", \"{1}\")".format(self.name)
 
-    def init_config_parser(self):
+    @staticmethod
+    def init_config_parser():
         """get the adequate config parser for either python 2 or 3
 
         Returns: ConfigParser (Python 2) or configparser (Python 3)
         """
         try:
-            self.config_parser = configparser.RawConfigParser()
+            return configparser.RawConfigParser()
         except NameError:
-            self.config_parser = ConfigParser.RawConfigParser()
+            return ConfigParser.RawConfigParser()
 
     def read_settings(self):
         """read the settings from config.cfg"""
         try:
-            if not self.config_parser:
-                self.init_config_parser()
-
             config = self.config_parser
 
             config.read(CONFIG)
@@ -150,9 +148,6 @@ class PyRunner(object):
             default (bool): true to save default values to the disk
         """
         try:
-            if not self.config_parser:
-                self.init_config_parser()
-
             config = self.config_parser
 
             if default:
@@ -432,25 +427,19 @@ class PyRunner(object):
         '''wrappers for thread variables which keep a local copy of the settings so they can be saved on exit'''
         def set_music(m_bol):
             """turn music on or off"""
-            global play_music
-            play_music = self.music_thread.play_music = m_bol
-            return m_bol
+            self.play_music = self.music_thread.play_music = m_bol
 
         def set_music_vol(m_vol):
             """set music volume"""
-            global vol_music
-            vol_music = self.music_thread.music_volume = m_vol
+            self.vol_music = self.music_thread.music_volume = m_vol
 
         def set_sfx(s_bol):
             """turn sfx on or off"""
-            global play_sfx
-            play_sfx = self.music_thread.play_sfx = s_bol
-            return s_bol
+            self.play_sfx = self.music_thread.play_sfx = s_bol
 
         def set_sfx_vol(s_vol):
             """set sfx volume"""
-            global vol_sfx
-            vol_sfx = self.music_thread.sfx_volume = s_vol
+            self.vol_sfx = self.music_thread.sfx_volume = s_vol
 
         # to store the settings so they can be saved on exit
         item = self.current_menu.get_menu_item(self.menu_pos)
