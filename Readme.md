@@ -14,7 +14,12 @@
 
 ## Basic functionality
 - [ ] create main class / function @fahrenwalde
-    - [ ] add player movement action functions @fahrenwalde
+    - [x] add basic player movement/action function support @fahrenwalde
+        - [x] hard coded player 1 and 2 keys added (+ stored in the config) @fahrenwalde
+        - [ ] add a sub menu that allows users to change the keys (pygame.key.name(key) as output) @fahrenwalde
+            - [ ] sub menu must be generic enough to support two players @fahrenwalde
+            - [ ] sub menu must be generic enough to support game pads as well @fahrenwalde
+            - [ ] key setting changes must be possible without restarting the game @fahrenwalde
 
 ### Menu
 - [x] create object orientated menu class @fahrenwalde

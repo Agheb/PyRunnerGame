@@ -14,6 +14,7 @@ SOUND_PATH = "./resources/sound_fx/"
 
 
 class MusicMixer(threading.Thread):
+    """a thread handling all the sound fx and music"""
 
     def __init__(self, play_music=True, music_volume=10, play_sfx=True, sfx_volume=10, fps=25, daemon=True):
         """a separate daemon thread that keeps playing music and sound in the background.
