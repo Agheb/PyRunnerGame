@@ -139,13 +139,16 @@ def write_settings(default=False):
         print("The config file is locked or not writable. Please delete config.cfg or make sure you have write access")
 
 
+# noinspection PyTypeChecker
 def init_audio():
+    """init the audio subsystem prior to anything else"""
     global music_thread
     music_thread = MusicMixer(play_music, vol_music, play_sfx, vol_sfx, fps)
     music_thread.background_music = ('time_delay.wav', 1)
     music_thread.start()
 
 
+# noinspection PyTypeChecker
 def init_screen():
     """initialize the main screen"""
     global render_thread
@@ -154,6 +157,7 @@ def init_screen():
     render_thread.start()
 
 
+# noinspection PyTypeChecker
 def init_menu():
     """initialize the whole main menu structure
 
@@ -233,14 +237,14 @@ def init_menu():
     set_current_menu(menu_main)
 
 
-def set_current_menu(menu):
+def set_current_menu(new_menu):
     """switch menu level
 
     Args:
-        menu (Menu): the (sub)menu to switch to
+        new_menu (Menu): the (sub)menu to switch to
     """
     global current_menu, menu_pos
-    current_menu = menu
+    current_menu = new_menu
     menu_pos = 1
     show_menu()
 
@@ -400,20 +404,24 @@ def switch_audio_volume(num, change):
     """
     '''wrappers for thread variables which keep a local copy of the settings so they can be saved on exit'''
     def set_music(m_bol):
+        """turn music on or off"""
         global play_music
         play_music = music_thread.play_music = m_bol
         return m_bol
 
     def set_music_vol(m_vol):
+        """set music volume"""
         global vol_music
         vol_music = music_thread.music_volume = m_vol
 
     def set_sfx(s_bol):
+        """turn sfx on or off"""
         global play_sfx
         play_sfx = music_thread.play_sfx = s_bol
         return s_bol
 
     def set_sfx_vol(s_vol):
+        """set sfx volume"""
         global vol_sfx
         vol_sfx = music_thread.sfx_volume = s_vol
 
@@ -483,8 +491,8 @@ def restart_program():
 
 
 def init_game():
-    global bg_image
     """initialize the game variables"""
+    global bg_image
     # first read the settings
     read_settings()
     # init audio subsystem first to avoid lag
