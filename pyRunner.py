@@ -103,9 +103,6 @@ class PyRunner(object):
         self.current_menu = None
         self.init_menu()
 
-    def __repr__(self):
-        return "element(\"{0}\", \"{1}\")".format(self.name)
-
     @staticmethod
     def init_config_parser():
         """get the adequate config parser for either python 2 or 3
