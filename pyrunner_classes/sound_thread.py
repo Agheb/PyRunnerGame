@@ -231,7 +231,6 @@ class MusicMixer(threading.Thread):
             self._sound_fx_volume = int(volume)
             '''apply these settings to all existing sound channels'''
             for num in range(pygame.mixer.get_num_channels()):
-                channel = pygame.mixer.Channel(num)
-                channel.set_volume(vol)
+                pygame.mixer.Channel(num).set_volume(vol)
         else:
             print("Volume value must be between 0 and 10")

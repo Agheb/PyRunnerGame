@@ -554,7 +554,7 @@ def start_game():
                         music_thread.play_sound('unscrew_lightbulb-mike-koenig.wav')
                 else:
                     """controls and key settings if the game is in foreground"""
-                    if key is K_ESCAPE:
+                    if key == K_ESCAPE:
                         show_menu(True)
                     '''
                     if key == (p1_left or p1_right or p1_up or p1_down or p2_left or p2_right or p2_up or p2_down):
