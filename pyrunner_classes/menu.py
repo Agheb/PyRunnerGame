@@ -121,10 +121,10 @@ class Menu(object):
             rects.append(self._draw_item(self.menu_items[0], 0, new_pos, margin_top))
             margin_top += self.menu_items[1].size
 
-            for menu_index in range(start_pos, stop_pos):
-                menu_item = self.menu_items[menu_index]
-                margin_top += menu_item.size * LINE_SPACING
-                rects.append(self._draw_item(self.menu_items[menu_index], menu_index, new_pos, margin_top))
+            '''draw all menu items that are in the current view'''
+            for index, item in enumerate(self.menu_items[start_pos:stop_pos], start_pos):
+                margin_top += item.size * LINE_SPACING
+                rects.append(self._draw_item(item, index, new_pos, margin_top))
 
             '''draw arrows if the menu is too long to notify about that'''
             if length > MAX_ITEMS_NO_SCROLL:

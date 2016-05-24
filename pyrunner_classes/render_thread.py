@@ -381,13 +381,13 @@ class RenderThread(threading.Thread):
 
         rects_fixed = []
 
-        try:
-            x, y, width, height = rects
-            fix_rect()
-        except ValueError:
+        if isinstance(rects, list):
             while rects:
                 x, y, width, height = rects.pop()
                 fix_rect()
+        else:
+            x, y, width, height = rects
+            fix_rect()
 
         '''pass the changed rects to the render thread / pygame'''
         return rects_fixed

@@ -325,19 +325,22 @@ def switch_showfps():
     """switch fps overlay on/off"""
     new = False if render_thread.show_framerate else True
     render_thread.show_framerate = new
-    item = current_menu.get_menu_item(menu_pos)
-    if item.action == 'switch_showfps()':
-        item.text = get_button_text("Show FPS", new)
-        show_menu(True)
+    current_menu.get_menu_item(menu_pos).text = get_button_text("Show FPS", new)
+    show_menu(True)
 
 
 def switch_fs_resolution():
     """switch between windowed and fullscreen mode"""
     global switch_resolution
     switch_resolution = False if switch_resolution else True
-    '''save changed settings to disk and restart this program'''
+    '''save changed settings to disk'''
     write_settings()
-    restart_program()
+    if fullscreen:
+        '''and restart this program'''
+        restart_program()
+    else:
+        current_menu.get_menu_item(menu_pos).text = get_button_text("Switch Resolution", switch_resolution)
+        show_menu(True)
 
 
 def get_button_text(text, text_val):
