@@ -73,6 +73,9 @@ class MainMenu(object):
         h1_size = int(h1_size * ratio)
         h2_size = int(h2_size * ratio)
         item_size = int(item_size * ratio)
+        # set the main menus font sizes
+        menu_main.header_size = h1_size
+        menu_main.font_size = item_size
         '''then begin adding items and pass them the font sizes'''
         menu_main.add_item(MenuItem(self.config.name))
         # new game menu
