@@ -5,6 +5,7 @@ from __future__ import division
 # universal imports
 import pygame
 from pygame.locals import *
+import sys
 import os
 # pyRunner subclasses
 from pyrunner_classes import *
@@ -35,8 +36,22 @@ class PyRunner(object):
         # set the background image
         self.bg_image = pygame.image.load(os.path.join('./resources/images/', 'lode2.gif')).convert()
         '''init the main menu'''
-        self.menu = MainMenu(self.config, self.render_thread, self.music_thread, self.bg_image)
+        self.menu = MainMenu(self)
 
+    def quit_game(self, shutdown=True):
+        """quit the game"""
+        self.config.write_settings()
+        self.render_thread.stop_thread()
+        self.music_thread.stop_thread()
+        pygame.quit()
+        if shutdown:
+            exit()
+
+    def restart_program(self):
+        """Restarts the current program"""
+        self.quit_game(False)
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
 
     def start_game(self):
         """main game loop"""
@@ -48,10 +63,10 @@ class PyRunner(object):
         # we should probably save all game sounds as variables
         sound_shoot = pygame.mixer.Sound(self.music_thread.get_full_path_sfx('9_mm_gunshot-mike-koenig-123.wav'))
 
-        while True:
+        while self.game_is_running:
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    self.menu.quit_game()
+                    self.quit_game()
                 elif event.type == KEYDOWN:
                     key = event.key
                     '''key pressing events'''

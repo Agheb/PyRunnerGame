@@ -3,8 +3,6 @@
 # Python 2 related fixes
 from __future__ import division
 # universal imports
-import sys
-import os
 import pygame
 from pygame.locals import *
 from .menu import Menu, MenuItem
@@ -14,12 +12,10 @@ from .constants import *
 class MainMenu(object):
     """PyRunners main menu"""
 
-    def __init__(self, config, render_thread, music_thread, bg_image):
-        self.config = config
-        self.render_thread = render_thread
-        self.music_thread = music_thread
-        self.bg_image = bg_image
+    def __init__(self, main):
+        self.main = main
         self.menu_pos = 1
+        self.in_menu = True
         self.current_menu = None
         self.init_menu()
 
@@ -60,8 +56,8 @@ class MainMenu(object):
         Cave: menus need to be saved in the reverse order (bottom to top) so that
               the top menus contain all up to date sub-menu objects
         """
-        s_width = (self.render_thread.screen.get_width() // 4) * 3
-        s_height = (self.render_thread.screen.get_height() // 3) * 2
+        s_width = (self.main.render_thread.screen.get_width() // 4) * 3
+        s_height = (self.main.render_thread.screen.get_height() // 3) * 2
         surface = pygame.Surface((s_width, s_height), SRCALPHA)
         # regular font sizes
         h1_size = 72
@@ -75,7 +71,7 @@ class MainMenu(object):
         h2_size = int(h2_size * ratio)
         item_size = int(item_size * ratio)
         '''then begin adding items and pass them the font sizes'''
-        menu_main.add_menu_item(MenuItem(self.config.name, None, h1_size))
+        menu_main.add_menu_item(MenuItem(self.main.config.name, None, h1_size))
         # new game menu
         menu_new_game = Menu(surface, menu_main, item_size)
         # heading
@@ -100,29 +96,29 @@ class MainMenu(object):
         menu_settings.add_menu_item(MenuItem("Settings", None, h2_size))
         menu_s_audio = Menu(surface, menu_settings, item_size)
         menu_s_audio.add_menu_item(MenuItem("Audio Settings", None, h2_size))
-        menu_s_audio_music = self.get_button_text("Music", self.music_thread.play_music)
+        menu_s_audio_music = self.get_button_text("Music", self.main.music_thread.play_music)
         menu_s_audio.add_menu_item(MenuItem(menu_s_audio_music, 'switch_audio_volume(1, 0)', item_size))
-        menu_s_audio_sfx = self.get_button_text("Sounds", self.music_thread.play_sfx)
+        menu_s_audio_sfx = self.get_button_text("Sounds", self.main.music_thread.play_sfx)
         menu_s_audio.add_menu_item(MenuItem(menu_s_audio_sfx, 'switch_audio_volume(2, 0)', item_size))
         #   video settings
         menu_s_video = Menu(surface, menu_settings, item_size)
         menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
-        menu_s_video.add_menu_item(MenuItem(self.get_button_text("Fullscreen", self.config.fullscreen),
+        menu_s_video.add_menu_item(MenuItem(self.get_button_text("Fullscreen", self.main.config.fullscreen),
                                             'switch_fullscreen()', item_size))
-        menu_s_video_switch_res = self.get_button_text("Switch Resolution", self.config.switch_resolution)
+        menu_s_video_switch_res = self.get_button_text("Switch Resolution", self.main.config.switch_resolution)
         menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
         # resolutions
         menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
         menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, h2_size))
-        for res in self.render_thread.display_modes:
+        for res in self.main.render_thread.display_modes:
             width, height = res
             res_name = str(width) + "x" + str(height)
             func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
             menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
-        res_name = str(self.config.screen_x) + "x" + str(self.config.screen_y)
+        res_name = str(self.main.config.screen_x) + "x" + str(self.main.config.screen_y)
         menu_s_video.add_menu_item(
             MenuItem(self.get_button_text("Resolution", res_name), menu_s_v_resolution, item_size))
-        menu_s_video_show_fps = self.get_button_text("Show FPS", self.render_thread.show_framerate)
+        menu_s_video_show_fps = self.get_button_text("Show FPS", self.main.render_thread.show_framerate)
         menu_s_video.add_menu_item(MenuItem(menu_s_video_show_fps, 'switch_show_fps()', item_size))
         menu_controls = Menu(surface, menu_settings, item_size)
         menu_controls.add_menu_item(MenuItem("Controls", None, h2_size))
@@ -135,7 +131,7 @@ class MainMenu(object):
         '''complete main menu at the end to store the up to date objects'''
         menu_main.add_menu_item(MenuItem("Start Game", menu_new_game, item_size))
         menu_main.add_menu_item(MenuItem("Settings", menu_settings, item_size))
-        menu_main.add_menu_item(MenuItem("Exit", 'quit_game()', item_size))
+        menu_main.add_menu_item(MenuItem("Exit", 'main.quit_game()', item_size))
 
         '''save the main menu'''
         self.set_current_menu(menu_main)
@@ -152,31 +148,33 @@ class MainMenu(object):
 
     def show_menu(self, boolean=True):
         """print the current menu to the screen"""
-        self.render_thread.fill_screen(BACKGROUND)
+        self.main.render_thread.fill_screen(BACKGROUND)
         # TODO add game surface here
         # surface = pygame.Surface((screen_x, screen_y))
-        if self.bg_image.get_width() is not self.config.screen_x or self.bg_image.get_height() is not self.config.screen_y:
-            self.bg_image = pygame.transform.scale(self.bg_image, (self.config.screen_x, self.config.screen_y))
+        if self.main.bg_image.get_width() is not self.main.config.screen_x or \
+                self.main.bg_image.get_height() is not self.main.config.screen_y:
+            self.main.bg_image = pygame.transform.scale(self.main.bg_image,
+                                                        (self.main.config.screen_x, self.main.config.screen_y))
         # save this as background surface for dirty rects
-        self.render_thread.bg_surface = self.bg_image
-        self.render_thread.blit(self.bg_image, (0, 0))
+        self.main.render_thread.bg_surface = self.main.bg_image
+        self.main.render_thread.blit(self.main.bg_image, (0, 0))
 
         if boolean:
             self.in_menu = True
             self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
-            self.render_thread.blit(self.current_menu.surface, None, True)
+            self.main.render_thread.blit(self.current_menu.surface, None, True)
             # render_thread.add_rect_to_update(rects)
         else:
             self.in_menu = False
             self.menu_pos = 1
         # draw the selected surface to the screen
-        self.render_thread.refresh_screen(True)
+        self.main.render_thread.refresh_screen(True)
 
     def navigate_menu(self, old_pos, complete=False):
         """helps rerendering the changed menu items for partial screen updates"""
         rects = self.current_menu.print_menu(self.menu_pos, old_pos, complete)
-        self.render_thread.blit(self.current_menu.surface, None, True)
-        self.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
+        self.main.render_thread.blit(self.current_menu.surface, None, True)
+        self.main.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
 
     def do_menu_action(self):
         """try to evaluate if a menu action is either a sub-menu or a function to call"""
@@ -199,37 +197,37 @@ class MainMenu(object):
             height (int): new height
             restart (bool): restart this process for a clean initialization
         """
-        self.config.screen_x = width
-        self.config.screen_y = height
+        self.main.config.screen_x = width
+        self.main.config.screen_y = height
 
         if restart:
             '''save changed settings to disk and restart this program'''
-            self.config.write_settings()
+            self.main.config.write_settings()
             self.restart_program()
         else:
-            self.render_thread.set_resolution(self.config.screen_x, self.config.screen_y)
+            self.main.render_thread.set_resolution(self.main.config.screen_x, self.main.config.screen_y)
 
     def switch_fullscreen(self):
         """switch between windowed and fullscreen mode"""
-        self.config.fullscreen = False if self.config.fullscreen else True
+        self.main.config.fullscreen = False if self.main.config.fullscreen else True
         '''save changed settings to disk and restart this program'''
-        self.config.write_settings()
+        self.main.config.write_settings()
         self.restart_program()
 
     def switch_show_fps(self):
         """switch fps overlay on/off"""
-        new = False if self.render_thread.show_framerate else True
-        self.render_thread.show_framerate = new
+        new = False if self.main.render_thread.show_framerate else True
+        self.main.render_thread.show_framerate = new
         self.current_menu.get_menu_item(self.menu_pos).text = self.get_button_text("Show FPS", new)
         self.show_menu(True)
 
     def switch_fs_resolution(self):
         """switch between windowed and fullscreen mode"""
-        new = False if self.config.switch_resolution else True
-        self.config.switch_resolution = new
+        new = False if self.main.config.switch_resolution else True
+        self.main.config.switch_resolution = new
         '''save changed settings to disk'''
-        self.config.write_settings()
-        if self.config.fullscreen:
+        self.main.config.write_settings()
+        if self.main.config.fullscreen:
             '''and restart this program'''
             self.restart_program()
         else:
@@ -264,9 +262,9 @@ class MainMenu(object):
         if isinstance(text_val, bool):
             text_val = bool_to_string(text_val)
             if text is "Music":
-                info_str = print_audio_volume_bar(self.music_thread.music_volume)
+                info_str = print_audio_volume_bar(self.main.music_thread.music_volume)
             elif text is "Sounds":
-                info_str = print_audio_volume_bar(self.music_thread.sfx_volume)
+                info_str = print_audio_volume_bar(self.main.music_thread.sfx_volume)
         elif isinstance(text_val, str):
             if text is "Resolution":
                 return '{:<24s} {:>10s}'.format(text, text_val)
@@ -294,31 +292,31 @@ class MainMenu(object):
 
         def set_music(val):
             """turn music on or off"""
-            self.config.play_music = self.music_thread.play_music = val
+            self.main.config.play_music = self.main.music_thread.play_music = val
             return val
 
         def set_music_vol(val):
             """set music volume"""
-            self.config.vol_music = self.music_thread.music_volume = val
+            self.main.config.vol_music = self.main.music_thread.music_volume = val
             return val
 
         def set_sfx(val):
             """turn sfx on or off"""
-            self.config.play_sfx = self.music_thread.play_sfx = val
+            self.main.config.play_sfx = self.main.music_thread.play_sfx = val
             return val
 
         def set_sfx_vol(val):
             """set sfx volume"""
-            self.config.vol_sfx = self.music_thread.sfx_volume = val
+            self.main.config.vol_sfx = self.main.music_thread.sfx_volume = val
             return val
 
         # to store the settings so they can be saved on exit
         item = self.current_menu.get_menu_item(self.menu_pos)
         txt = bol = vol = None
         if num is 1:
-            vol = self.music_thread.music_volume
+            vol = self.main.music_thread.music_volume
         elif num is 2:
-            vol = self.music_thread.sfx_volume
+            vol = self.main.music_thread.sfx_volume
 
         if 0 <= vol + change <= 10:
             '''in/decrease the volume'''
@@ -326,7 +324,7 @@ class MainMenu(object):
             vol += change
             if num is 1:
                 txt = "Music"
-                bol = self.music_thread.play_music
+                bol = self.main.music_thread.play_music
                 '''switch music on or off if 0 is passed'''
                 if change is not 0:
                     set_music_vol(vol)
@@ -341,7 +339,7 @@ class MainMenu(object):
                         set_music_vol(1)
             elif num is 2:
                 txt = "Sounds"
-                bol = self.music_thread.play_sfx
+                bol = self.main.music_thread.play_sfx
                 '''switch sfx on or off if 0 is passed'''
                 if change is not 0:
                     set_sfx_vol(vol)
@@ -358,18 +356,3 @@ class MainMenu(object):
             item.text = self.get_button_text(txt, bol)
             '''and refresh the menu'''
             self.show_menu(True)
-
-    def quit_game(self, shutdown=True):
-        """quit the game"""
-        self.config.write_settings()
-        self.render_thread.stop_thread()
-        self.music_thread.stop_thread()
-        pygame.quit()
-        if shutdown:
-            exit()
-
-    def restart_program(self):
-        """Restarts the current program"""
-        self.quit_game(False)
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
