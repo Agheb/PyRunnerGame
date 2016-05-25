@@ -41,17 +41,17 @@ class MainMenu(object):
                 self.menu_pos += 1
                 self.navigate_menu(self.menu_pos - 1)
         elif key == K_LEFT:
-            action = self.current_menu.get_item(self.menu_pos).action
-            if action == 'switch_audio_volume(1, 0)':
-                self.switch_audio_volume(1, -1)
-            elif action == 'switch_audio_volume(2, 0)':
-                self.switch_audio_volume(2, -1)
+            name = self.current_menu.get_item(self.menu_pos).name
+            if name == "Music":
+                self.switch_audio_volume((1, -1))
+            elif name == "Sounds":
+                self.switch_audio_volume((2, -1))
         elif key == K_RIGHT:
-            action = self.current_menu.get_item(self.menu_pos).action
-            if action == 'switch_audio_volume(1, 0)':
-                self.switch_audio_volume(1, 1)
-            elif action == 'switch_audio_volume(2, 0)':
-                self.switch_audio_volume(2, 1)
+            name = self.current_menu.get_item(self.menu_pos).name
+            if name == "Music":
+                self.switch_audio_volume((1, 1))
+            elif name == "Sounds":
+                self.switch_audio_volume((2, 1))
 
     def init_menu(self):
         """initialize the whole main menu structure
@@ -67,7 +67,7 @@ class MainMenu(object):
         h2_size = 48
         item_size = 36
         '''first create the root menu'''
-        menu_main = Menu(surface)
+        menu_main = Menu(self, surface)
         '''then calculate the ratio to adjust font sizes accordingly'''
         ratio = menu_main.calc_font_size(h1_size, item_size)
         h1_size = int(h1_size * ratio)
@@ -76,17 +76,17 @@ class MainMenu(object):
         '''then begin adding items and pass them the font sizes'''
         menu_main.add_item(MenuItem(self.config.name))
         # new game menu
-        menu_new_game = Menu(surface, menu_main, h2_size, item_size)
+        menu_new_game = Menu(self, surface, menu_main, h2_size, item_size)
         # heading
         menu_new_game.add_item(MenuItem("Start Game"))
         #   single player
-        menu_ng_singleplayer = Menu(surface, menu_new_game, h2_size, item_size)
+        menu_ng_singleplayer = Menu(self, surface, menu_new_game, h2_size, item_size)
         menu_ng_singleplayer.add_item(MenuItem("Singleplayer"))
         menu_ng_singleplayer.add_item(MenuItem("New Game", None))
         menu_ng_singleplayer.add_item(MenuItem("Resume", None))
         menu_ng_singleplayer.add_item(MenuItem("Difficulty", None))
         #   multiplayer
-        menu_ng_multiplayer = Menu(surface, menu_new_game, h2_size, item_size)
+        menu_ng_multiplayer = Menu(self, surface, menu_new_game, h2_size, item_size)
         menu_ng_multiplayer.add_item(MenuItem("Multiplayer", None))
         menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
         menu_ng_multiplayer.add_item(MenuItem("Network Game", None))
@@ -95,21 +95,21 @@ class MainMenu(object):
         menu_new_game.add_item(MenuItem("Singleplayer", self.set_current_menu, vars=menu_ng_singleplayer))
         menu_new_game.add_item(MenuItem("Multiplayer", self.set_current_menu, vars=menu_ng_multiplayer))
         # settings menu
-        menu_settings = Menu(surface, menu_main, h2_size, item_size)
+        menu_settings = Menu(self, surface, menu_main, h2_size, item_size)
         menu_settings.add_item(MenuItem("Settings"))
-        menu_s_audio = Menu(surface, menu_settings, h2_size, item_size)
+        menu_s_audio = Menu(self, surface, menu_settings, h2_size, item_size)
         menu_s_audio.add_item(MenuItem("Audio Settings"))
         menu_s_audio.add_item(MenuItem("Music", self.switch_audio_volume, vars=(1, 0),
                                        val=self.music_thread.play_music, bar=self.music_thread.music_volume))
         menu_s_audio.add_item(MenuItem("Sounds", self.switch_audio_volume, vars=(2, 0),
                                        val=self.music_thread.play_sfx, bar=self.music_thread.sfx_volume))
         #   video settings
-        menu_s_video = Menu(surface, menu_settings, h2_size, item_size)
+        menu_s_video = Menu(self, surface, menu_settings, h2_size, item_size)
         menu_s_video.add_item(MenuItem("Video Settings"))
         menu_s_video.add_item(MenuItem("Fullscreen", self.switch_fullscreen, val=self.config.fullscreen))
         menu_s_video.add_item(MenuItem("Switch Resolution", self.switch_fs_resolution, val=self.config.switch_resolution))
         # resolutions
-        menu_s_v_resolution = Menu(surface, menu_s_video, h2_size, item_size)
+        menu_s_v_resolution = Menu(self, surface, menu_s_video, h2_size, item_size)
         menu_s_v_resolution.add_item(MenuItem("Video Resolution"))
         for res in self.render_thread.display_modes:
             width, height = res
@@ -119,7 +119,7 @@ class MainMenu(object):
         menu_s_video.add_item(MenuItem('{:<24s} {:>10s}'.format("Resolution", res_name), self.set_current_menu,
                                        vars=menu_s_v_resolution))
         menu_s_video.add_item(MenuItem("Show FPS", self.switch_show_fps, val=self.render_thread.show_framerate))
-        menu_controls = Menu(surface, menu_settings, h2_size, item_size)
+        menu_controls = Menu(self, surface, menu_settings, h2_size, item_size)
         menu_controls.add_item(MenuItem("Controls"))
         menu_controls.add_item(MenuItem("Player 1", None))
         menu_controls.add_item(MenuItem("Player 2", None))

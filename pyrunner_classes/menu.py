@@ -23,7 +23,7 @@ class Menu(object):
         font_size (int): size which is used for the "Back" Button if it's a sub menu
     """
 
-    def __init__(self, surface, parent=None, header_size=48, font_size=36):
+    def __init__(self, init, surface, parent=None, header_size=48, font_size=36):
         self.surface = surface
         self.width = surface.get_width()
         self.height = surface.get_height()
@@ -35,7 +35,7 @@ class Menu(object):
         self.background = None
         if self.parent:
             # always add a back button for sub-menus
-            self.add_item(MenuItem("Back", self.parent))
+            self.add_item(MenuItem("Back", init.set_current_menu, vars=self.parent))
         # initialize the pygame font rendering engine
         pygame.font.init()
 
@@ -311,8 +311,8 @@ class MenuItem(object):
     def text(self):
         """get a full menu item text representation"""
         if self.val is not None:
-            if self.bar:
-                return '{:<10s} {:<4s} {:12s}'.format(self.name, self.bool_to_string(self.val),
+            if self.bar is not None:
+                return '{:<12s} {:<4s} {:10s}'.format(self.name, self.bool_to_string(self.val),
                                                       self.print_bar(self.bar))
             else:
                 return '{:<28s} {:>6s}'.format(self.name, self.bool_to_string(self.val))
@@ -356,7 +356,7 @@ class MenuItem(object):
 
         Returns: a 10 character long string representing the volume bar
         """
-        return "".join([">" if i < val else " " for i in range(10)])
+        return "".join(["=" if i < val else "_" for i in range(10)])
 
     @staticmethod
     def bool_to_string(boolean):
