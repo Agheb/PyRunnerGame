@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 # Python 2 related fixes
 from __future__ import division
-try:
-    import configparser     # Python 3
-except ImportError:
-    import ConfigParser     # Python 2
 # universal imports
 import pygame
 from pygame.locals import *
@@ -14,9 +10,6 @@ import os
 # pyRunner subclasses
 from pyrunner_classes import *
 
-'''constants'''
-NAME = "pyRunner"
-CONFIG = "resources/config.cfg"
 # Colors
 BLUE = (30, 144, 255)
 YELLOW = (255, 255, 0)
@@ -25,31 +18,6 @@ BLACK = (0, 0, 0)
 BACKGROUND = (200, 200, 200)
 GRAY = (100, 100, 100)
 WHITE = (255, 255, 255)
-# Settings
-_CONF_INFO = "Info"
-_CONF_INFO_NAME = "name"
-_CONF_DISPLAY = "Display"
-_CONF_DISPLAY_WIDTH = "width"
-_CONF_DISPLAY_HEIGHT = "height"
-_CONF_DISPLAY_FULLSCREEN = "fullscreen"
-_CONF_DISPLAY_SWITCH_RES = "switch resolution"
-_CONF_DISPLAY_FPS = "fps"
-_CONF_AUDIO = "Audio"
-_CONF_AUDIO_VOL = " volume"
-_CONF_AUDIO_MUSIC = "music"
-_CONF_AUDIO_MUSIC_VOL = _CONF_AUDIO_MUSIC + _CONF_AUDIO_VOL
-_CONF_AUDIO_SFX = "sfx"
-_CONF_AUDIO_SFX_VOL = _CONF_AUDIO_SFX + _CONF_AUDIO_VOL
-_CONF_CONT_P1 = "Player 1 Controls"
-_CONF_CONT_P2 = "Player 2 Controls"
-_CONF_CONT_LEFT = "left"
-_CONF_CONT_RIGHT = "right"
-_CONF_CONT_UP = "up"
-_CONF_CONT_DOWN = "down"
-_CONF_CONT_AL = "action left"
-_CONF_CONT_AR = "action right"
-_CONF_CONT_INT = "interact"
-_CONF_CONT_TAUNT = "taunt"
 
 
 class PyRunner(object):
@@ -62,47 +30,17 @@ class PyRunner(object):
         """initialize the game"""
         '''important settings'''
         self.game_is_running = True
-        '''screen settings'''
-        self.screen_x = None
-        self.screen_y = None
-        self.fps = None
-        self.fullscreen = None
-        self.switch_resolution = None
-        self.in_menu = None
-        self.bg_image = None
-        '''audio settings'''
-        self.play_music = None
-        self.vol_music = None
-        self.play_sfx = None
-        self.vol_sfx = None
-        '''controls for player 1'''
-        self.p1_left = None
-        self.p1_right = None
-        self.p1_up = None
-        self.p1_down = None
-        self.p1_action_l = None
-        self.p1_action_r = None
-        self.p1_interact = None
-        self.p1_taunt = None
-        '''controls for player 2'''
-        self.p2_left = None
-        self.p2_right = None
-        self.p2_up = None
-        self.p2_down = None
-        self.p2_action_l = None
-        self.p2_action_r = None
-        self.p2_interact = None
-        self.p2_taunt = None
+        self.config = MainConfig()
         # initialize the settings
-        self.config_parser = self.init_config_parser()
-        self.read_settings()
+
         '''init the audio subsystem prior to anything else'''
-        self.music_thread = MusicMixer(self.play_music, self.vol_music, self.play_sfx, self.vol_sfx, self.fps)
+        self.music_thread = MusicMixer(self.config.play_music, self.config.vol_music,
+                                       self.config.play_sfx, self.config.vol_sfx, self.config.fps)
         self.music_thread.background_music = ('time_delay.wav', 1)
         self.music_thread.start()
         '''init the main screen'''
-        self.render_thread = RenderThread(NAME, self.screen_x, self.screen_y, self.fps,
-                                          self.fullscreen, self.switch_resolution)
+        self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.config.fps,
+                                          self.config.fullscreen, self.config.switch_resolution)
         self.render_thread.fill_screen(BACKGROUND)
         self.render_thread.start()
         # set the background image
@@ -112,167 +50,7 @@ class PyRunner(object):
         self.current_menu = None
         self.init_menu()
 
-    @staticmethod
-    def init_config_parser():
-        """get the adequate config parser for either python 2 or 3
 
-        Returns: ConfigParser (Python 2) or configparser (Python 3)
-        """
-        try:
-            return configparser.RawConfigParser()
-        except NameError:
-            return ConfigParser.RawConfigParser()
-
-    def read_settings(self):
-        """read the settings from config.cfg"""
-
-        try:
-            config = self.config_parser
-            config.read(CONFIG)
-        except NameError:
-            raise
-
-        try:
-            '''get display configuration'''
-            self.screen_x = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH)
-            self.screen_y = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT)
-            self.fps = config.getint(_CONF_DISPLAY, _CONF_DISPLAY_FPS)
-            self.fullscreen = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN)
-            self.switch_resolution = config.getboolean(_CONF_DISPLAY, _CONF_DISPLAY_SWITCH_RES)
-            '''audio settings'''
-            self.play_music = config.getboolean(_CONF_AUDIO, _CONF_AUDIO_MUSIC)
-            self.vol_music = config.getint(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL)
-            self.play_sfx = config.getboolean(_CONF_AUDIO, _CONF_AUDIO_SFX)
-            self.vol_sfx = config.getint(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL)
-            '''controls for player 1'''
-            self.p1_left = config.getint(_CONF_CONT_P1, _CONF_CONT_LEFT)
-            self.p1_right = config.getint(_CONF_CONT_P1, _CONF_CONT_RIGHT)
-            self.p1_up = config.getint(_CONF_CONT_P1, _CONF_CONT_UP)
-            self.p1_down = config.getint(_CONF_CONT_P1, _CONF_CONT_DOWN)
-            self.p1_action_l = config.getint(_CONF_CONT_P1, _CONF_CONT_AL)
-            self.p1_action_r = config.getint(_CONF_CONT_P1, _CONF_CONT_AR)
-            self.p1_interact = config.getint(_CONF_CONT_P1, _CONF_CONT_INT)
-            self.p1_taunt = config.getint(_CONF_CONT_P1, _CONF_CONT_TAUNT)
-            '''controls for player 2'''
-            self.p2_left = config.getint(_CONF_CONT_P2, _CONF_CONT_LEFT)
-            self.p2_right = config.getint(_CONF_CONT_P2, _CONF_CONT_RIGHT)
-            self.p2_up = config.getint(_CONF_CONT_P2, _CONF_CONT_UP)
-            self.p2_down = config.getint(_CONF_CONT_P2, _CONF_CONT_DOWN)
-            self.p2_action_l = config.getint(_CONF_CONT_P2, _CONF_CONT_AL)
-            self.p2_action_r = config.getint(_CONF_CONT_P2, _CONF_CONT_AR)
-            self.p2_interact = config.getint(_CONF_CONT_P2, _CONF_CONT_INT)
-            self.p2_taunt = config.getint(_CONF_CONT_P2, _CONF_CONT_TAUNT)
-        except (configparser.NoSectionError, configparser.NoOptionError, TypeError, ValueError, AttributeError):
-            self.write_settings(True)
-
-    def write_settings(self, default=False):
-        """save the current used settings
-
-        Args:
-            default (bool): true to save all default values to the disk
-        """
-        '''Python 3 vs Python 2 error handling'''
-        try:
-            cp_duplicate_section_error = configparser.DuplicateSectionError
-        except NameError:
-            cp_duplicate_section_error = ConfigParser.DuplicateSectionError
-        try:
-            cp_permission_error = PermissionError
-        except NameError:
-            cp_permission_error = (IOError, OSError)
-
-        try:
-            config = self.config_parser
-
-            if default:
-                # default display values
-                self.screen_x = 800
-                self.screen_y = 600
-                self.fps = 25
-                self.fullscreen = True
-                self.switch_resolution = False
-                # default audio settings
-                self.play_music = True
-                self.vol_music = 10
-                self.play_sfx = True
-                self.vol_sfx = 10
-                # controls for player 1
-                self.p1_left = K_LEFT
-                self.p1_right = K_RIGHT
-                self.p1_up = K_UP
-                self.p1_down = K_DOWN
-                self.p1_action_l = K_RALT
-                self.p1_action_r = K_RSHIFT
-                self.p1_interact = K_BACKSPACE
-                self.p1_taunt = K_RETURN
-                # controls for player 2
-                self.p2_left = K_a
-                self.p2_right = K_d
-                self.p2_up = K_w
-                self.p2_down = K_s
-                self.p2_action_l = K_q
-                self.p2_action_r = K_e
-                self.p2_interact = K_LSHIFT
-                self.p2_taunt = K_TAB
-
-            '''info part'''
-            try:
-                config.add_section(_CONF_INFO)
-            except cp_duplicate_section_error:
-                pass
-            config.set(_CONF_INFO, _CONF_INFO_NAME, NAME)
-            '''write display configuration'''
-            try:
-                config.add_section(_CONF_DISPLAY)
-            except cp_duplicate_section_error:
-                pass
-            config.set(_CONF_DISPLAY, _CONF_DISPLAY_WIDTH, self.screen_x)
-            config.set(_CONF_DISPLAY, _CONF_DISPLAY_HEIGHT, self.screen_y)
-            config.set(_CONF_DISPLAY, _CONF_DISPLAY_FPS, self.fps)
-            config.set(_CONF_DISPLAY, _CONF_DISPLAY_FULLSCREEN, self.fullscreen)
-            config.set(_CONF_DISPLAY, _CONF_DISPLAY_SWITCH_RES, self.switch_resolution)
-            '''and audio settings'''
-            try:
-                config.add_section(_CONF_AUDIO)
-            except cp_duplicate_section_error:
-                pass
-            config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC, self.play_music)
-            config.set(_CONF_AUDIO, _CONF_AUDIO_MUSIC_VOL, self.vol_music)
-            config.set(_CONF_AUDIO, _CONF_AUDIO_SFX, self.play_sfx)
-            config.set(_CONF_AUDIO, _CONF_AUDIO_SFX_VOL, self.vol_sfx)
-            '''controls for player 1'''
-            try:
-                config.add_section(_CONF_CONT_P1)
-            except cp_duplicate_section_error:
-                pass
-            config.set(_CONF_CONT_P1, _CONF_CONT_LEFT, self.p1_left)
-            config.set(_CONF_CONT_P1, _CONF_CONT_RIGHT, self.p1_right)
-            config.set(_CONF_CONT_P1, _CONF_CONT_UP, self.p1_up)
-            config.set(_CONF_CONT_P1, _CONF_CONT_DOWN, self.p1_down)
-            config.set(_CONF_CONT_P1, _CONF_CONT_AL, self.p1_action_l)
-            config.set(_CONF_CONT_P1, _CONF_CONT_AR, self.p1_action_r)
-            config.set(_CONF_CONT_P1, _CONF_CONT_INT, self.p1_interact)
-            config.set(_CONF_CONT_P1, _CONF_CONT_TAUNT, self.p1_taunt)
-            '''controls for player 2'''
-            try:
-                config.add_section(_CONF_CONT_P2)
-            except cp_duplicate_section_error:
-                pass
-            config.set(_CONF_CONT_P2, _CONF_CONT_LEFT, self.p2_left)
-            config.set(_CONF_CONT_P2, _CONF_CONT_RIGHT, self.p2_right)
-            config.set(_CONF_CONT_P2, _CONF_CONT_UP, self.p2_up)
-            config.set(_CONF_CONT_P2, _CONF_CONT_DOWN, self.p2_down)
-            config.set(_CONF_CONT_P2, _CONF_CONT_AL, self.p2_action_l)
-            config.set(_CONF_CONT_P2, _CONF_CONT_AR, self.p2_action_r)
-            config.set(_CONF_CONT_P2, _CONF_CONT_INT, self.p2_interact)
-            config.set(_CONF_CONT_P2, _CONF_CONT_TAUNT, self.p2_taunt)
-
-            with open(CONFIG, 'w') as configfile:
-                config.write(configfile)
-
-        except cp_permission_error:
-            print("The config file is locked or not writable.")
-            print("Please delete config.cfg or make sure you have write access")
 
     # noinspection PyTypeChecker
     def init_menu(self):
@@ -296,7 +74,7 @@ class PyRunner(object):
         h2_size = int(h2_size * ratio)
         item_size = int(item_size * ratio)
         '''then begin adding items and pass them the font sizes'''
-        menu_main.add_menu_item(MenuItem(NAME, None, h1_size))
+        menu_main.add_menu_item(MenuItem(self.config.name, None, h1_size))
         # new game menu
         menu_new_game = Menu(surface, menu_main, item_size)
         # heading
@@ -328,9 +106,9 @@ class PyRunner(object):
         #   video settings
         menu_s_video = Menu(surface, menu_settings, item_size)
         menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
-        menu_s_video.add_menu_item(MenuItem(self.get_button_text("Fullscreen", self.fullscreen),
+        menu_s_video.add_menu_item(MenuItem(self.get_button_text("Fullscreen", self.config.fullscreen),
                                             'switch_fullscreen()', item_size))
-        menu_s_video_switch_res = self.get_button_text("Switch Resolution", self.switch_resolution)
+        menu_s_video_switch_res = self.get_button_text("Switch Resolution", self.config.switch_resolution)
         menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
         # resolutions
         menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
@@ -340,7 +118,7 @@ class PyRunner(object):
             res_name = str(width) + "x" + str(height)
             func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
             menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
-        res_name = str(self.screen_x) + "x" + str(self.screen_y)
+        res_name = str(self.config.screen_x) + "x" + str(self.config.screen_y)
         menu_s_video.add_menu_item(MenuItem(self.get_button_text("Resolution", res_name), menu_s_v_resolution, item_size))
         menu_s_video_show_fps = self.get_button_text("Show FPS", self.render_thread.show_framerate)
         menu_s_video.add_menu_item(MenuItem(menu_s_video_show_fps, 'switch_show_fps()', item_size))
@@ -375,8 +153,8 @@ class PyRunner(object):
         self.render_thread.fill_screen(BACKGROUND)
         # TODO add game surface here
         # surface = pygame.Surface((screen_x, screen_y))
-        if self.bg_image.get_width() is not self.screen_x or self.bg_image.get_height() is not self.screen_y:
-            self.bg_image = pygame.transform.scale(self.bg_image, (self.screen_x, self.screen_y))
+        if self.bg_image.get_width() is not self.config.screen_x or self.bg_image.get_height() is not self.config.screen_y:
+            self.bg_image = pygame.transform.scale(self.bg_image, (self.config.screen_x, self.config.screen_y))
         # save this as background surface for dirty rects
         self.render_thread.bg_surface = self.bg_image
         self.render_thread.blit(self.bg_image, (0, 0))
@@ -419,21 +197,21 @@ class PyRunner(object):
             height (int): new height
             restart (bool): restart this process for a clean initialization
         """
-        self.screen_x = width
-        self.screen_y = height
+        self.config.screen_x = width
+        self.config.screen_y = height
 
         if restart:
             '''save changed settings to disk and restart this program'''
-            self.write_settings()
+            self.config.write_settings()
             self.restart_program()
         else:
-            self.render_thread.set_resolution(self.screen_x, self.screen_y)
+            self.render_thread.set_resolution(self.config.screen_x, self.config.screen_y)
 
     def switch_fullscreen(self):
         """switch between windowed and fullscreen mode"""
-        self.fullscreen = False if self.fullscreen else True
+        self.config.fullscreen = False if self.config.fullscreen else True
         '''save changed settings to disk and restart this program'''
-        self.write_settings()
+        self.config.write_settings()
         self.restart_program()
 
     def switch_show_fps(self):
@@ -445,11 +223,11 @@ class PyRunner(object):
 
     def switch_fs_resolution(self):
         """switch between windowed and fullscreen mode"""
-        new = False if self.switch_resolution else True
-        self.switch_resolution = new
+        new = False if self.config.switch_resolution else True
+        self.config.switch_resolution = new
         '''save changed settings to disk'''
-        self.write_settings()
-        if self.fullscreen:
+        self.config.write_settings()
+        if self.config.fullscreen:
             '''and restart this program'''
             self.restart_program()
         else:
@@ -513,19 +291,19 @@ class PyRunner(object):
         '''wrappers for thread variables which keep a local copy of the settings so they can be saved on exit'''
         def set_music(m_bol):
             """turn music on or off"""
-            self.play_music = self.music_thread.play_music = m_bol
+            self.config.play_music = self.music_thread.play_music = m_bol
 
         def set_music_vol(m_vol):
             """set music volume"""
-            self.vol_music = self.music_thread.music_volume = m_vol
+            self.config.vol_music = self.music_thread.music_volume = m_vol
 
         def set_sfx(s_bol):
             """turn sfx on or off"""
-            self.play_sfx = self.music_thread.play_sfx = s_bol
+            self.config.play_sfx = self.music_thread.play_sfx = s_bol
 
         def set_sfx_vol(s_vol):
             """set sfx volume"""
-            self.vol_sfx = self.music_thread.sfx_volume = s_vol
+            self.config.vol_sfx = self.music_thread.sfx_volume = s_vol
 
         # to store the settings so they can be saved on exit
         item = self.current_menu.get_menu_item(self.menu_pos)
@@ -576,7 +354,7 @@ class PyRunner(object):
 
     def quit_game(self, shutdown=True):
         """quit the game"""
-        self.write_settings()
+        self.config.write_settings()
         self.render_thread.stop_thread()
         self.music_thread.stop_thread()
         pygame.quit()
@@ -645,44 +423,44 @@ class PyRunner(object):
                         if key == K_ESCAPE:
                             self.show_menu(True)
                         # TODO move both players
-                        elif key == self.p1_left:
+                        elif key == self.config.p1_left:
                             print("Player 1 moves left")
-                        elif key == self.p1_right:
+                        elif key == self.config.p1_right:
                             print("Player 1 moves right")
-                        elif key == self.p1_up:
+                        elif key == self.config.p1_up:
                             print("Player 1 moves up")
-                        elif key == self.p1_down:
+                        elif key == self.config.p1_down:
                             print("Player 1 moves down")
                         # TODO actions for both players
-                        elif key == self.p1_action_l:
+                        elif key == self.config.p1_action_l:
                             print("Player 1 digs left")
-                        elif key == self.p1_action_r:
+                        elif key == self.config.p1_action_r:
                             print("Player 1 digs right")
-                        elif key == self.p1_interact:
+                        elif key == self.config.p1_interact:
                             print("Player 1 interacts")
-                        elif key == self.p1_taunt:
+                        elif key == self.config.p1_taunt:
                             print("Player 1 taunts")
                         # TODO the same for player 2
-                        elif key == self.p2_left:
+                        elif key == self.config.p2_left:
                             print("Player 2 moves left")
-                        elif key == self.p2_right:
+                        elif key == self.config.p2_right:
                             print("Player 2 moves right")
-                        elif key == self.p2_up:
+                        elif key == self.config.p2_up:
                             print("Player 2 moves up")
-                        elif key == self.p2_down:
+                        elif key == self.config.p2_down:
                             print("Player 2 moves down")
                         # TODO actions for both players
-                        elif key == self.p2_action_l:
+                        elif key == self.config.p2_action_l:
                             print("Player 2 digs left")
-                        elif key == self.p2_action_r:
+                        elif key == self.config.p2_action_r:
                             print("Player 2 digs right")
-                        elif key == self.p2_interact:
+                        elif key == self.config.p2_interact:
                             print("Player 2 interacts")
-                        elif key == self.p2_taunt:
+                        elif key == self.config.p2_taunt:
                             print("Player 2 taunts")
 
             # save cpu resources
-            clock.tick(self.fps)
+            clock.tick(self.config.fps)
 
 
 if __name__ == "__main__":
