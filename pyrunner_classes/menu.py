@@ -5,15 +5,9 @@ from __future__ import division
 # universal imports
 import pygame
 from pygame.locals import *
+from .constants import *
 
 '''constants'''
-# Colors
-BLACK = (0, 0, 0)
-GRAY = (150, 150, 150)
-WHITE = (255, 255, 255)
-RED = (150, 0, 0)
-MENU_FONT = "./resources/fonts/Mikodacs.otf"
-BACKGROUND = (100, 100, 100)
 # including 2 for the header
 MAX_ITEMS_NO_SCROLL = 7
 # space between two entries
