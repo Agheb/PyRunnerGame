@@ -23,38 +23,45 @@ class Menu(object):
         font_size (int): size which is used for the "Back" Button if it's a sub menu
     """
 
-    def __init__(self, surface, parent=None, font_size=36):
+    def __init__(self, surface, parent=None, header_size=48, font_size=36):
         self.surface = surface
         self.width = surface.get_width()
         self.height = surface.get_height()
-        self.parent = parent
+        self.header_size = header_size
         self.font_size = font_size
+        self.parent = parent
         self.menu_items = []
         self.length = 0
         self.background = None
         if self.parent:
             # always add a back button for sub-menus
-            self.add_menu_item(MenuItem("Back", self.parent, self.font_size))
+            self.add_item(MenuItem("Back", self.parent))
         # initialize the pygame font rendering engine
         pygame.font.init()
 
-    def add_menu_item(self, menu_item):
+    def add_item(self, menu_item):
         """add a new MenuItem to this Menu
 
         Args:
             menu_item (MenuItem): the new MenuItem to add to the list of menu-items
         """
+        # finish MenuItem initialization / make the MenuItem aware to which Menu it belongs
+        if (self.length is 0 and not self.parent) or (self.length is 1 and self.parent):
+            menu_item.size = self.header_size
+        else:
+            menu_item.size = self.font_size
+        menu_item.menu = self
+        menu_item.finish_init()
+
         if self.parent:
             # keep the back button at the end of the menu items list
             self.menu_items.insert(self.length - 1, menu_item)
         else:
             self.menu_items.append(menu_item)
-        # finish MenuItem initialization / make the MenuItem aware to which Menu it belongs
-        menu_item.menu = self
         # keep track of the menu size
         self.length += 1
 
-    def get_menu_item(self, index):
+    def get_item(self, index):
         """Return the MenuItem at a specific index
 
         Args:
@@ -245,16 +252,44 @@ class MenuItem(object):
     """
     hovered = False
 
-    def __init__(self, text, action, size=36):
+    def __init__(self, name, action=None, **kwargs):
         self.menu = None
-        self.text = text
+        self.name = name
+        self.size = None
         self.action = action
-        self._size = size
-        # initialize the font renderings
-        self.font = pygame.font.Font(MENU_FONT, size)
+        self._action_values = None
+        self.font = None
         self.font_renderer = None
         self.rect = None
+        self.val = None
+        self.bar = None
+
+        for name, value in kwargs.items():
+            if name == "val":
+                self.val = value
+            elif name == "bar":
+                self.bar = value
+            elif name == "vars":
+                self._action_values = value
+
+    def finish_init(self):
+        """finish initialization after an item has been added to a Menu"""
+        # initialize the font renderings
+        self.font = pygame.font.Font(MENU_FONT, self.size)
         self.set_rect()
+
+    def do_action(self):
+        """execute passed function"""
+        if self._action_values:
+            self.action(self._action_values)
+        else:
+            self.action()
+
+    def get_function(self):
+        """get the current action as string"""
+        action = self.action
+        args = self._action_values
+        return "%(action)s%(args)s" % locals()
 
     def draw(self):
         """(re)draw this item"""
@@ -271,6 +306,18 @@ class MenuItem(object):
     def set_renderer(self):
         """set the font renderer"""
         self.font_renderer = self.font.render(self.text, True, self.get_color())
+
+    @property
+    def text(self):
+        """get a full menu item text representation"""
+        if self.val is not None:
+            if self.bar:
+                return '{:<10s} {:<4s} {:12s}'.format(self.name, self.bool_to_string(self.val),
+                                                      self.print_bar(self.bar))
+            else:
+                return '{:<28s} {:>6s}'.format(self.name, self.bool_to_string(self.val))
+        else:
+            return self.name
 
     def get_color(self):
         """get the current Color of this Item
@@ -294,10 +341,24 @@ class MenuItem(object):
         """
         return self.action
 
-    @property
     def size(self):
         """changing the size only works when reinitializing the whole MenuItem that's why it's read only
 
         Returns: text size of this menu item (int)
         """
-        return self._size
+        return self.size
+
+    @staticmethod
+    def print_bar(val):
+        """ a little helper function to visualize the volume level of a specific channel
+        Args:
+            val (int): value from 0 to 10 which get's filled according to the volume level
+
+        Returns: a 10 character long string representing the volume bar
+        """
+        return "".join([">" if i < val else " " for i in range(10)])
+
+    @staticmethod
+    def bool_to_string(boolean):
+        """helper function for the MenuItems containing booleans in their name"""
+        return "on" if boolean else "off"

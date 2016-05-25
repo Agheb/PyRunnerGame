@@ -40,6 +40,7 @@ class PyRunner(object):
 
     def quit_game(self, shutdown=True):
         """quit the game"""
+        self.game_is_running = False
         self.config.write_settings()
         self.render_thread.stop_thread()
         self.music_thread.stop_thread()

@@ -26,13 +26,12 @@ class MainMenu(object):
     def key_actions(self, key):
         """key settings if the main menu is active"""
         if key == K_ESCAPE:
-            back_item = self.current_menu.get_menu_item(self.current_menu.length - 1).action
-            if isinstance(back_item, Menu):
-                self.set_current_menu(back_item)
+            if self.current_menu.parent:
+                self.set_current_menu(self.current_menu.parent)
             else:
                 self.show_menu(False)
         elif key == K_RETURN:
-            self.do_menu_action()
+            self.current_menu.get_item(self.menu_pos).do_action()
         elif key == K_UP:
             if 1 < self.menu_pos:
                 self.menu_pos -= 1
@@ -42,13 +41,13 @@ class MainMenu(object):
                 self.menu_pos += 1
                 self.navigate_menu(self.menu_pos - 1)
         elif key == K_LEFT:
-            action = self.current_menu.get_menu_item(self.menu_pos).action
+            action = self.current_menu.get_item(self.menu_pos).action
             if action == 'switch_audio_volume(1, 0)':
                 self.switch_audio_volume(1, -1)
             elif action == 'switch_audio_volume(2, 0)':
                 self.switch_audio_volume(2, -1)
         elif key == K_RIGHT:
-            action = self.current_menu.get_menu_item(self.menu_pos).action
+            action = self.current_menu.get_item(self.menu_pos).action
             if action == 'switch_audio_volume(1, 0)':
                 self.switch_audio_volume(1, 1)
             elif action == 'switch_audio_volume(2, 0)':
@@ -75,67 +74,63 @@ class MainMenu(object):
         h2_size = int(h2_size * ratio)
         item_size = int(item_size * ratio)
         '''then begin adding items and pass them the font sizes'''
-        menu_main.add_menu_item(MenuItem(self.config.name, None, h1_size))
+        menu_main.add_item(MenuItem(self.config.name))
         # new game menu
-        menu_new_game = Menu(surface, menu_main, item_size)
+        menu_new_game = Menu(surface, menu_main, h2_size, item_size)
         # heading
-        menu_new_game.add_menu_item(MenuItem("Start Game", None, h2_size))
+        menu_new_game.add_item(MenuItem("Start Game"))
         #   single player
-        menu_ng_singleplayer = Menu(surface, menu_new_game, item_size)
-        menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, h2_size))
-        menu_ng_singleplayer.add_menu_item(MenuItem("New Game", None, item_size))
-        menu_ng_singleplayer.add_menu_item(MenuItem("Resume", None, item_size))
-        menu_ng_singleplayer.add_menu_item(MenuItem("Difficulty", None, item_size))
+        menu_ng_singleplayer = Menu(surface, menu_new_game, h2_size, item_size)
+        menu_ng_singleplayer.add_item(MenuItem("Singleplayer"))
+        menu_ng_singleplayer.add_item(MenuItem("New Game", None))
+        menu_ng_singleplayer.add_item(MenuItem("Resume", None))
+        menu_ng_singleplayer.add_item(MenuItem("Difficulty", None))
         #   multiplayer
-        menu_ng_multiplayer = Menu(surface, menu_new_game, item_size)
-        menu_ng_multiplayer.add_menu_item(MenuItem("Multiplayer", None, h2_size))
-        menu_ng_multiplayer.add_menu_item(MenuItem("Local Game", None, item_size))
-        menu_ng_multiplayer.add_menu_item(MenuItem("Network Game", None, item_size))
-        menu_ng_multiplayer.add_menu_item(MenuItem("Game Settings", None, item_size))
+        menu_ng_multiplayer = Menu(surface, menu_new_game, h2_size, item_size)
+        menu_ng_multiplayer.add_item(MenuItem("Multiplayer", None))
+        menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
+        menu_ng_multiplayer.add_item(MenuItem("Network Game", None))
+        menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
         # finish top menu with sub menus
-        menu_new_game.add_menu_item(MenuItem("Singleplayer", menu_ng_singleplayer, item_size))
-        menu_new_game.add_menu_item(MenuItem("Multiplayer", menu_ng_multiplayer, item_size))
+        menu_new_game.add_item(MenuItem("Singleplayer", self.set_current_menu, vars=menu_ng_singleplayer))
+        menu_new_game.add_item(MenuItem("Multiplayer", self.set_current_menu, vars=menu_ng_multiplayer))
         # settings menu
-        menu_settings = Menu(surface, menu_main, item_size)
-        menu_settings.add_menu_item(MenuItem("Settings", None, h2_size))
-        menu_s_audio = Menu(surface, menu_settings, item_size)
-        menu_s_audio.add_menu_item(MenuItem("Audio Settings", None, h2_size))
-        menu_s_audio_music = self.get_button_text("Music", self.music_thread.play_music)
-        menu_s_audio.add_menu_item(MenuItem(menu_s_audio_music, 'switch_audio_volume(1, 0)', item_size))
-        menu_s_audio_sfx = self.get_button_text("Sounds", self.music_thread.play_sfx)
-        menu_s_audio.add_menu_item(MenuItem(menu_s_audio_sfx, 'switch_audio_volume(2, 0)', item_size))
+        menu_settings = Menu(surface, menu_main, h2_size, item_size)
+        menu_settings.add_item(MenuItem("Settings"))
+        menu_s_audio = Menu(surface, menu_settings, h2_size, item_size)
+        menu_s_audio.add_item(MenuItem("Audio Settings"))
+        menu_s_audio.add_item(MenuItem("Music", self.switch_audio_volume, vars=(1, 0),
+                                       val=self.music_thread.play_music, bar=self.music_thread.music_volume))
+        menu_s_audio.add_item(MenuItem("Sounds", self.switch_audio_volume, vars=(2, 0),
+                                       val=self.music_thread.play_sfx, bar=self.music_thread.sfx_volume))
         #   video settings
-        menu_s_video = Menu(surface, menu_settings, item_size)
-        menu_s_video.add_menu_item(MenuItem("Video Settings", None, h2_size))
-        menu_s_video.add_menu_item(MenuItem(self.get_button_text("Fullscreen", self.config.fullscreen),
-                                            'switch_fullscreen()', item_size))
-        menu_s_video_switch_res = self.get_button_text("Switch Resolution", self.config.switch_resolution)
-        menu_s_video.add_menu_item(MenuItem(menu_s_video_switch_res, 'switch_fs_resolution()', item_size))
+        menu_s_video = Menu(surface, menu_settings, h2_size, item_size)
+        menu_s_video.add_item(MenuItem("Video Settings"))
+        menu_s_video.add_item(MenuItem("Fullscreen", self.switch_fullscreen, val=self.config.fullscreen))
+        menu_s_video.add_item(MenuItem("Switch Resolution", self.switch_fs_resolution, val=self.config.switch_resolution))
         # resolutions
-        menu_s_v_resolution = Menu(surface, menu_s_video, item_size)
-        menu_s_v_resolution.add_menu_item(MenuItem("Video Resolution", None, h2_size))
+        menu_s_v_resolution = Menu(surface, menu_s_video, h2_size, item_size)
+        menu_s_v_resolution.add_item(MenuItem("Video Resolution"))
         for res in self.render_thread.display_modes:
             width, height = res
             res_name = str(width) + "x" + str(height)
-            func_name = "set_resolution(" + str(width) + ", " + str(height) + ", True)"
-            menu_s_v_resolution.add_menu_item(MenuItem(res_name, func_name, item_size))
+            menu_s_v_resolution.add_item(MenuItem(res_name, self.set_resolution, vars=(width, height, True)))
         res_name = str(self.config.screen_x) + "x" + str(self.config.screen_y)
-        menu_s_video.add_menu_item(
-            MenuItem(self.get_button_text("Resolution", res_name), menu_s_v_resolution, item_size))
-        menu_s_video_show_fps = self.get_button_text("Show FPS", self.render_thread.show_framerate)
-        menu_s_video.add_menu_item(MenuItem(menu_s_video_show_fps, 'switch_show_fps()', item_size))
-        menu_controls = Menu(surface, menu_settings, item_size)
-        menu_controls.add_menu_item(MenuItem("Controls", None, h2_size))
-        menu_controls.add_menu_item(MenuItem("Player 1", None, item_size))
-        menu_controls.add_menu_item(MenuItem("Player 2", None, item_size))
+        menu_s_video.add_item(MenuItem('{:<24s} {:>10s}'.format("Resolution", res_name), self.set_current_menu,
+                                       vars=menu_s_v_resolution))
+        menu_s_video.add_item(MenuItem("Show FPS", self.switch_show_fps, val=self.render_thread.show_framerate))
+        menu_controls = Menu(surface, menu_settings, h2_size, item_size)
+        menu_controls.add_item(MenuItem("Controls"))
+        menu_controls.add_item(MenuItem("Player 1", None))
+        menu_controls.add_item(MenuItem("Player 2", None))
         '''complete the settings menu at the end to store the up to date objects'''
-        menu_settings.add_menu_item(MenuItem("Audio", menu_s_audio, item_size))
-        menu_settings.add_menu_item(MenuItem("Controls", menu_controls, item_size))
-        menu_settings.add_menu_item(MenuItem("Video", menu_s_video, item_size))
+        menu_settings.add_item(MenuItem("Audio", self.set_current_menu, vars=menu_s_audio))
+        menu_settings.add_item(MenuItem("Controls", self.set_current_menu, vars=menu_controls))
+        menu_settings.add_item(MenuItem("Video", self.set_current_menu, vars=menu_s_video))
         '''complete main menu at the end to store the up to date objects'''
-        menu_main.add_menu_item(MenuItem("Start Game", menu_new_game, item_size))
-        menu_main.add_menu_item(MenuItem("Settings", menu_settings, item_size))
-        menu_main.add_menu_item(MenuItem("Exit", 'main.quit_game()', item_size))
+        menu_main.add_item(MenuItem("Start Game", self.set_current_menu, vars=menu_new_game))
+        menu_main.add_item(MenuItem("Settings", self.set_current_menu, vars=menu_settings))
+        menu_main.add_item(MenuItem("Exit", self.main.quit_game))
 
         '''save the main menu'''
         self.set_current_menu(menu_main)
@@ -178,27 +173,16 @@ class MainMenu(object):
         self.render_thread.blit(self.current_menu.surface, None, True)
         self.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
 
-    def do_menu_action(self):
-        """try to evaluate if a menu action is either a sub-menu or a function to call"""
-        try:
-            action = self.current_menu.get_menu_item(self.menu_pos).action
-            if isinstance(action, Menu):
-                self.set_current_menu(action)
-            else:
-                if action:
-                    eval('self.%s' % action)
-        except TypeError:
-            # don't crash on wrong actions, the menu will stay up and nothing will happen
-            pass
-
-    def set_resolution(self, width, height, restart=False):
+    def set_resolution(self, vars):
         """set the main screen/surface resolution
 
         Args:
-            width (int): new width
-            height (int): new height
-            restart (bool): restart this process for a clean initialization
+            vars (width, height, restart):
+                width (int): new width
+                height (int): new height
+                restart (bool): restart this process for a clean initialization
         """
+        width, height, restart = vars
         self.config.screen_x = width
         self.config.screen_y = height
 
@@ -220,7 +204,7 @@ class MainMenu(object):
         """switch fps overlay on/off"""
         new = False if self.render_thread.show_framerate else True
         self.render_thread.show_framerate = new
-        self.current_menu.get_menu_item(self.menu_pos).text = self.get_button_text("Show FPS", new)
+        self.current_menu.get_item(self.menu_pos).val = new
         self.show_menu(True)
 
     def switch_fs_resolution(self):
@@ -233,50 +217,10 @@ class MainMenu(object):
             '''and restart this program'''
             self.main.restart_program()
         else:
-            self.current_menu.get_menu_item(self.menu_pos).text = self.get_button_text("Switch Resolution", new)
+            self.current_menu.get_item(self.menu_pos).val = new
             self.show_menu(True)
 
-    def get_button_text(self, text, text_val):
-        """ this function beautifies menu entries which contain additional information in it's name
-
-        Args:
-            text (str): the base text / name of the MenuItem
-            text_val (str or bool): the value to append to the base text / name
-
-        Returns: a formatted string to use as the MenuItem text
-        """
-
-        def print_audio_volume_bar(vol):
-            """ a little helper function to visualize the volume level of a specific channel
-            Args:
-                vol (int): value from 0 to 10 which get's filled according to the volume level
-
-            Returns: a 10 character long string representing the volume bar
-            """
-            return "".join([">" if i < vol else " " for i in range(10)])
-
-        def bool_to_string(boolean):
-            """helper function for the MenuItems containing booleans in their name"""
-            return "on" if boolean else "off"
-
-        info_str = False
-
-        if isinstance(text_val, bool):
-            text_val = bool_to_string(text_val)
-            if text is "Music":
-                info_str = print_audio_volume_bar(self.music_thread.music_volume)
-            elif text is "Sounds":
-                info_str = print_audio_volume_bar(self.music_thread.sfx_volume)
-        elif isinstance(text_val, str):
-            if text is "Resolution":
-                return '{:<24s} {:>10s}'.format(text, text_val)
-
-        if info_str:
-            return '{:<10s} {:<4s} {:12s}'.format(text, text_val, info_str)
-        else:
-            return '{:<28s} {:>6s}'.format(text, text_val)
-
-    def switch_audio_volume(self, num, change):
+    def switch_audio_volume(self, var):
         """Function to switch the Music and Sound FX volume with the left/right keys
            when hovering the Music or Sound FX on/off Menu Item
 
@@ -312,9 +256,10 @@ class MainMenu(object):
             self.config.vol_sfx = self.music_thread.sfx_volume = val
             return val
 
+        num, change = var
         # to store the settings so they can be saved on exit
-        item = self.current_menu.get_menu_item(self.menu_pos)
-        txt = bol = vol = None
+        item = self.current_menu.get_item(self.menu_pos)
+        vol = bol = None
         if num is 1:
             vol = self.music_thread.music_volume
         elif num is 2:
@@ -325,7 +270,6 @@ class MainMenu(object):
             old_vol = vol
             vol += change
             if num is 1:
-                txt = "Music"
                 bol = self.music_thread.play_music
                 '''switch music on or off if 0 is passed'''
                 if change is not 0:
@@ -340,7 +284,6 @@ class MainMenu(object):
                     if vol is 0:
                         set_music_vol(1)
             elif num is 2:
-                txt = "Sounds"
                 bol = self.music_thread.play_sfx
                 '''switch sfx on or off if 0 is passed'''
                 if change is not 0:
@@ -355,6 +298,8 @@ class MainMenu(object):
                     if vol is 0:
                         set_sfx_vol(1)
             '''update the menu button'''
-            item.text = self.get_button_text(txt, bol)
+            item.bar = vol
+            item.val = bol
+            item.set_rect()
             '''and refresh the menu'''
             self.show_menu(True)

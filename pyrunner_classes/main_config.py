@@ -75,7 +75,7 @@ class MainConfig(object):
         self.p2_action_r = None
         self.p2_interact = None
         self.p2_taunt = None
-
+        '''read the configuration file to initialize above variables'''
         self.config_parser = self.init_config_parser()
         self.read_settings()
 
