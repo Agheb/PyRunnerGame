@@ -282,7 +282,7 @@ class MainMenu(object):
                     bol = False if bol else True
                     set_music(bol)
                     if vol is 0:
-                        set_music_vol(1)
+                        vol = set_music_vol(1)
             elif num is 2:
                 bol = self.music_thread.play_sfx
                 '''switch sfx on or off if 0 is passed'''
@@ -296,7 +296,7 @@ class MainMenu(object):
                     bol = False if bol else True
                     set_sfx(bol)
                     if vol is 0:
-                        set_sfx_vol(1)
+                        vol = set_sfx_vol(1)
             '''update the menu button'''
             item.bar = vol
             item.val = bol

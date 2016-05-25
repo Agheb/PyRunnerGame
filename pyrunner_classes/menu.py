@@ -264,13 +264,14 @@ class MenuItem(object):
         self.val = None
         self.bar = None
 
+        # parse additional values
         for name, value in kwargs.items():
-            if name == "val":
+            if name == "vars":
+                self._action_values = value
+            elif name == "val":
                 self.val = value
             elif name == "bar":
                 self.bar = value
-            elif name == "vars":
-                self._action_values = value
 
     def finish_init(self):
         """finish initialization after an item has been added to a Menu"""
@@ -280,10 +281,14 @@ class MenuItem(object):
 
     def do_action(self):
         """execute passed function"""
-        if self._action_values:
-            self.action(self._action_values)
-        else:
-            self.action()
+        try:
+            if self._action_values:
+                self.action(self._action_values)
+            else:
+                self.action()
+        except TypeError:
+            '''if the action is invalid just ignore it'''
+            pass
 
     def get_function(self):
         """get the current action as string"""
@@ -312,7 +317,7 @@ class MenuItem(object):
         """get a full menu item text representation"""
         if self.val is not None:
             if self.bar is not None:
-                return '{:<12s} {:<4s} {:10s}'.format(self.name, self.bool_to_string(self.val),
+                return '{:<14s} {:<5s} {:10s}'.format(self.name, self.bool_to_string(self.val),
                                                       self.print_bar(self.bar))
             else:
                 return '{:<28s} {:>6s}'.format(self.name, self.bool_to_string(self.val))
@@ -356,7 +361,7 @@ class MenuItem(object):
 
         Returns: a 10 character long string representing the volume bar
         """
-        return "".join(["=" if i < val else "_" for i in range(10)])
+        return "".join(["|" if i is val - 1 else "-" for i in range(10)])
 
     @staticmethod
     def bool_to_string(boolean):
