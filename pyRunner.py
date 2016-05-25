@@ -299,9 +299,8 @@ class PyRunner(object):
         menu_main.add_menu_item(MenuItem(NAME, None, h1_size))
         # new game menu
         menu_new_game = Menu(surface, menu_main, item_size)
+        # heading
         menu_new_game.add_menu_item(MenuItem("Start Game", None, h2_size))
-        menu_new_game.add_menu_item(MenuItem("Singleplayer", None, item_size))
-        menu_new_game.add_menu_item(MenuItem("Multiplayer", None, item_size))
         #   single player
         menu_ng_singleplayer = Menu(surface, menu_new_game, item_size)
         menu_ng_singleplayer.add_menu_item(MenuItem("Singleplayer", None, h2_size))
@@ -314,6 +313,9 @@ class PyRunner(object):
         menu_ng_multiplayer.add_menu_item(MenuItem("Local Game", None, item_size))
         menu_ng_multiplayer.add_menu_item(MenuItem("Network Game", None, item_size))
         menu_ng_multiplayer.add_menu_item(MenuItem("Game Settings", None, item_size))
+        # finish top menu with sub menus
+        menu_new_game.add_menu_item(MenuItem("Singleplayer", menu_ng_singleplayer, item_size))
+        menu_new_game.add_menu_item(MenuItem("Multiplayer", menu_ng_multiplayer, item_size))
         # settings menu
         menu_settings = Menu(surface, menu_main, item_size)
         menu_settings.add_menu_item(MenuItem("Settings", None, h2_size))
