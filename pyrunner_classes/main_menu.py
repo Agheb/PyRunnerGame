@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""creates the main menu and handles all menu actions"""
 # Python 2 related fixes
 from __future__ import division
 # universal imports
@@ -10,10 +11,9 @@ from .constants import *
 
 
 class MainMenu(object):
-    """PyRunners main menu"""
+    """initialize PyRunners main menu, save all required objects"""
 
     def __init__(self, main):
-        """initialize PyRunners main menu, save all required objects"""
         self.main = main
         self.config = self.main.config
         self.render_thread = self.main.render_thread
@@ -67,31 +67,24 @@ class MainMenu(object):
         h1_size = 72
         h2_size = 48
         item_size = 36
-        '''first create the root menu'''
-        menu_main = Menu(self, surface)
-        '''then calculate the ratio to adjust font sizes accordingly'''
-        ratio = menu_main.calc_font_size(h1_size, item_size)
+        '''calculate the ratio to adjust font sizes accordingly'''
+        ratio = Menu.calc_font_size(surface, h1_size, item_size)
         h1_size = int(h1_size * ratio)
         h2_size = int(h2_size * ratio)
         item_size = int(item_size * ratio)
-        # set the main menus font sizes
-        menu_main.header_size = h1_size
-        menu_main.font_size = item_size
+        '''first create the root menu'''
+        # noinspection PyTypeChecker
+        menu_main = Menu(self, self.config.name, surface, None, h1_size, item_size)
         '''then begin adding items and pass them the font sizes'''
-        menu_main.add_item(MenuItem(self.config.name))
         # new game menu
-        menu_new_game = Menu(self, surface, menu_main, h2_size, item_size)
-        # heading
-        menu_new_game.add_item(MenuItem("Start Game"))
+        menu_new_game = Menu(self, "Start Game", surface, menu_main, h2_size, item_size)
         #   single player
-        menu_ng_singleplayer = Menu(self, surface, menu_new_game, h2_size, item_size)
-        menu_ng_singleplayer.add_item(MenuItem("Singleplayer"))
+        menu_ng_singleplayer = Menu(self, "Singleplayer", surface, menu_new_game, h2_size, item_size)
         menu_ng_singleplayer.add_item(MenuItem("New Game", None))
         menu_ng_singleplayer.add_item(MenuItem("Resume", None))
         menu_ng_singleplayer.add_item(MenuItem("Difficulty", None))
         #   multiplayer
-        menu_ng_multiplayer = Menu(self, surface, menu_new_game, h2_size, item_size)
-        menu_ng_multiplayer.add_item(MenuItem("Multiplayer", None))
+        menu_ng_multiplayer = Menu(self, "Multiplayer", surface, menu_new_game, h2_size, item_size)
         menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
         menu_ng_multiplayer.add_item(MenuItem("Network Game", None))
         menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
@@ -99,22 +92,19 @@ class MainMenu(object):
         menu_new_game.add_item(MenuItem("Singleplayer", self.set_current_menu, vars=menu_ng_singleplayer))
         menu_new_game.add_item(MenuItem("Multiplayer", self.set_current_menu, vars=menu_ng_multiplayer))
         # settings menu
-        menu_settings = Menu(self, surface, menu_main, h2_size, item_size)
-        menu_settings.add_item(MenuItem("Settings"))
-        menu_s_audio = Menu(self, surface, menu_settings, h2_size, item_size)
-        menu_s_audio.add_item(MenuItem("Audio Settings"))
+        menu_settings = Menu(self, "Settings", surface, menu_main, h2_size, item_size)
+        menu_s_audio = Menu(self, "Audio Settings", surface, menu_settings, h2_size, item_size)
         menu_s_audio.add_item(MenuItem("Music", self.switch_audio_volume, vars=(1, 0),
                                        val=self.music_thread.play_music, bar=self.music_thread.music_volume))
         menu_s_audio.add_item(MenuItem("Sounds", self.switch_audio_volume, vars=(2, 0),
                                        val=self.music_thread.play_sfx, bar=self.music_thread.sfx_volume))
         #   video settings
-        menu_s_video = Menu(self, surface, menu_settings, h2_size, item_size)
-        menu_s_video.add_item(MenuItem("Video Settings"))
+        menu_s_video = Menu(self, "Video Settings", surface, menu_settings, h2_size, item_size)
         menu_s_video.add_item(MenuItem("Fullscreen", self.switch_fullscreen, val=self.config.fullscreen))
-        menu_s_video.add_item(MenuItem("Switch Resolution", self.switch_fs_resolution, val=self.config.switch_resolution))
+        menu_s_video.add_item(MenuItem("Switch Resolution", self.switch_fs_resolution,
+                                       val=self.config.switch_resolution))
         # resolutions
-        menu_s_v_resolution = Menu(self, surface, menu_s_video, h2_size, item_size)
-        menu_s_v_resolution.add_item(MenuItem("Video Resolution"))
+        menu_s_v_resolution = Menu(self, "Video Resolution", surface, menu_s_video, h2_size, item_size)
         for res in self.render_thread.display_modes:
             width, height = res
             res_name = str(width) + "x" + str(height)
@@ -123,8 +113,7 @@ class MainMenu(object):
         menu_s_video.add_item(MenuItem('{:<24s} {:>10s}'.format("Resolution", res_name), self.set_current_menu,
                                        vars=menu_s_v_resolution))
         menu_s_video.add_item(MenuItem("Show FPS", self.switch_show_fps, val=self.render_thread.show_framerate))
-        menu_controls = Menu(self, surface, menu_settings, h2_size, item_size)
-        menu_controls.add_item(MenuItem("Controls"))
+        menu_controls = Menu(self, "Controls", surface, menu_settings, h2_size, item_size)
         menu_controls.add_item(MenuItem("Player 1", None))
         menu_controls.add_item(MenuItem("Player 2", None))
         '''complete the settings menu at the end to store the up to date objects'''
@@ -154,7 +143,8 @@ class MainMenu(object):
         self.render_thread.fill_screen(BACKGROUND)
         # TODO add game surface background / blank tile map here
         # surface = pygame.Surface((screen_x, screen_y))
-        if self.bg_image.get_width() is not self.config.screen_x or self.bg_image.get_height() is not self.config.screen_y:
+        if self.bg_image.get_width() is not self.config.screen_x \
+                or self.bg_image.get_height() is not self.config.screen_y:
             self.bg_image = pygame.transform.scale(self.bg_image, (self.config.screen_x, self.config.screen_y))
         # save this as background surface for dirty rects
         self.render_thread.bg_surface = self.bg_image

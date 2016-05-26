@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
 # universal imports
@@ -12,10 +13,7 @@ from pyrunner_classes import *
 
 
 class PyRunner(object):
-    """main PyRunner Class
-
-       This class runs the whole game an initializes all necessary values
-    """
+    """main PyRunner Class"""
 
     def __init__(self):
         """initialize the game"""

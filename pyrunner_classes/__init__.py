@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""main package handling all important game classes"""
 from .constants import *
 from .main_config import MainConfig
 from .menu import Menu, MenuItem

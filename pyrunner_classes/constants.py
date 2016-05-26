@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""constants used in multiple classes of this game"""
 
 # Colors
 BLUE = (30, 144, 255)

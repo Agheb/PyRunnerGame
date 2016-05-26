@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""Menu and MenuItem class to create a new (Sub)Menu"""
 # Python 2 related fixes
 from __future__ import division
 # universal imports
@@ -15,15 +16,19 @@ LINE_SPACING = 1.5
 
 
 class Menu(object):
-    """Menu class which contains several MenuItems
+    """Create a new (Sub)Menu
 
     Args:
-        surface (pygame.Surface): the surface the menu get's drawn to
-        parent (Menu):  parent menu if this is a sub-menu
-        font_size (int): size which is used for the "Back" Button if it's a sub menu
+        init (class): the class calling this to use the set_current_menu function for the back item
+        name (str): name of this Menu
+        surface (pygame.Surface): the surface this menu is drawn to
+        parent (Menu): the parent menu if existent
+        header_size (int): font size for the first menu item / header
+        font_size (int): font size for all other items
     """
 
-    def __init__(self, init, surface, parent=None, header_size=48, font_size=36):
+    def __init__(self, init, name, surface, parent=None, header_size=48, font_size=36):
+        self.name = name
         self.surface = surface
         self.width = surface.get_width()
         self.height = surface.get_height()
@@ -36,6 +41,8 @@ class Menu(object):
         if self.parent:
             # always add a back button for sub-menus
             self.add_item(MenuItem("Back", init.set_current_menu, vars=self.parent))
+        # add the name as first menu item (saves another font render routine)
+        self.add_item(MenuItem(name))
         # initialize the pygame font rendering engine
         pygame.font.init()
 
@@ -117,10 +124,10 @@ class Menu(object):
             # draw the fancy background
             rects.append(self._draw_background(BACKGROUND))
             # don't overwrite the header
-            margin_top = self.menu_items[0].size
+            margin_top = self.header_size
             # always draw the first item (header)
             rects.append(self._draw_item(self.menu_items[0], 0, new_pos, margin_top))
-            margin_top += self.menu_items[1].size
+            margin_top += self.font_size
 
             '''draw all menu items that are in the current view'''
             for index, item in enumerate(self.menu_items[start_pos:stop_pos], start_pos):
@@ -176,7 +183,7 @@ class Menu(object):
             height -= radius
 
             background_rect = pygame.Rect(10, 10, width, height)
-            background_rect.union_ip(pygame.draw.rect(bg_surface, bg_color, background_rect, 0))
+            background_rect.union_ip(pygame.draw.rect(bg_surface, bg_color, background_rect))
             background_rect.union_ip(pygame.draw.rect(bg_surface, RED, background_rect, 5))
             background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (radius, radius), radius))
             background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (width, radius), radius))
@@ -189,20 +196,22 @@ class Menu(object):
 
         return self.background.get_rect()
 
-    def calc_font_size(self, header_size, font_size):
+    @staticmethod
+    def calc_font_size(surface, header_size, font_size):
         """calculate a ratio to multiply font sizes with to adjust them for different screen sizes
 
         Cave: this should be called right after creating the top level menu BEFORE creating any MenuItem
               MenuItems need to be initialized with the correct font size else many things tend to break!
 
         Args:
+            surface (pygame.Surface): the surface the menu is drawn to
             header_size (int): font size used for the first Menu entry e.g. the header
             font_size (int): font size used for all other entries
 
         Returns: ratio to multiply your favored font sizes with, which then can be passed to MenuItems and sub menus
         """
-        width = self.width
-        height = self.height
+        width = surface.get_width()
+        height = surface.get_height()
         size = height if height < width else width
         text_space = font_size * LINE_SPACING * MAX_ITEMS_NO_SCROLL
         ratio = round((size - header_size) / text_space, 2)
@@ -234,8 +243,8 @@ class Menu(object):
         arrow_h_p2 = (arrow_botm_x + width + size // 5, pos_y + height)
         arrow_h_p3 = (arrow_botm_x + width // 2 - 1, arr_down_tip_y)  # compensate int rounding
 
-        arrow_base = pygame.draw.rect(self.surface, arrow_color, arrow_bottom, 0)
-        tip = pygame.draw.polygon(self.surface, arrow_color, (arrow_h_p1, arrow_h_p2, arrow_h_p3), 0)
+        arrow_base = pygame.draw.rect(self.surface, arrow_color, arrow_bottom)
+        tip = pygame.draw.polygon(self.surface, arrow_color, (arrow_h_p1, arrow_h_p2, arrow_h_p3))
         arrow_base.union_ip(tip)
 
         '''return the complete arrow'''
@@ -282,19 +291,14 @@ class MenuItem(object):
     def do_action(self):
         """execute passed function"""
         try:
-            if self._action_values:
+            try:
                 self.action(self._action_values)
-            else:
+            except TypeError:
                 self.action()
         except TypeError:
-            '''if the action is invalid just ignore it'''
+            '''if the action is invalid/uninitialized just ignore it'''
+            print("invalid action %s in %s/%s" % (self.action, self.menu.name, self.name))
             pass
-
-    def get_function(self):
-        """get the current action as string"""
-        action = self.action
-        args = self._action_values
-        return "%(action)s%(args)s" % locals()
 
     def draw(self):
         """(re)draw this item"""
@@ -330,9 +334,9 @@ class MenuItem(object):
         Returns: RGB tuple: white if hovered, red else
         """
         if self.hovered:
-            return 255, 255, 255
+            return WHITE
         else:
-            return 100, 0, 0
+            return RED
 
     def set_rect(self):
         """draw the pygame.Rect containing this menu item"""
