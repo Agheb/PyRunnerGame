@@ -1,6 +1,8 @@
 from .menu import Menu, MenuItem
 from .render_thread import RenderThread
 from .sound_thread import MusicMixer
+from .util_pygame import *
+from .pytmx import *
 
 __all__ = ['Menu', 'MenuItem', 'RenderThread', 'MusicMixer']
 
