@@ -13,6 +13,7 @@ class MainMenu(object):
     """PyRunners main menu"""
 
     def __init__(self, main):
+        """initialize PyRunners main menu, save all required objects"""
         self.main = main
         self.config = self.main.config
         self.render_thread = self.main.render_thread
@@ -151,7 +152,7 @@ class MainMenu(object):
     def show_menu(self, boolean=True):
         """print the current menu to the screen"""
         self.render_thread.fill_screen(BACKGROUND)
-        # TODO add game surface here
+        # TODO add game surface background / blank tile map here
         # surface = pygame.Surface((screen_x, screen_y))
         if self.bg_image.get_width() is not self.config.screen_x or self.bg_image.get_height() is not self.config.screen_y:
             self.bg_image = pygame.transform.scale(self.bg_image, (self.config.screen_x, self.config.screen_y))
@@ -176,16 +177,16 @@ class MainMenu(object):
         self.render_thread.blit(self.current_menu.surface, None, True)
         self.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
 
-    def set_resolution(self, vars):
+    def set_resolution(self, var):
         """set the main screen/surface resolution
 
         Args:
-            vars (width, height, restart):
+            var (width, height, restart):
                 width (int): new width
                 height (int): new height
                 restart (bool): restart this process for a clean initialization
         """
-        width, height, restart = vars
+        width, height, restart = var
         self.config.screen_x = width
         self.config.screen_y = height
 
@@ -228,11 +229,12 @@ class MainMenu(object):
            when hovering the Music or Sound FX on/off Menu Item
 
         Args:
-            num (int): number of the audio channel (1) Music (2) Sound FX
-            change (int): value how to change the current volume
-                            -1 decrease volume by 10%
-                             0 turn channel on/off
-                            +1 increase volume by 10%
+            var (num, change):
+                num (int): number of the audio channel (1) Music (2) Sound FX
+                change (int): value how to change the current volume
+                                -1 decrease volume by 10%
+                                 0 turn channel on/off
+                                +1 increase volume by 10%
 
             additionally this function will turn the channel off if it's volume is 0
             and turn it back on when the volume get's increased starting at 0

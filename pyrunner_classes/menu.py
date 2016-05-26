@@ -361,7 +361,7 @@ class MenuItem(object):
 
         Returns: a 10 character long string representing the volume bar
         """
-        return "".join(["|" if i is val - 1 else "-" for i in range(10)])
+        return "".join(["|" if i is val else "-" for i in range(11)])
 
     @staticmethod
     def bool_to_string(boolean):
