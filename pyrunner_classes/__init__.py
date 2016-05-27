@@ -1,10 +1,9 @@
 from .menu import Menu, MenuItem
 from .render_thread import RenderThread
 from .sound_thread import MusicMixer
-from .util_pygame import *
-from .pytmx import *
+from .tilerenderer import Renderer
 
-__all__ = ['Menu', 'MenuItem', 'RenderThread', 'MusicMixer']
+__all__ = ['Menu', 'MenuItem', 'RenderThread', 'MusicMixer', 'Renderer']
 
 __version__ = '0.1.0'
 __author__ = 'Team pyBerries'

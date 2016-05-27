@@ -1,25 +1,34 @@
-import pygame as pg
-import tilerenderer
 import os
+import sys
+
+import pygame as pg
+
+from pyrunner_classes import *
 
 """Initialize pygame, create a clock, create the window
 with a surface to blit the map onto."""
 pg.init()
 fps_clock = pg.time.Clock()
-main_surface = pg.display.set_mode((420, 420))
+main_surface = pg.display.set_mode((1120, 420))
 main_rect = main_surface.get_rect()
 
-"""loads the file """
+"""loads the file
+"""
 
-## TODO: Set relative Path
-dir = os.path.dirname(__file__)
-tmx_file = os.path.join(dir, 'test.tmx')
-tile_renderer = tilerenderer.Renderer(tmx_file)
+## TODO: relative filepath needed
+
+'''
+dir_path = os.path.dirname(os.path.abspath(__file__))
+tmx_file = os.path.join(dir_path, "/images/levels/scifi.tmx")
+print(dir_path)
+'''
+tmx_file = "scifi.tmx"
+tile_renderer = Renderer(tmx_file)
 
 """Create the map surface using the make_level()
 method.  Used to blit onto the main_surface."""
 level_surface = tile_renderer.make_level()
-map_rect = level_surface.get_rect()
+level_rect = level_surface.get_rect()
 
 """Simple game loop that blits the map_surface onto
 the main_surface."""
@@ -27,7 +36,7 @@ the main_surface."""
 
 def main():
     while True:
-        main_surface.blit(level_surface, map_rect)
+        main_surface.blit(level_surface, level_rect)
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
