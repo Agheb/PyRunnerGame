@@ -9,7 +9,7 @@ from pyrunner_classes import *
 with a surface to blit the map onto."""
 pg.init()
 fps_clock = pg.time.Clock()
-main_surface = pg.display.set_mode((1120, 420))
+main_surface = pg.display.set_mode((1024, 768))
 main_rect = main_surface.get_rect()
 
 """loads the file

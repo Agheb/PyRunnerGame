@@ -16,10 +16,23 @@ class Renderer(object):
         self.size = tm.width * tm.tilewidth, tm.height * tm.tileheight
         self.tmx_data = tm
 
-    ## TODO loop through each tile and blit to screen
+
 
     def render(self, surface):
-        pass
+        for layer in self.tmx_data.visible_layers:
+            if isinstance(layer, pytmx.TiledTileLayer):
+                self.render_tile_layer(surface, layer)
+
+    def render_tile_layer(self, surface, layer):
+
+        tw = self.tmx_data.tilewidth
+        th = self.tmx_data.tileheight
+
+        # iterate over the tiles in the layer
+        for x, y, image in layer.tiles():
+            surface.blit(image, (x * tw, y * th))
+        # TODO iterate over object layer
+        # TODO iterate over imageLayer
 
     def make_level(self):
         temp_surface = pygame.Surface(self.size)
