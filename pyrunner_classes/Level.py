@@ -3,6 +3,8 @@ import pygame
 background_colour = (255,255,255)
 (width, height) = (300, 200)
 
+BLACK = (0, 0, 0)
+
 
 class Particle:
     def __init__(self, x, y, size):
@@ -14,7 +16,10 @@ class Particle:
         self.position = (x, y)
 
     def display(self):
-        pygame.draw.rect(screen, self.colour, self.x, self.y, self.size)
+        pygame.draw.circle(screen, BLACK, (140, 120), 20, 0)
+        pygame.draw.circle(screen, BLACK, (100, 20), 20, 0)
+        pygame.draw.circle(screen, BLACK, (50, 22), 20, 0)
+        pygame.draw.circle(screen, BLACK, (200, 100), 20, 0)
 
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Tutorial 2')
