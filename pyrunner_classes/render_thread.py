@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""thread taking care of all pygame.display.update()'s etc."""
 # Python 2 related fixes
 from __future__ import division
 # universal imports
 import threading
 import pygame
 from pygame.locals import *
+from .constants import *
 
 '''constants'''
 # Minimum Fullscreen Resolution
@@ -14,9 +16,6 @@ SCREEN_MIN_Y = 480
 # Minimum Windowed Resolution
 WINDOW_MIN_X = SCREEN_MIN_X - 40
 WINDOW_MIN_Y = SCREEN_MIN_Y - 80
-# Colors
-WHITE = (255, 255, 255)
-BACKGROUND = (200, 200, 200)
 
 
 class RenderThread(threading.Thread):
@@ -285,6 +284,7 @@ class RenderThread(threading.Thread):
 
     @property
     def rects_to_update(self):
+        """returns the list of rects which should be updated"""
         return self._rects_to_update
 
     def add_rect_to_update(self, rects, surface=None, pos=None, centered=None):
@@ -304,7 +304,7 @@ class RenderThread(threading.Thread):
             centered (bool): if the surface is centered on the screen or not (pos required if False)
         """
         def add_rect(single_rect):
-            # make sure not to add something wrong because pygame.display.update is very sensible
+            """make sure not to add something wrong because pygame.display.update is very sensible"""
             if isinstance(single_rect, pygame.Rect):
                 self._rects_to_update.insert(0, single_rect)
             else:
@@ -373,6 +373,7 @@ class RenderThread(threading.Thread):
         Returns: list(pygame.Rect) with all altered rects
         """
         def fix_rect():
+            """fix a rect passed from a smaller surface than the screen"""
             m_dim = 4  # 2 pixels wider in each direction
             m_pos = m_dim // 2
             diff_x, diff_y = self._offsets_for_centered_surface(surface, pos, centered)
@@ -424,6 +425,7 @@ class RenderThread(threading.Thread):
 
     @property
     def fullscreen(self):
+        """Returns: True if the game runs in fullscreen"""
         return self._fullscreen
 
     @fullscreen.setter

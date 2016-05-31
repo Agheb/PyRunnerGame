@@ -12,17 +12,11 @@ fps_clock = pg.time.Clock()
 main_surface = pg.display.set_mode((1024, 768))
 main_rect = main_surface.get_rect()
 
-"""loads the file
+"""
+loads the file
 """
 
-## TODO: relative filepath needed
-
-'''
-dir_path = os.path.dirname(os.path.abspath(__file__))
-tmx_file = os.path.join(dir_path, "/images/levels/scifi.tmx")
-print(dir_path)
-'''
-tmx_file = "scifi.tmx"
+tmx_file = "./resources/levels/scifi.tmx"
 tile_renderer = Renderer(tmx_file)
 
 """Create the map surface using the make_level()
