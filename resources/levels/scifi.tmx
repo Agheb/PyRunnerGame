@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="1">
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
-<<<<<<< HEAD
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
-=======
-  <image source="../images/sheets/scifi_platformTiles_32x32.png" width="1120" height="736"/>
->>>>>>> 9324e500d022e570d3640b43011e6f711525a938
  </tileset>
  <layer name="Background" width="32" height="24">
   <data encoding="base64" compression="zlib">
