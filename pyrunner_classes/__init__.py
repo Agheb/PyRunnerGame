@@ -10,7 +10,11 @@ from .sound_thread import MusicMixer
 from .tilerenderer import Renderer
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
+<<<<<<< HEAD
            'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer', 'Renderer']
+=======
+           'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer']
+>>>>>>> 9324e500d022e570d3640b43011e6f711525a938
 
 __version__ = '0.1.3'
 __author__ = 'Team pyBerries'
