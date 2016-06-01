@@ -29,40 +29,40 @@ class Player(pygame.sprite.Sprite):
         self.walking_frames_r = []
         self.walking_frames_ud = []
 
-        sprite_sheet = SpriteSheet("LRCharacters.png")
+        sprite_sheet = SpriteSheet("LRCharacters32.png")
 
         # Load all the left facing images into a list (x, y, height, width)
-        image = sprite_sheet.get_image(48, 0, 16, 16)
+        image = sprite_sheet.get_image(96, 0, 32, 32)
         self.walking_frames_l.append(image)
-        image = sprite_sheet.get_image(32, 0, 16, 16)
+        image = sprite_sheet.get_image(64, 0, 32, 32)
         self.walking_frames_l.append(image)
-        image = sprite_sheet.get_image(16, 0, 16, 16)
+        image = sprite_sheet.get_image(32, 0, 32, 32)
         self.walking_frames_l.append(image)
-        image = sprite_sheet.get_image(0, 0, 16, 16)
+        image = sprite_sheet.get_image(0, 0, 32, 32)
         self.walking_frames_l.append(image)
 
         # Load all the left facing images into a list and flip them to make them face right
-        image = sprite_sheet.get_image(48, 0, 16, 16)
+        image = sprite_sheet.get_image(96, 0, 32, 32)
         image = pygame.transform.flip(image, True, False)
         self.walking_frames_r.append(image)
-        image = sprite_sheet.get_image(32, 0, 16, 16)
+        image = sprite_sheet.get_image(64, 0, 32, 32)
         image = pygame.transform.flip(image, True, False)
         self.walking_frames_r.append(image)
-        image = sprite_sheet.get_image(16, 0, 16, 16)
+        image = sprite_sheet.get_image(32, 0, 32, 32)
         image = pygame.transform.flip(image, True, False)
         self.walking_frames_r.append(image)
-        image = sprite_sheet.get_image(0, 0, 16, 16)
+        image = sprite_sheet.get_image(0, 0, 32, 32)
         image = pygame.transform.flip(image, True, False)
         self.walking_frames_r.append(image)
 
         # Load all the up / down facing images into a list
-        image = sprite_sheet.get_image(48, 16, 16, 16)
+        image = sprite_sheet.get_image(96, 32, 32, 32)
         self.walking_frames_ud.append(image)
-        image = sprite_sheet.get_image(32, 16, 16, 16)
+        image = sprite_sheet.get_image(64, 32, 32, 32)
         self.walking_frames_ud.append(image)
-        image = sprite_sheet.get_image(16, 16, 16, 16)
+        image = sprite_sheet.get_image(32, 32, 32, 32)
         self.walking_frames_ud.append(image)
-        image = sprite_sheet.get_image(0, 16, 16, 16)
+        image = sprite_sheet.get_image(0, 32, 32, 32)
         self.walking_frames_ud.append(image)
 
         self.direction = "R"  # direction the player is facing
@@ -118,7 +118,7 @@ class Player(pygame.sprite.Sprite):
         # Move up/down
         self.rect.y += self.change_y
         posy = self.rect.y
-        if self.direction == "U":  # for up and down movement the same sprite is used
+        if self.direction == "UD":  # for up and down movement the same sprite is used
             frame = (posy // 30) % len(self.walking_frames_ud)
             self.image = self.walking_frames_ud[frame]
 
