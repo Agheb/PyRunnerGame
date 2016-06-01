@@ -7,10 +7,10 @@ from .menu import Menu, MenuItem
 from .main_menu import MainMenu
 from .render_thread import RenderThread
 from .sound_thread import MusicMixer
-from .tilerenderer import Renderer
+from .Level import Level
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
-           'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer', 'Renderer']
+           'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer', 'Level']
 
 
 __version__ = '0.1.3'
