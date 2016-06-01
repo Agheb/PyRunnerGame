@@ -25,11 +25,12 @@ class Level(object):
     3. draw layer by layer
     """
 
-    def __init__(self, filename,surface):
+    def __init__(self, filename, surface):
         tm = load_pygame(filename, pixelalpha=True)
         self.size = tm.width * tm.tilewidth, tm.height * tm.tileheight
         self.tm = tm
         self.surface = surface
+        self.render(self.surface)
 
 
     def render(self, surface):
