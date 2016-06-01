@@ -17,7 +17,7 @@ loads the file
 """
 
 tmx_file = "./resources/levels/scifi.tmx"
-tile_renderer = Level(tmx_file)
+tile_renderer = Level(tmx_file,main_surface)
 
 """Create the map surface using the make_level()
 method.  Used to blit onto the main_surface."""
