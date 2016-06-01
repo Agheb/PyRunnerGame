@@ -1,7 +1,6 @@
 import pygame
 import constants
 from player import Player
-from level import Level, LevelOne
 
 
 def main():
@@ -16,9 +15,6 @@ def main():
 
     # Create the player
     player = Player()
-
-    # Set the current level
-    current_level = LevelOne()
 
     active_sprite_list = pygame.sprite.Group()
     active_sprite_list.add(player)
@@ -60,7 +56,6 @@ def main():
 
         # ALL CODE TO DRAW SHOULD GO BELOW THIS COMMENT
 
-        current_level.draw(screen)
         pygame.Surface.fill(screen, (0, 0, 0))
         active_sprite_list.draw(screen)
 

@@ -7,9 +7,6 @@ from .menu import Menu, MenuItem
 from .main_menu import MainMenu
 from .render_thread import RenderThread
 from .sound_thread import MusicMixer
-from .levels import Level, Level_01, Level_02
-from .platforms import MovingPlatform, Platform
-from .spritesheet_functions import SpriteSheet
 from .player import Player
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
