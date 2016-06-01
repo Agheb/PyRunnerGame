@@ -22,12 +22,15 @@ class Player(pygame.sprite.Sprite):
 
         self.level = None
         self.player = None
-        self.contactwith = None  # tells the player sprite which blocks he is in contact with
+        # TODO check if player is on a ladder or rope so he can walk up / down
+        # self.contactwith = None  # tells the player sprite which blocks he is in contact with
 
         # list holding the image for movement. Up and down movement uses the same sprites.
         self.walking_frames_l = []
         self.walking_frames_r = []
         self.walking_frames_ud = []
+        self.digging_frames_l = []
+        self.digging_frames_r = []
 
         sprite_sheet = SpriteSheet("LRCharacters32.png")
 
@@ -65,6 +68,23 @@ class Player(pygame.sprite.Sprite):
         image = sprite_sheet.get_image(0, 32, 32, 32)
         self.walking_frames_ud.append(image)
 
+        # Load all the digging left images
+        image = sprite_sheet.get_image(0, 64, 32, 32)
+        self.digging_frames_l.append(image)
+        image = sprite_sheet.get_image(16, 64, 32, 32)
+        self.digging_frames_l.append(image)
+
+        # Load all the digging left images and flip them do digging right
+        image = sprite_sheet.get_image(0, 64, 32, 32)
+        image = pygame.transform.flip(image, True, False)
+        self.digging_frames_r.append(image)
+        image = sprite_sheet.get_image(16, 64, 32, 32)
+        image = pygame.transform.flip(image, True, False)
+        self.digging_frames_r.append(image)
+
+        # Stop Frame
+        self.stop_frame = sprite_sheet.get_image(160, 0, 32, 32)
+
         self.direction = "R"  # direction the player is facing
 
         # Set the image the player starts with
@@ -98,9 +118,16 @@ class Player(pygame.sprite.Sprite):
         """ Called when the user lets off the keyboard. """
         self.change_x = 0
         self.change_y = 0
+        self.direction = "Stop"  # TODO wenn player stehen bleibt soll er stehend aussehen
 
-    def update(self):
+    def dig_right(self):
+        if self.direction != "R" or "L":  # TODO gegraben werden kann nur wenn man nicht läuft
+            self.direction = "DR"
 
+    def dig_left(self):
+        self.direction = "DL"
+
+    def update(self):  # updates the frames to create motion with sprites
         """ Move the player. """
         # Gravity
         self.calc_grav()
@@ -115,15 +142,25 @@ class Player(pygame.sprite.Sprite):
             frame = (posx // 30) % len(self.walking_frames_l)
             self.image = self.walking_frames_l[frame]
 
-        # Move up/down
+        # Move up/down uses the same sprites
         self.rect.y += self.change_y
         posy = self.rect.y
-        if self.direction == "UD":  # for up and down movement the same sprite is used
+        if self.direction == "UD":
             frame = (posy // 30) % len(self.walking_frames_ud)
             self.image = self.walking_frames_ud[frame]
 
-    def calc_grav(self):
+        # Dig left/right
+        if self.direction == "DL":
+            self.image = self.digging_frames_l[0]
+            # self.image = self.digging_frames_l[1]
+        elif self.direction == "DR":
+            self.image = self.digging_frames_r[0]
+            # self.image = self.digging_frames_r[1]
 
+        if self.direction == "Stop":
+            self.image = self.stop_frame
+
+    def calc_grav(self):
         """ Calculate effect of gravity. """
         if self.change_y == 0:
             self.change_y = 1

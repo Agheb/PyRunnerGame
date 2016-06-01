@@ -40,6 +40,12 @@ def main():
                     player.go_up()
                 if event.key == pygame.K_DOWN:
                     player.go_down()
+                if event.key == pygame.K_a:
+                    player.dig_left()
+                    print("a key")
+                if event.key == pygame.K_s:
+                    player.dig_right()
+                    print("s key")
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT and player.change_x < 0:
@@ -49,6 +55,10 @@ def main():
                 if event.key == pygame.K_DOWN and player.change_y < 0:
                     player.stop()
                 if event.key == pygame.K_UP and player.change_y > 0:
+                    player.stop()
+                if event.key == pygame.K_a:
+                    player.stop()
+                if event.key == pygame.K_s:
                     player.stop()
 
         # Update the player
