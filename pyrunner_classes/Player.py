@@ -1,27 +1,43 @@
+"""
+This module is used to hold the Player class. The Player represents the user-
+controlled sprite on the screen.
+"""
 import pygame
-from pygame.locals import *
-from .SpriteHandling import *
 
-
-WHITE = (255, 255, 255)
+# from .constants import *
+from pyrunner_classes.platforms import MovingPlatform
+from pyrunner_classes.spritesheet_functions import SpriteSheet
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, start_x, start_y, width, height):
-        super.__init__(self)
-        self.image = pygame.transform.scale(pygame.image.load(sprite).convert_alpha(), (width, height))
-        self.rect = self.image.get_rect()
-        self.rect.x = start_x
-        self.rect.y = start_y
+    """ This class represents the bar at the bottom that the player
+    controls. """
 
-        """List holding image for moving left/right"""
+    # -- Methods
+    def __init__(self):
+        """ Constructor function """
+
+        # Call the parent's constructor
+        super().__init__()
+
+        # -- Attributes
+        # Set speed vector of player
+        self.change_x = 0
+        self.change_y = 0
+
+        # This holds all the images for the animated walk left/right
+        # of our player
         self.walking_frames_l = []
         self.walking_frames_r = []
 
-        # direction player is facing
+        # What direction is the player facing?
         self.direction = "R"
 
-        sprite_sheet = SpriteSheet("Spritesheet_LR.png")
+        # List of sprites we can bump against
+        self.level = None
+
+        sprite_sheet = SpriteSheet("p1_walk.png")
+        # Load all the right facing images into a list
         image = sprite_sheet.get_image(0, 0, 66, 90)
         self.walking_frames_r.append(image)
         image = sprite_sheet.get_image(66, 0, 66, 90)
@@ -61,53 +77,94 @@ class Player(pygame.sprite.Sprite):
         image = pygame.transform.flip(image, True, False)
         self.walking_frames_l.append(image)
 
-    def bewegen_x(self, width):
-        self.rect.x = self.rect.x + width
+        # Set the image the player starts with
+        self.image = self.walking_frames_r[0]
 
-    def bewegen_y(self, width):
-        self.rect.y = self.rect.y + width
+        # Set a reference to the image rect.
+        self.rect = self.image.get_rect()
 
-# Optionen
-screen_x = 500
-screen_y = 500
-gamename = "PyRunnerPlayer"
-sprite = "stickmanBasic.png"
+    def update(self):
+        """ Move the player. """
+        # Gravity
+        self.calc_grav()
 
-# Init pygame
-pygame.init()
-fenster = pygame.display.set_mode((screen_x, screen_y))
-pygame.display.set_caption(gamename)
-screen = pygame.display.get_surface()
-player1 = Player(screen_x / 2, screen_y / 2, 60, 80)
-playersprite = pygame.sprite.RenderPlain(player1)
+        # Move left/right
+        self.rect.x += self.change_x
+        pos = self.rect.x + self.level.world_shift
+        if self.direction == "R":
+            frame = (pos // 30) % len(self.walking_frames_r)
+            self.image = self.walking_frames_r[frame]
+        else:
+            frame = (pos // 30) % len(self.walking_frames_l)
+            self.image = self.walking_frames_l[frame]
 
-# Variablen
-width = False
-fpsclock = pygame.time.Clock()
-gameover = False
+        # See if we hit anything
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        for block in block_hit_list:
+            # If we are moving right,
+            # set our right side to the left side of the item we hit
+            if self.change_x > 0:
+                self.rect.right = block.rect.left
+            elif self.change_x < 0:
+                # Otherwise if we are moving left, do the opposite.
+                self.rect.left = block.rect.right
 
-while not gameover:
-    screen.fill((0, 0, 0))
+        # Move up/down
+        self.rect.y += self.change_y
 
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            gameover = True
+        # Check and see if we hit anything
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        for block in block_hit_list:
 
-    tastendruck = pygame.key.get_pressed()
-    if tastendruck[K_LEFT]:
-        player1.bewegen_x(-3)
-    if tastendruck[K_RIGHT]:
-        player1.bewegen_x(3)
-    if tastendruck[K_UP]:
-        player1.bewegen_y(-3)
-    if tastendruck[K_DOWN]:
-        player1.bewegen_y(3)
-    if tastendruck[K_q]:
-        gameover = True
+            # Reset our position based on the top/bottom of the object.
+            if self.change_y > 0:
+                self.rect.bottom = block.rect.top
+            elif self.change_y < 0:
+                self.rect.top = block.rect.bottom
 
-    playersprite.draw(screen)
-    pygame.draw.circle(screen, WHITE, (140, 120), 20, 0)
+            # Stop our vertical movement
+            self.change_y = 0
 
+            if isinstance(block, MovingPlatform):
+                self.rect.x += block.change_x
 
-    pygame.display.update()
-    fpsclock.tick(20)
+    def calc_grav(self):
+        """ Calculate effect of gravity. """
+        if self.change_y == 0:
+            self.change_y = 1
+        else:
+            self.change_y += .35
+
+        # See if we are on the ground.
+        if self.rect.y >= constants.SCREEN_HEIGHT - self.rect.height and self.change_y >= 0:
+            self.change_y = 0
+            self.rect.y = constants.SCREEN_HEIGHT - self.rect.height
+
+    def jump(self):
+        """ Called when user hits 'jump' button. """
+
+        # move down a bit and see if there is a platform below us.
+        # Move down 2 pixels because it doesn't work well if we only move down 1
+        # when working with a platform moving down.
+        self.rect.y += 2
+        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        self.rect.y -= 2
+
+        # If it is ok to jump, set our speed upwards
+        if len(platform_hit_list) > 0 or self.rect.bottom >= constants.SCREEN_HEIGHT:
+            self.change_y = -10
+
+    # Player-controlled movement:
+    def go_left(self):
+        """ Called when the user hits the left arrow. """
+        self.change_x = -6
+        self.direction = "L"
+
+    def go_right(self):
+        """ Called when the user hits the right arrow. """
+        self.change_x = 6
+        self.direction = "R"
+
+    def stop(self):
+        """ Called when the user lets off the keyboard. """
+        self.change_x = 0
