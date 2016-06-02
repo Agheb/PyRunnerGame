@@ -7,7 +7,7 @@ from .menu import Menu, MenuItem
 from .main_menu import MainMenu
 from .render_thread import RenderThread
 from .sound_thread import MusicMixer
-from .Level import Level
+from .level import Level
 from .player import Player
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
