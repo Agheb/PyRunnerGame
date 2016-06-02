@@ -1,21 +1,20 @@
-from player import *
+from .player import *
 
 GRAVITY = 1
 
-worldGroup = pygame.sprite.Group()
-playerGroup = pygame.sprite.Group()
-
-
-
-def init():
-    player = Player()
-    playerGroup.add(player)
     
+class Physics():
+    def __init__(self):
+        self.gravity = GRAVITY
+        self.worldGroup = pygame.sprite.Group()
+        self.playerGroup = pygame.sprite.Group()
+        self.player = Player()
+        self.playerGroup.add(player)
+    def update(self):
+        """updates all physics components"""
+        self.playerGroup.draw()
+        self.playerGroup.update()
     
-def update():
-    """updates all physics components"""
-    playerGroup.draw()
-    playerGroup.update()
 
 class Collider():
     def __init__(self, player):

@@ -36,6 +36,7 @@ class PyRunner(object):
         '''init the main menu'''
         self.bg_image = pygame.Surface((self.config.screen_x, self.config.screen_y))
         self.level = Level("./resources/levels/scifi.tmx", self.bg_image)
+        self.physics = Physics()
         # self.bg_image.blit(self.level, self.level.get_rect())
         self.render_thread.blit(self.bg_image, None, True)
         self.menu = MainMenu(self)

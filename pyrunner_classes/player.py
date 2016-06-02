@@ -3,7 +3,7 @@ This module is used to hold the Player class. The Player represents the user-
 controlled sprite on the screen.
 """
 import pygame
-import constants
+from .constants import *
 
 from spritesheet_handling import SpriteSheet
 

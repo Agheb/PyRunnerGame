@@ -13,7 +13,7 @@ TMX- Specification:
 import pytmx
 import pygame
 from pprint import pprint
-import collision
+from .physics import Physics
 from pytmx.util_pygame import load_pygame
 
 class Level(object):
@@ -23,7 +23,6 @@ class Level(object):
     filename: Tilesheet and TMX-File must be in same folder
     1. Read in and parse TMX file
     2. load all tilesheet image
-
     3. draw layer by layer
     """
 
@@ -33,7 +32,6 @@ class Level(object):
         self.tm = tm
         self.surface = surface
         self.render(self.surface)
-
 
     def render(self, surface):
         for layer in self.tm.visible_layers:
@@ -54,15 +52,7 @@ class Level(object):
         # TODO iterate over object layer
         # TODO iterate over imageLayer
 
-    def collision_objectlayer(self):
-        # iterates over objectlayer used for sprite collision later
-        pass
-
     def make_level(self):
         temp_surface = pygame.Surface(self.size)
         self.render(temp_surface)
         return temp_surface
-
-    def check_TMX(self):
-        pass
-        # check TMX Specification
