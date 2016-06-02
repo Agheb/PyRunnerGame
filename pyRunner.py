@@ -40,6 +40,7 @@ class PyRunner(object):
         # self.bg_image.blit(self.level, self.level.get_rect())
         self.render_thread.blit(self.bg_image, None, True)
         self.menu = MainMenu(self)
+        self.controller = Controller(self.physics.player,self.config)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -87,53 +88,12 @@ class PyRunner(object):
                     key = event.key
                     '''key pressing events'''
                     if self.menu.in_menu:
-                        if key == K_SPACE:
-                            self.music_thread.play_sound(sound_shoot)
-                        elif key == K_LSHIFT:
-                            self.music_thread.play_sound('unscrew_lightbulb-mike-koenig.wav')
-                        else:
-                            self.menu.key_actions(key)
+                        self.menu.key_actions(key)
                     else:
-                        """controls and key settings if the game is in foreground"""
                         if key == K_ESCAPE:
                             self.menu.show_menu(True)
-                        # TODO move both players
-                        elif key == self.config.p1_left:
-                            print("Player 1 moves left")
-                        elif key == self.config.p1_right:
-                            print("Player 1 moves right")
-                        elif key == self.config.p1_up:
-                            print("Player 1 moves up")
-                        elif key == self.config.p1_down:
-                            print("Player 1 moves down")
-                        # TODO actions for both players
-                        elif key == self.config.p1_action_l:
-                            print("Player 1 digs left")
-                        elif key == self.config.p1_action_r:
-                            print("Player 1 digs right")
-                        elif key == self.config.p1_interact:
-                            print("Player 1 interacts")
-                        elif key == self.config.p1_taunt:
-                            print("Player 1 taunts")
-                        # TODO the same for player 2
-                        elif key == self.config.p2_left:
-                            print("Player 2 moves left")
-                        elif key == self.config.p2_right:
-                            print("Player 2 moves right")
-                        elif key == self.config.p2_up:
-                            print("Player 2 moves up")
-                        elif key == self.config.p2_down:
-                            print("Player 2 moves down")
-                        # TODO actions for both players
-                        elif key == self.config.p2_action_l:
-                            print("Player 2 digs left")
-                        elif key == self.config.p2_action_r:
-                            print("Player 2 digs right")
-                        elif key == self.config.p2_interact:
-                            print("Player 2 interacts")
-                        elif key == self.config.p2_taunt:
-                            print("Player 2 taunts")
-
+                        else:
+                            self.controller.interpret_key(key)
             # save cpu resources
             self.physics.update()
             clock.tick(self.config.fps)

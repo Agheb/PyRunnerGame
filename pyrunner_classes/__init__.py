@@ -10,9 +10,10 @@ from .sound_thread import MusicMixer
 from .level import Level
 from .player import Player
 from .game_physics import Physics
+from .controller import Controller
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
-           'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer', 'Level', 'Physics']
+           'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer', 'Level', 'Physics', 'Controller']
 
 
 __version__ = '0.1.3'

@@ -38,8 +38,10 @@ class Level(object):
             if isinstance(layer, pytmx.TiledTileLayer):
                 self.render_tile_layer(surface, layer)
                 if layer.properties['solid'] == 'true':
-                    self
-                pprint(layer.properties)
+                    print("solid layer found")
+                if layer.properties['climbable'] == 'true':
+                    print("climbalbe layer")
+                #pprint(layer.properties)
 
     def render_tile_layer(self, surface, layer):
 

@@ -118,7 +118,6 @@ class Player(pygame.sprite.Sprite):
         self.image = self.walking_frames_r[0]
         # Set a reference to the image rect.
         self.rect = self.image.get_rect()
-
     # Player-controlled movement:
     def go_left(self):
         """ Called when the user hits the left arrow. """
