@@ -12,6 +12,8 @@ TMX- Specification:
 
 import pytmx
 import pygame
+from pprint import pprint
+import collision
 from pytmx.util_pygame import load_pygame
 
 class Level(object):
@@ -37,6 +39,9 @@ class Level(object):
         for layer in self.tm.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 self.render_tile_layer(surface, layer)
+                if layer.properties['solid'] == 'true':
+                    self.solidi
+                pprint(layer.properties)
 
     def render_tile_layer(self, surface, layer):
 
