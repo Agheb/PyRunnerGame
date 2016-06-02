@@ -11,4 +11,8 @@ BACKGROUND = (100, 100, 100)
 GRAY = (150, 150, 150)
 WHITE = (255, 255, 255)
 
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
+
 MENU_FONT = "./resources/fonts/Mikodacs.otf"

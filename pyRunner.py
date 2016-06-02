@@ -56,6 +56,18 @@ class PyRunner(object):
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
+    def player_test(self):
+        if self.in_menu:
+            self.show_menu(False)
+        surface = pygame.Surface((self.screen_x, self.screen_y), SRCALPHA)
+        rects = []
+        # player = pygame.draw.circle(surface, color, )
+        rects.append(player)
+        print("draw player")
+        self.render_thread.blit(surface, None, True)
+        self.render_thread.add_rect_to_update(rects, surface, None, True)
+        self.render_thread.refresh_screen(True)
+
     def start_game(self):
         """main game loop"""
         # Main loop relevant vars
