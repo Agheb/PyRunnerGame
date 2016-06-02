@@ -40,12 +40,14 @@ def main():
                     player.go_up()
                 if event.key == pygame.K_DOWN:
                     player.go_down()
-                if event.key == pygame.K_a: # TODO gegraben werden kann nur wenn man nicht läuft
-                    player.dig_left()
-                    print("a key")
+                if event.key == pygame.K_a:
+                    if player.change_y == 0 and player.change_x == 0:
+                        player.dig_left()
+                        print("a key")
                 if event.key == pygame.K_s:
-                    player.dig_right()
-                    print("s key")
+                    if player.change_y == 0 and player.change_x == 0:
+                        player.dig_right()
+                        print("s key")
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT and player.change_x < 0:

@@ -121,12 +121,10 @@ class Player(pygame.sprite.Sprite):
         self.direction = "Stop"
 
     def dig_right(self):
-        if self.change_y == 0 and self.change_x == 0:
-            self.direction = "DR"
+        self.direction = "DR"
 
     def dig_left(self):
-        if self.change_y == 0 and self.change_x == 0:
-            self.direction = "DL"
+        self.direction = "DL"
 
     def update(self):  # updates the frames to create motion with sprites
         """ Move the player. """
