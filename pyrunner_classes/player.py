@@ -4,9 +4,10 @@ controlled sprite on the screen.
 """
 import pygame
 from .constants import *
+from .spritesheet_handling import SpriteSheet
 
-from spritesheet_handling import SpriteSheet
 
+SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -34,7 +35,7 @@ class Player(pygame.sprite.Sprite):
         self.hanging_frames_l = []
         self.hanging_frames_r = []
 
-        sprite_sheet = SpriteSheet("LRCharacters32.png")
+        sprite_sheet = SpriteSheet(SPRITE_SHEET_PATH)
 
         # Load all the left facing images into a list (x, y, height, width)
         image = sprite_sheet.get_image(96, 0, 32, 32)
@@ -212,6 +213,6 @@ class Player(pygame.sprite.Sprite):
             self.change_y += .35
 
         # See if we are on the ground.
-        if self.rect.y >= constants.SCREEN_HEIGHT - self.rect.height and self.change_y >= 0:
+        if self.rect.y >= SCREEN_HEIGHT - self.rect.height and self.change_y >= 0:
             self.change_y = 0
-            self.rect.y = constants.SCREEN_HEIGHT - self.rect.height
+            self.rect.y = SCREEN_HEIGHT - self.rect.height

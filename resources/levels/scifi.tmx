@@ -5,6 +5,7 @@
  </tileset>
  <layer name="Background" width="32" height="24">
   <properties>
+   <property name="cimbable" type="bool" value="false"/>
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
@@ -13,6 +14,7 @@
  </layer>
  <layer name="Block" width="32" height="24">
   <properties>
+   <property name="climbable" type="bool" value="false"/>
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">

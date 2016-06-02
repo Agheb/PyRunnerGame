@@ -1,4 +1,5 @@
 from .player import *
+import pygame
 
 GRAVITY = 1
 
@@ -9,7 +10,8 @@ class Physics():
         self.worldGroup = pygame.sprite.Group()
         self.playerGroup = pygame.sprite.Group()
         self.player = Player()
-        self.playerGroup.add(player)
+        self.playerGroup.add(self.player)
+
     def update(self):
         """updates all physics components"""
         self.playerGroup.draw()
