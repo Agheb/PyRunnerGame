@@ -16,7 +16,9 @@ class Physics():
 
     def update(self):
         """updates all physics components"""
+        #TODO: pass sprites to render threade
         self.playerGroup.draw(self.render_thread.screen)
+        self.render_thread.refresh_screen(True)
         self.playerGroup.update()
         return
 class Collider():
