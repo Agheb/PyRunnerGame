@@ -30,4 +30,4 @@ class Collider():
 
 class WorldObject(pygame.sprite.Sprite):
     def __init__(self):
-                pygame.sprite.Sprite.__init__(self, world)
+                pygame.sprite.Sprite.__init__(self, worldGroup)
