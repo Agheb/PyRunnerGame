@@ -118,14 +118,15 @@ class Player(pygame.sprite.Sprite):
         """ Called when the user lets off the keyboard. """
         self.change_x = 0
         self.change_y = 0
-        self.direction = "Stop"  # TODO wenn player stehen bleibt soll er stehend aussehen
+        self.direction = "Stop"
 
     def dig_right(self):
-        if self.direction != "R" or "L":  # TODO gegraben werden kann nur wenn man nicht läuft
+        if self.change_y == 0 and self.change_x == 0:
             self.direction = "DR"
 
     def dig_left(self):
-        self.direction = "DL"
+        if self.change_y == 0 and self.change_x == 0:
+            self.direction = "DL"
 
     def update(self):  # updates the frames to create motion with sprites
         """ Move the player. """

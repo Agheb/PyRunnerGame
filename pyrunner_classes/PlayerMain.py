@@ -40,7 +40,7 @@ def main():
                     player.go_up()
                 if event.key == pygame.K_DOWN:
                     player.go_down()
-                if event.key == pygame.K_a:
+                if event.key == pygame.K_a: # TODO gegraben werden kann nur wenn man nicht läuft
                     player.dig_left()
                     print("a key")
                 if event.key == pygame.K_s:
@@ -78,6 +78,7 @@ def main():
         pygame.display.flip()
 
     pygame.quit()
+
 
 if __name__ == '__main__':
     main()
