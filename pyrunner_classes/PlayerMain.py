@@ -41,13 +41,17 @@ def main():
                 if event.key == pygame.K_DOWN:
                     player.go_down()
                 if event.key == pygame.K_a:
-                    if player.change_y == 0 and player.change_x == 0:
+                    if player.change_y == 0 and player.change_x == 0:  # Digging is only possible while not moving
                         player.dig_left()
                         print("a key")
                 if event.key == pygame.K_s:
                     if player.change_y == 0 and player.change_x == 0:
                         player.dig_right()
                         print("s key")
+                if event.key == pygame.K_q:
+                    player.hang_left()
+                if event.key == pygame.K_w:
+                    player.hang_right()
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT and player.change_x < 0:

@@ -31,6 +31,8 @@ class Player(pygame.sprite.Sprite):
         self.walking_frames_ud = []
         self.digging_frames_l = []
         self.digging_frames_r = []
+        self.hanging_frames_l = []
+        self.hanging_frames_r = []
 
         sprite_sheet = SpriteSheet("LRCharacters32.png")
 
@@ -82,6 +84,30 @@ class Player(pygame.sprite.Sprite):
         image = pygame.transform.flip(image, True, False)
         self.digging_frames_r.append(image)
 
+        # Load the left hanging images into a list
+        image = sprite_sheet.get_image(128, 32, 32, 32)
+        self.hanging_frames_l.append(image)
+        image = sprite_sheet.get_image(160, 32, 32, 32)
+        self.hanging_frames_l.append(image)
+        image = sprite_sheet.get_image(192, 32, 32, 32)
+        self.hanging_frames_l.append(image)
+        image = sprite_sheet.get_image(224, 32, 32, 32)
+        self.hanging_frames_l.append(image)
+
+        # Load the left hanging images into a list and flip them to right
+        image = sprite_sheet.get_image(128, 32, 32, 32)
+        image = pygame.transform.flip(image, True, False)
+        self.hanging_frames_l.append(image)
+        image = sprite_sheet.get_image(160, 32, 32, 32)
+        image = pygame.transform.flip(image, True, False)
+        self.hanging_frames_l.append(image)
+        image = sprite_sheet.get_image(192, 32, 32, 32)
+        image = pygame.transform.flip(image, True, False)
+        self.hanging_frames_l.append(image)
+        image = sprite_sheet.get_image(224, 32, 32, 32)
+        image = pygame.transform.flip(image, True, False)
+        self.hanging_frames_l.append(image)
+
         # Stop Frame
         self.stop_frame = sprite_sheet.get_image(160, 0, 32, 32)
 
@@ -126,6 +152,14 @@ class Player(pygame.sprite.Sprite):
     def dig_left(self):
         self.direction = "DL"
 
+    def hang_left(self):
+        self.change_x = -2
+        self.direction = "HL"
+
+    def hang_right(self):
+        self.change_x = 2
+        self.direction = "HR"
+
     def update(self):  # updates the frames to create motion with sprites
         """ Move the player. """
         # Gravity
@@ -156,6 +190,17 @@ class Player(pygame.sprite.Sprite):
             self.image = self.digging_frames_r[0]
             # self.image = self.digging_frames_r[1]
 
+        # Hang left/right
+        self.rect.x += self.change_x
+        posx = self.rect.x
+        if self.direction == "HR":
+            frame = (posx // 30) % len(self.hanging_frames_r)
+            self.image = self.hanging_frames_r[frame]
+        elif self.direction == "HL":
+            frame = (posx // 30) % len(self.hanging_frames_l)
+            self.image = self.hanging_frames_l[frame]
+
+        # stop frame
         if self.direction == "Stop":
             self.image = self.stop_frame
 
