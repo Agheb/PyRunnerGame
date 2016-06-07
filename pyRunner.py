@@ -94,6 +94,13 @@ class PyRunner(object):
                             self.menu.show_menu(True)
                         else:
                             self.controller.interpret_key(key)
+                elif event.type == KEYUP:
+                    key = event.key
+                    '''key pressing events'''
+                    if self.menu.in_menu:
+                      pass
+                    else:
+                      self.controller.release_key(key)
             # save cpu resources
             self.physics.update()
             clock.tick(self.config.fps)

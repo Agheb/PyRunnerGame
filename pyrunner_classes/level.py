@@ -39,10 +39,10 @@ class Level(object):
                 self.render_tile_layer(surface, layer)
                 if layer.properties['solid'] == 'true':
                     for a in layer.tiles():
-                        pprint(a)
                         WorldObject(a)
                 if layer.properties['climbable'] == 'true':
-                    print("climbalbe layer")
+                    for a in layer.tiles():
+                        WorldObject(a,True)
                 #pprint(layer.properties)
 
     def render_tile_layer(self, surface, layer):

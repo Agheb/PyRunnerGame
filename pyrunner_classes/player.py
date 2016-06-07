@@ -13,7 +13,9 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
-        self.onGround = False
+        self.on_ground = False
+        self.on_ladder = False
+        self.stop_on_ground = False
         self.change_x = 0
         self.change_y = 0
 
@@ -133,7 +135,7 @@ class Player(pygame.sprite.Sprite):
     def go_up(self):
 
         """ Called when the user hits the up arrow. """
-        self.change_y = -2
+        self.change_y = -5
         self.direction = 'UD'
 
     def go_down(self):
@@ -147,6 +149,8 @@ class Player(pygame.sprite.Sprite):
         self.change_y = 0
         self.direction = "Stop"
 
+    def schedule_stop(self):
+      self.stop_on_ground = True
     def dig_right(self):
         self.direction = "DR"
 
@@ -166,9 +170,13 @@ class Player(pygame.sprite.Sprite):
         # Gravity
         self.calc_grav()
 
+
         # Move left/right
         self.rect.x += self.change_x
+        self.rect.y += self.change_y
+        #Animations
         posx = self.rect.x
+        posy = self.rect.y
         if self.direction == "R":
             frame = (posx // 30) % len(self.walking_frames_r)
             self.image = self.walking_frames_r[frame]
@@ -177,8 +185,6 @@ class Player(pygame.sprite.Sprite):
             self.image = self.walking_frames_l[frame]
 
         # Move up/down uses the same sprites
-        self.rect.y += self.change_y
-        posy = self.rect.y
         if self.direction == "UD":
             frame = (posy // 30) % len(self.walking_frames_ud)
             self.image = self.walking_frames_ud[frame]
@@ -192,8 +198,6 @@ class Player(pygame.sprite.Sprite):
             # self.image = self.digging_frames_r[1]
 
         # Hang left/right
-        self.rect.x += self.change_x
-        posx = self.rect.x
         if self.direction == "HR":
             frame = (posx // 30) % len(self.hanging_frames_r)
             self.image = self.hanging_frames_r[frame]
@@ -207,14 +211,12 @@ class Player(pygame.sprite.Sprite):
 
     def calc_grav(self):
         """ Calculate effect of gravity. """
-        if self.change_y == 0:
-            self.change_y = 1
-        else:
-            self.change_y += .35
 
         # See if we are on the ground.
-        if self.onGround:
-            self.change_y = 0
-        elif self.rect.y >= SCREEN_HEIGHT - self.rect.height and self.change_y >= 0:
-            self.change_y = 0
-            self.rect.y = SCREEN_HEIGHT - self.rect.height
+        if not self.on_ground or not self.on_ladder:
+            self.change_y += .35
+
+        if self.stop_on_ground and self.on_ground:
+          self.change_y = 0
+          self.change_x = 0
+          self.stop_on_ground = False
