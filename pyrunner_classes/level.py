@@ -13,7 +13,7 @@ TMX- Specification:
 import pytmx
 import pygame
 from pprint import pprint
-from .game_physics import Physics
+from .game_physics import *
 from pytmx.util_pygame import load_pygame
 
 class Level(object):
@@ -38,7 +38,8 @@ class Level(object):
             if isinstance(layer, pytmx.TiledTileLayer):
                 self.render_tile_layer(surface, layer)
                 if layer.properties['solid'] == 'true':
-                    print("solid layer found")
+                    for a in layer.tiles():
+                        WorldObject(a)
                 if layer.properties['climbable'] == 'true':
                     print("climbalbe layer")
                 #pprint(layer.properties)
