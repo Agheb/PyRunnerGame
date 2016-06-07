@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
+        self.onGround = False
         self.change_x = 0
         self.change_y = 0
 
@@ -212,6 +213,8 @@ class Player(pygame.sprite.Sprite):
             self.change_y += .35
 
         # See if we are on the ground.
-        if self.rect.y >= SCREEN_HEIGHT - self.rect.height and self.change_y >= 0:
+        if self.onGround:
+            self.change_y = 0
+        elif self.rect.y >= SCREEN_HEIGHT - self.rect.height and self.change_y >= 0:
             self.change_y = 0
             self.rect.y = SCREEN_HEIGHT - self.rect.height
