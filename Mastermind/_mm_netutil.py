@@ -4,7 +4,7 @@ except:
     import pickle as pickle  # new equivalent of cPickle, if it's available.
 import zlib
 
-from ._mm_constants import *
+from _mm_constants import *
 
 
 def packet_send(socket, protocol_and_udpaddress, data, compression):  # E.g.: =(MM_TCP,None)
