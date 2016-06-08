@@ -10,7 +10,7 @@ port = 6317
 
 
 def main():
-    global client, server, continuing
+    # global client, server, continuing
 
     client = MastermindClientTCP()
     try:
@@ -18,7 +18,7 @@ def main():
         client.connect(client_ip, port)
     except MastermindError:
         print("No server found; starting server!")
-        server = pyrunner_server.ServerChat()
+        server = pyrunner_server.PyrunnerServer()
         server.connect(server_ip, port)
         server.accepting_allow()
 
