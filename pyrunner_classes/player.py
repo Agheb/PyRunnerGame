@@ -3,7 +3,6 @@ This module is used to hold the Player class. The Player represents the user-
 controlled sprite on the screen.
 """
 import pygame
-from .constants import *
 from .spritesheet_handling import SpriteSheet
 
 
@@ -220,6 +219,6 @@ class Player(pygame.sprite.DirtySprite):
             self.change_y += .35
 
         if self.stop_on_ground and self.on_ground:
-          self.change_y = 0
-          self.change_x = 0
-          self.stop_on_ground = False
+            self.change_y = 0
+            self.change_x = 0
+            self.stop_on_ground = False
