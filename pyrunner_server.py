@@ -10,7 +10,7 @@ server_ip = "0.0.0.0"
 port = 6317
 
 
-class PyrunnerServer(MastermindServerTCP):
+class PyrunnerServer(MastermindServerTCP, MastermindServerCallbacksEcho):
     def __init__(self):
         MastermindServerTCP.__init__(self, 0.5, 0.5, 10.0)  # server refresh, connections' refresh, connection timeout
 

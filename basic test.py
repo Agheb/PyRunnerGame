@@ -24,16 +24,15 @@ class Server(MastermindServerCallbacksEcho, MastermindServerCallbacksDebug, Clas
         ClassServer.__init__(self)
         # MastermindServerCallbacksEcho already does something like this, so it's not necessary
 
-
-##    def callback_client_handle(self, connection_object, data):
-##        print("Echo server got: \""+str(data)+"\"")
-##        self.callback_client_send(connection_object, data)
+    def callback_client_handle(self, connection_object, data):
+        print("Echo server got: \""+str(data)+"\"")
+        self.callback_client_send(connection_object, data)
 
 if __name__ == "__main__":
     server = Server()
     server.connect(ip, port)
     server.accepting_allow()
-    ##    server.accepting_allow_wait_forever()
+    server.accepting_allow_wait_forever()
     print()
 
     client = ClassClient(1.0, 1.0)
