@@ -16,6 +16,7 @@ class Player(pygame.sprite.DirtySprite):
 
         self.on_ground = False
         self.on_ladder = False
+        self.on_rope = False
         self.stop_on_ground = False
         self.change_x = 0
         self.change_y = 0
@@ -27,8 +28,6 @@ class Player(pygame.sprite.DirtySprite):
 
         self.level = None
         self.player = None
-        # TODO check if player is on a ladder or rope so he can walk up / down
-        # self.contactwith = None  # tells the player sprite which blocks he is in contact with
 
         # list holding the image for movement. Up and down movement uses the same sprites.
         self.walking_frames_l = []
@@ -122,27 +121,39 @@ class Player(pygame.sprite.DirtySprite):
         self.image = self.walking_frames_r[0]
         # Set a reference to the image rect.
         self.rect = self.image.get_rect()
+
     # Player-controlled movement:
     def go_left(self):
-        """ Called when the user hits the left arrow. """
+        """" Called when the user hits the left arrow. Checks if player is on Rope to change animation """
         self.change_x = -2
-        self.direction = "L"
+        if self.on_rope:
+            self.direction = "RL"
+        else:
+            self.direction = "L"
 
     def go_right(self):
-        """ Called when the user hits the right arrow. """
+        """ Called when the user hits the right arrow. Checks if player is on Rope to change animation """
         self.change_x = 2
-        self.direction = "R"
+        if self.on_rope:
+            self.direction = "RR"
+        else:
+            self.direction = "R"
 
     def go_up(self):
-
-        """ Called when the user hits the up arrow. """
-        self.change_y = -5
-        self.direction = 'UD'
+        """ Called when the user hits the up arrow. Only Possible when Player is on a ladder"""
+        if self.on_ladder:
+            self.change_y = -5
+            self.direction = 'UD'
+        else:
+            pass
 
     def go_down(self):
-        """ Called when the user hits the down arrow. """
-        self.change_y = 2
-        self.direction = 'UD'
+        """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
+        if self.on_ladder:
+            self.change_y = 5
+            self.direction = 'UD'
+        else:
+            pass
 
     def stop(self):
         """ Called when the user lets off the keyboard. """
@@ -151,7 +162,8 @@ class Player(pygame.sprite.DirtySprite):
         self.direction = "Stop"
 
     def schedule_stop(self):
-      self.stop_on_ground = True
+        self.stop_on_ground = True
+
     def dig_right(self):
         self.direction = "DR"
 
@@ -172,11 +184,11 @@ class Player(pygame.sprite.DirtySprite):
         self.calc_grav()
         self.dirty = 1
 
-
         # Move left/right
         self.rect.x += self.change_x
         self.rect.y += self.change_y
-        #Animations
+
+        # Animations with Sprites
         posx = self.rect.x
         posy = self.rect.y
         if self.direction == "R":

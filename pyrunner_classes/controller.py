@@ -5,13 +5,13 @@
 from __future__ import division
 
 
-class Controller():
+class Controller:
 
     """player controls manager"""
 
     def __init__(self, player1, config):
         self.player1 = player1
-        #self.player2 = player2
+        # self.player2 = player2
         self.config = config
 
     def interpret_key(self, key):

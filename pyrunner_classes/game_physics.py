@@ -28,7 +28,7 @@ class Physics(object):
 
     def update(self):
         """updates all physics components"""
-        #TODO: pass sprites to render thread
+        # TODO: pass sprites to render thread
         screen = self.render_thread.screen
         background = self.render_thread.bg_surface
         rects = []
@@ -43,16 +43,16 @@ class Physics(object):
 
     def collide(self):
         """calculates collision for players and sprites"""
-        #TODO: add head collide
+        # TODO: add head collide
         col = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False)
         if len(col) > 0:
-            #some collision
+            # some collision
             for playerObj in col.keys():
                 for sprite in col[playerObj]:
                     if sprite.climbable:
                         playerObj.on_ladder = True
                     else:
-                        #collision at feet
+                        # collision at feet
                         self.fix_pos(playerObj, sprite)
                         """
                         else:
@@ -67,7 +67,7 @@ class Physics(object):
 
     @staticmethod
     def fix_pos(player, sprite):
-        """Used tp place the player nicely"""
+        """Used to place the player nicely"""
         player.on_ground = True
         player.rect.y = sprite.rect.y - player.rect.height - 1
 
