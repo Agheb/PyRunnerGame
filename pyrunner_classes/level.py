@@ -16,6 +16,7 @@ from pprint import pprint
 from .game_physics import *
 from pytmx.util_pygame import load_pygame
 
+
 class Level(object):
 
     """

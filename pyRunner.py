@@ -40,7 +40,7 @@ class PyRunner(object):
         # self.bg_image.blit(self.level, self.level.get_rect())
         self.render_thread.blit(self.bg_image, None, True)
         self.menu = MainMenu(self)
-        self.controller = Controller(self.physics.player,self.config)
+        self.controller = Controller(self.physics.player, self.config)
 
     def quit_game(self, shutdown=True):
         """quit the game"""

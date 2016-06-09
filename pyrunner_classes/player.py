@@ -9,7 +9,9 @@ from .spritesheet_handling import SpriteSheet
 
 SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
 
-class Player(pygame.sprite.Sprite):
+
+class Player(pygame.sprite.DirtySprite):
+    """defines the main player"""
     def __init__(self):
         super().__init__()
 
@@ -169,6 +171,7 @@ class Player(pygame.sprite.Sprite):
         """ Move the player. """
         # Gravity
         self.calc_grav()
+        self.dirty = 1
 
 
         # Move left/right

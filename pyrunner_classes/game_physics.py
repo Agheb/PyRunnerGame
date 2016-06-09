@@ -8,8 +8,8 @@ TILE_WIDTH = 32
 TILE_HEIGHT = 32
 
 
-worldGroup = pygame.sprite.Group()
-playerGroup = pygame.sprite.Group()
+worldGroup = pygame.sprite.LayeredDirty()
+playerGroup = pygame.sprite.LayeredDirty()
 
 class Physics():
     def __init__(self, render_thread):
@@ -22,12 +22,16 @@ class Physics():
     def update(self):
         """updates all physics components"""
         #TODO: pass sprites to render thread
-        playerGroup.draw(self.render_thread.screen)
-        worldGroup.draw(self.render_thread.screen)
-        self.render_thread.refresh_screen(True)
+        rects = []
+        rects.append(playerGroup.draw(self.render_thread.screen))
+        rects.append(worldGroup.draw(self.render_thread.screen))
         playerGroup.update()
         self.collide()
+        self.render_thread.refresh_screen(rects)
+        playerGroup.clear(self.render_thread.screen, self.render_thread.bg_surface)
+        worldGroup.clear(self.render_thread.screen, self.render_thread.bg_surface)
         return
+
     def collide(self):
       """calculates collision for players and sprites"""
       #TODO: add head collide
@@ -56,10 +60,13 @@ class Physics():
         player.on_ground = True
         player.rect.y = sprite.rect.y - player.rect.height -1
 
-class WorldObject(pygame.sprite.Sprite):
-    def __init__(self, tile, climbable = False):
+
+class WorldObject(pygame.sprite.DirtySprite):
+
+    def __init__(self, tile, climbable=False):
+        """world object item"""
         (pos_x, pos_y,self.image) = tile
-        pygame.sprite.Sprite.__init__(self, worldGroup)
+        pygame.sprite.DirtySprite.__init__(self, worldGroup)
         self.rect = self.image.get_rect()
         self.rect.x = pos_x * TILE_WIDTH
         self.rect.y = pos_y * TILE_HEIGHT
