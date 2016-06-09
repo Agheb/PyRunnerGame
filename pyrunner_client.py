@@ -26,5 +26,17 @@ def main():
         client.connect(client_ip, port)
     print("Client connected!")
 
+    texts = [
+        "Hello world!  How are you today?",
+        "I see you're well",
+        "Lovely weather, methinks."
+    ]
+    for text in texts:
+        print("Client: sending \"" + text + "\"")
+        client.send(text, None)  # None for no compression
+
+        reply = client.receive(True)  # True for blocking
+        print("Client: got     \"" + str(reply) + "\"")
+
 if __name__ == "__main__":
         main()

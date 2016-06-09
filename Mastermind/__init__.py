@@ -18,6 +18,7 @@ from ._mm_errors import MastermindErrorClient
 from ._mm_errors import MastermindErrorServer
 from ._mm_errors import MastermindErrorSocket
 
-from ._mm_constants import MM_TCP, MM_UDP, MM_UNKNOWN
+
+from ._mm_constants import MM_TCP, MM_UDP, MM_UNKNOWN, MM_MAX
 
 sys.path = old_path
