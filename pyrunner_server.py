@@ -12,7 +12,7 @@ port = 6317
 
 class PyrunnerServer(MastermindServerTCP):
     def __init__(self):
-        MastermindServerTCP.__init__(self)  # server refresh, connections' refresh, connection timeout
+        MastermindServerTCP.__init__(self, 0.5, 0.5, 10.0)  # server refresh, connections' refresh, connection timeout
 
         self.chat = [None]
         self.mutex = threading.Lock()
@@ -69,7 +69,6 @@ if __name__ == "__main__":
     except:
         # Only way to break is with an exception
         pass
-
     server.accepting_disallow()
     server.disconnect_clients()
     server.disconnect()
