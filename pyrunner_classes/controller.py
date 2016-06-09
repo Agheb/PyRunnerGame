@@ -1,10 +1,19 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""main pyRunner class which initializes all sub classes and threads"""
+# Python 2 related fixes
+from __future__ import division
+
+
 class Controller():
+
+    """player controls manager"""
+
     def __init__(self, player1, config):
         self.player1 = player1
         #self.player2 = player2
         self.config = config
-        
-        
+
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
         # TODO move both players
@@ -43,3 +52,7 @@ class Controller():
             print("Player 2 interacts")
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
+
+    def release_key(self, key):
+        """stop walking"""
+        self.player1.schedule_stop()
