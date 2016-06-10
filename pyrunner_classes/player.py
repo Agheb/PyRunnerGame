@@ -206,10 +206,10 @@ class Player(pygame.sprite.DirtySprite):
         # Dig left/right
         if self.direction == "DL":
             self.image = self.digging_frames_l[0]
-            # self.image = self.digging_frames_l[1]
+            self.image = self.digging_frames_l[1]
         elif self.direction == "DR":
             self.image = self.digging_frames_r[0]
-            # self.image = self.digging_frames_r[1]
+            self.image = self.digging_frames_r[1]
 
         # Hang left/right
         if self.direction == "HR":
