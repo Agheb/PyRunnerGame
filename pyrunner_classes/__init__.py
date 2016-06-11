@@ -11,6 +11,7 @@ from .level import Level
 from .player import Player
 from .game_physics import Physics
 from .controller import Controller
+from Mastermind import *
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
            'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer', 'Level', 'Physics', 'Controller']

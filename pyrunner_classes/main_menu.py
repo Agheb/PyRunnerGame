@@ -8,6 +8,7 @@ import pygame
 from pygame.locals import *
 from .menu import Menu, MenuItem
 from .constants import *
+from .network_connector import NetworkConnector
 
 
 class MainMenu(object):
@@ -17,6 +18,7 @@ class MainMenu(object):
         self.main = main
         self.config = self.main.config
         self.render_thread = self.main.render_thread
+        self.network_connector = NetworkConnector()
         self.music_thread = self.main.music_thread
         self.bg_image = self.main.bg_image
         self.menu_pos = 1
@@ -86,7 +88,9 @@ class MainMenu(object):
         #   multiplayer
         menu_ng_multiplayer = Menu(self, "Multiplayer", surface, menu_new_game, h2_size, item_size)
         menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
-        menu_ng_multiplayer.add_item(MenuItem("Network Game", None))
+        #TODO: Add nice ip input
+        menu_ng_multiplayer.add_item(MenuItem("Start Server",self.network_connector.start_server_prompt))
+        menu_ng_multiplayer.add_item(MenuItem("Join Server", self.network_connector.join_server_prompt))
         menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
         # finish top menu with sub menus
         menu_new_game.add_item(MenuItem("Singleplayer", self.set_current_menu, vars=menu_ng_singleplayer))
