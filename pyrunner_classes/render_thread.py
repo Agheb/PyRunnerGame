@@ -251,7 +251,7 @@ class RenderThread(threading.Thread):
             x, y = self._fps_pos
             pos = (x, y)
             self.blit(self._fps_dirty_rect, pos)
-            self.blit(surf, pos)
+            self.blit(surf, (x + 10, y + 10))
             # update the dirty rect area because it's a little bit bigger
             self.add_rect_to_update(self._fps_dirty_rect.get_rect(), surf, pos, False)
 
