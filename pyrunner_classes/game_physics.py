@@ -19,9 +19,10 @@ playerGroup = pygame.sprite.LayeredDirty()
 class Physics(object):
     """physics"""
 
-    def __init__(self, render_thread):
+    def __init__(self, surface, background):
         self.gravity = GRAVITY
-        self.render_thread = render_thread
+        self.surface = surface
+        self.background = background
         self.player = Player()
         playerGroup.add(self.player)
         return
@@ -29,17 +30,16 @@ class Physics(object):
     def update(self):
         """updates all physics components"""
         #TODO: pass sprites to render thread
-        screen = self.render_thread.screen
-        background = self.render_thread.bg_surface
         rects = []
-        rects.append(playerGroup.draw(screen))
-        rects.append(worldGroup.draw(screen))
+        rects.append(playerGroup.draw(self.surface))
+        rects.append(worldGroup.draw(self.surface))
+
         playerGroup.update()
         self.collide()
-        self.render_thread.refresh_screen(rects)
-        playerGroup.clear(screen, background)
-        worldGroup.clear(screen, background)
-        return
+
+        playerGroup.clear(self.surface, self.background)
+        worldGroup.clear(self.surface, self.background)
+        return rects
 
     def collide(self):
         """calculates collision for players and sprites"""
@@ -86,4 +86,4 @@ class WorldObject(pygame.sprite.DirtySprite):
 
     def update(self):
         """update world objects"""
-        pass
+        self.dirty = 1

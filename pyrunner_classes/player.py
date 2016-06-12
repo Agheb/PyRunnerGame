@@ -1,7 +1,11 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 This module is used to hold the Player class. The Player represents the user-
 controlled sprite on the screen.
 """
+# Python 2 related fixes
+from __future__ import division
 import pygame
 from .spritesheet_handling import SpriteSheet
 
@@ -12,7 +16,7 @@ SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
 class Player(pygame.sprite.DirtySprite):
     """defines the main player"""
     def __init__(self):
-        super().__init__()
+        pygame.sprite.DirtySprite.__init__(self)
 
         self.on_ground = False
         self.on_ladder = False

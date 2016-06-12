@@ -31,14 +31,11 @@ class PyRunner(object):
                                           self.config.fullscreen, self.config.switch_resolution)
         self.render_thread.fill_screen(BACKGROUND)
         self.render_thread.start()
-        # set the background image
-        # self.bg_image = pygame.image.load(os.path.join('./resources/images/', 'lode2.gif')).convert()
+        '''init the level and main game physics'''
+        self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
+        self.level = Level("./resources/levels/scifi.tmx", self.bg_surface)
+        self.physics = Physics(self.render_thread.screen, self.bg_surface)
         '''init the main menu'''
-        self.bg_image = pygame.Surface((self.config.screen_x, self.config.screen_y))
-        self.level = Level("./resources/levels/scifi.tmx", self.bg_image)
-        self.physics = Physics(self.render_thread)
-        # self.bg_image.blit(self.level, self.level.get_rect())
-        self.render_thread.blit(self.bg_image, None, True)
         self.menu = MainMenu(self)
         self.controller = Controller(self.physics.player, self.config)
 
@@ -57,18 +54,6 @@ class PyRunner(object):
         self.quit_game(False)
         python = sys.executable
         os.execl(python, python, *sys.argv)
-
-    def player_test(self):
-        if self.in_menu:
-            self.show_menu(False)
-        surface = pygame.Surface((self.screen_x, self.screen_y), SRCALPHA)
-        rects = []
-        # player = pygame.draw.circle(surface, color, )
-        rects.append(player)
-        print("draw player")
-        self.render_thread.blit(surface, None, True)
-        self.render_thread.add_rect_to_update(rects, surface, None, True)
-        self.render_thread.refresh_screen(True)
 
     def start_game(self):
         """main game loop"""
@@ -102,7 +87,8 @@ class PyRunner(object):
                     else:
                       self.controller.release_key(key)
             # save cpu resources
-            self.physics.update()
+            if not self.menu.in_menu:
+                self.render_thread.add_rect_to_update(self.physics.update())
             clock.tick(self.config.fps)
 
 

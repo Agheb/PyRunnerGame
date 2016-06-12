@@ -50,6 +50,7 @@ class RenderThread(threading.Thread):
         display_modes (list(resolutions)): read only access to _display_modes
         fullscreen (bool): set fullscreen on/off, automatically updates the screen
     """
+    lock = threading.Lock()
 
     def __init__(self, caption, width, height, fps=25, fullscreen=False, switch_resolution=False, daemon=True):
         threading.Thread.__init__(self)
@@ -61,7 +62,6 @@ class RenderThread(threading.Thread):
         self._fullscreen = fullscreen
         self.switch_resolution = switch_resolution
         self.daemon = daemon
-        self.lock = threading.Lock()
         # clock thread @ fps
         self.clock = pygame.time.Clock()
         # dirty rects list to only partially update the screen
@@ -305,9 +305,9 @@ class RenderThread(threading.Thread):
         """
         def add_rect(single_rect):
             """make sure not to add something wrong because pygame.display.update is very sensible"""
-            if isinstance(single_rect, pygame.Rect):
+            try:
                 self._rects_to_update.insert(0, single_rect)
-            else:
+            except TypeError:
                 print("%s is no valid pygame.Rect" % single_rect)
 
         if surface:
