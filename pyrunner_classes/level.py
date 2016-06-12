@@ -44,8 +44,8 @@ class Level(object):
                         WorldObject(a)
                 if layer.properties['climbable'] == 'true':
                     for a in layer.tiles():
-                        WorldObject(a,True)
-                #pprint(layer.properties)
+                        WorldObject(a, True)
+                # print(layer.properties)
 
     def render_tile_layer(self, surface, layer):
         """create the level"""

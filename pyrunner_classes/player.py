@@ -1,6 +1,8 @@
 """
 This module is used to hold the Player class. The Player represents the user-
 controlled sprite on the screen.
+Passing sprite_sheet.getimage(x position in pixels upper left corner, y position in pixels upper left corner,
+widht of image, height of image) to cut the sprite out of the sprite sheet
 """
 import pygame
 from .spritesheet_handling import SpriteSheet
@@ -25,6 +27,8 @@ class Player(pygame.sprite.DirtySprite):
         self.boundary_bottom = 0
         self.boundary_left = 0
         self.boundary_right = 0
+
+        self.gold_count = 0
 
         self.level = None
         self.player = None
@@ -178,7 +182,7 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = 2
         self.direction = "HR"
 
-    def update(self):  # updates the frames to create motion with sprites
+    def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
         # Gravity
         self.calc_grav()

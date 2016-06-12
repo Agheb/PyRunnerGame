@@ -19,8 +19,10 @@ class Controller:
         # TODO move both players
         if key == self.config.p1_left:
             self.player1.go_left()
+            print("Player1 goes left")
         elif key == self.config.p1_right:
             self.player1.go_right()
+            print("Player1 goes right")
         elif key == self.config.p1_up:
             self.player1.go_up()
         elif key == self.config.p1_down:
