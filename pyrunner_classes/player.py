@@ -2,17 +2,18 @@
 This module is used to hold the Player class. The Player represents the user-
 controlled sprite on the screen.
 Passing sprite_sheet.getimage(x position in pixels upper left corner, y position in pixels upper left corner,
-widht of image, height of image) to cut the sprite out of the sprite sheet
+widht of image, height of image) to spritesheet_handling to cut the sprite out of the sprite sheet.
 """
 import pygame
 from .spritesheet_handling import SpriteSheet
-
+from .level import *
 
 SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
 
 
 class Player(pygame.sprite.DirtySprite):
     """defines the main player"""
+
     def __init__(self):
         super().__init__()
 
@@ -79,16 +80,21 @@ class Player(pygame.sprite.DirtySprite):
         self.walking_frames_ud.append(image)
 
         # Load all the digging left images
-        image = sprite_sheet.get_image(0, 64, 32, 32)
+        image = sprite_sheet.get_image(64, 64, 32, 32)
         self.digging_frames_l.append(image)
-        image = sprite_sheet.get_image(16, 64, 32, 32)
+        image = sprite_sheet.get_image(32, 64, 32, 32)
+        self.digging_frames_l.append(image)
+        image = sprite_sheet.get_image(0, 64, 32, 32)
         self.digging_frames_l.append(image)
 
         # Load all the digging left images and flip them do digging right
-        image = sprite_sheet.get_image(0, 64, 32, 32)
+        image = sprite_sheet.get_image(64, 64, 32, 32)
         image = pygame.transform.flip(image, True, False)
         self.digging_frames_r.append(image)
-        image = sprite_sheet.get_image(16, 64, 32, 32)
+        image = sprite_sheet.get_image(32, 64, 32, 32)
+        image = pygame.transform.flip(image, True, False)
+        self.digging_frames_r.append(image)
+        image = sprite_sheet.get_image(0, 64, 32, 32)
         image = pygame.transform.flip(image, True, False)
         self.digging_frames_r.append(image)
 
@@ -129,7 +135,7 @@ class Player(pygame.sprite.DirtySprite):
     # Player-controlled movement:
     def go_left(self):
         """" Called when the user hits the left arrow. Checks if player is on Rope to change animation """
-        self.change_x = -2
+        self.change_x = -5
         if self.on_rope:
             self.direction = "RL"
         else:
@@ -137,7 +143,7 @@ class Player(pygame.sprite.DirtySprite):
 
     def go_right(self):
         """ Called when the user hits the right arrow. Checks if player is on Rope to change animation """
-        self.change_x = 2
+        self.change_x = 5
         if self.on_rope:
             self.direction = "RR"
         else:
@@ -159,28 +165,17 @@ class Player(pygame.sprite.DirtySprite):
         else:
             pass
 
-    def stop(self):
-        """ Called when the user lets off the keyboard. """
-        self.change_x = 0
-        self.change_y = 0
-        self.direction = "Stop"
-
     def schedule_stop(self):
         self.stop_on_ground = True
+        self.direction = "Stop"
 
     def dig_right(self):
         self.direction = "DR"
+        print("digging right")
 
     def dig_left(self):
         self.direction = "DL"
-
-    def hang_left(self):
-        self.change_x = -2
-        self.direction = "HL"
-
-    def hang_right(self):
-        self.change_x = 2
-        self.direction = "HR"
+        print("digging left")
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
@@ -211,9 +206,11 @@ class Player(pygame.sprite.DirtySprite):
         if self.direction == "DL":
             self.image = self.digging_frames_l[0]
             self.image = self.digging_frames_l[1]
+            self.image = self.digging_frames_l[2]
         elif self.direction == "DR":
             self.image = self.digging_frames_r[0]
             self.image = self.digging_frames_r[1]
+            self.image = self.digging_frames_r[2]
 
         # Hang left/right
         if self.direction == "HR":

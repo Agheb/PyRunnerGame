@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
 from .player import *
@@ -10,7 +9,6 @@ GRAVITY = 1
 MULTIPLICATOR = 1
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
-
 
 worldGroup = pygame.sprite.LayeredDirty()
 playerGroup = pygame.sprite.LayeredDirty()
@@ -64,6 +62,8 @@ class Physics(object):
             for player in playerGroup:
                 player.on_ground = False
                 player.on_ladder = False
+        return col
+        print(col)
 
     @staticmethod
     def fix_pos(player, sprite):

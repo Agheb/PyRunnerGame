@@ -29,10 +29,10 @@ class Controller:
             self.player1.go_down()
         # TODO actions for both players
         elif key == self.config.p1_action_l:
-            self.player1.dig_left
+            self.player1.dig_left()
             print("Player1 digs left")
         elif key == self.config.p1_action_r:
-            self.player1.dig_right
+            self.player1.dig_right()
             print("Player1 digs right")
         elif key == self.config.p1_interact:
             print("Player 1 interacts")
