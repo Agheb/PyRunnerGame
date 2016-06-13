@@ -9,13 +9,31 @@ import pygame
 from pygame.locals import *
 import sys
 import os
+import argparse
+import logging 
 # pyRunner subclasses
 from pyrunner_classes import *
 
 
+
+
+#interpret command line ags
+parser = argparse.ArgumentParser(description='Testing')
+parser.add_argument('--log',
+                    help='pass the log level desired (info, debug,...)', type=str)
+args = parser.parse_args()
+
+# set log level
+# specify --log=DEBUG or --log=debug
+if args.log is not None:
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log)
+    logging.basicConfig(level=numeric_level)
+
 class PyRunner(object):
     """main PyRunner Class"""
-
+    
     def __init__(self):
         """initialize the game"""
         '''important settings'''
