@@ -71,6 +71,13 @@ class Physics(object):
         player.on_ground = True
         player.rect.y = sprite.rect.y - player.rect.height - 1
 
+    def get_level_info_json(self):
+        pass
+
+    def set_level_info_via_json(self, json):
+        pass
+    
+
 
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
