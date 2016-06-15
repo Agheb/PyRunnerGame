@@ -20,11 +20,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-<<<<<<< HEAD
-   eJzt08ENgCAQBdEN/VcjKIIW5y8ACMgBE+clcyG73NYMwF/5gWb/Ks0BWOfN3Y/ucP/4qm1xhzOL6lRJZXWpu/LmVVC7a+/2zj0wpUz/
-=======
    eJztlEsKwCAMRIP3P03tz7aH6+wb00EQW5gHb6EksxnUTIgn2ZHdizJaMkU/an14ZzaLzVb/3+Wty+gtq9v/0PI3M/17896+ECOZBrsmsw3usMADnvCq3GU4wyXFu+zcDe6fWZU=
->>>>>>> RobSprint2
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
