@@ -8,9 +8,25 @@ import pygame
 from pygame.locals import *
 import sys
 import os
+import argparse
+import logging
 # pyRunner subclasses
 from pyrunner_classes import *
 
+
+#interpret command line ags
+parser = argparse.ArgumentParser(description='Testing')
+parser.add_argument('--log',
+                    help='pass the log level desired (info, debug,...)', type=str)
+args = parser.parse_args()
+
+# set log level
+# specify --log=DEBUG or --log=debug
+if args.log is not None:
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log)
+    logging.basicConfig(level=numeric_level)
 
 class PyRunner(object):
     """main PyRunner Class"""
@@ -42,8 +58,9 @@ class PyRunner(object):
         self.physics = None
         self.load_level("./resources/levels/scifi.tmx")
         '''init the main menu'''
-        self.menu = MainMenu(self)
-        self.controller = Controller(self.physics.player, self.config)
+        self.network_connector = NetworkConnector()
+        self.menu = MainMenu(self, self.network_connector)
+        self.controller = Controller(self.physics.player, self.config, self.network_connector)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -102,3 +119,4 @@ if __name__ == "__main__":
     pyrunner = PyRunner()
     # start the pyrunner game
     pyrunner.start_game()
+

@@ -117,6 +117,13 @@ class Physics(object):
                     player.rect.left = sprite.rect.right
                     player.change_x = 0
 
+    def get_level_info_json(self):
+        pass
+
+    def set_level_info_via_json(self, json):
+        pass
+    
+
 
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
