@@ -6,6 +6,7 @@
  <layer name="Background" width="32" height="24">
   <properties>
    <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
@@ -15,19 +16,31 @@
  <layer name="Block" width="32" height="24">
   <properties>
    <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlUsOQFAMRZsuEFvBVrAQz5/FuUMTvEqkEvckZ9K0vaOmIoT8g0RFUpipT36O3AKWTvkVcmvYHPKDwTssu2J3EkLe48mNWmd4/+SrtM4O+MUjnOAMF7jC7aQWYAd7vZ6N7dsBSgFT3w==
+   eJztkkEOwBAUBX/c/zSUajmct7Oq8NsGyZtkNuLZDBFCKq7h2732TfIfX7Yabc/+66Jpybb7oek4uuEfIatiJxuMyAkjvOANE8wPZw4e0Jv2tvdeAYLsaPc=
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
   <properties>
    <property name="climbable" type="bool" value="true"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztzUEVACAIRMGlrGbBLNJRrgTw7eVPgZEA4L8V0g5+fn6H7PsY/9t3GX8A0wOoowga
+   eJztldEJgDAMRNNNdBadRWfRWXQhncVi/FKkEtK74k8f9EtyT8lRRSqVm0NP/DGjCSJtwPxIRqdzPehHMgadG0E/kjHp3PyYzdnlOwN5L0YfED+jD4if0Qck62uXKayuML8lhdWV0n6rK6X9Vr5nlxebnt3ht/IXfbY6/Ix/EQLz7smBeffkULqvFt6+Vvycq3IhJg==
+  </data>
+ </layer>
+ <layer name="Seil" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="true"/>
+   <property name="solid" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFxIBvQPwdC/4BxD+B+BcQ/wbiPwPlwFFAVfCNARHn2OIYn9woGAUg8A0Nj4KRAUbLhVEwCkbBUAAAuF0i8Q==
   </data>
  </layer>
 </map>

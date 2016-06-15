@@ -49,6 +49,8 @@ class Physics(object):
                 for sprite in col[playerObj]:
                     if sprite.climbable:
                         playerObj.on_ladder = True
+                    elif sprite.climbable_horizontal:
+                        playerObj.on_rope = True
                     else:
                         # collision at feet
                         self.fix_pos(playerObj, sprite)
@@ -62,6 +64,8 @@ class Physics(object):
             for player in playerGroup:
                 player.on_ground = False
                 player.on_ladder = False
+                player.on_rope = False
+
         return col
         print(col)
 
@@ -75,7 +79,7 @@ class Physics(object):
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
-    def __init__(self, tile, climbable=False):
+    def __init__(self, tile, climbable=False,climbable_horizontal=False):
         """world object item"""
         (pos_x, pos_y, self.image) = tile
         pygame.sprite.DirtySprite.__init__(self, worldGroup)
@@ -83,6 +87,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.rect.x = pos_x * TILE_WIDTH
         self.rect.y = pos_y * TILE_HEIGHT
         self.climbable = climbable
+        self.climbable_horizontal = climbable_horizontal
 
     def update(self):
         """update world objects"""
