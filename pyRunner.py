@@ -8,12 +8,33 @@ import pygame
 from pygame.locals import *
 import sys
 import os
+import argparse
+import logging
 # pyRunner subclasses
 from pyrunner_classes import *
 
 
+#interpret command line ags
+parser = argparse.ArgumentParser(description='Testing')
+parser.add_argument('--log',
+                    help='pass the log level desired (info, debug,...)', type=str)
+args = parser.parse_args()
+
+# set log level
+# specify --log=DEBUG or --log=debug
+if args.log is not None:
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log)
+    logging.basicConfig(level=numeric_level)
+
 class PyRunner(object):
     """main PyRunner Class"""
+
+    def load_level(self, level_path):
+        """load another level"""
+        self.level = Level(level_path, self.bg_surface)
+        self.physics = Physics(self.render_thread.screen, self.bg_surface)
 
     def __init__(self):
         """initialize the game"""
@@ -31,10 +52,15 @@ class PyRunner(object):
                                           self.config.fullscreen, self.config.switch_resolution)
         self.render_thread.fill_screen(BACKGROUND)
         self.render_thread.start()
-        # set the background image
-        self.bg_image = pygame.image.load(os.path.join('./resources/images/', 'lode2.gif')).convert()
+        '''init the level and main game physics'''
+        self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
+        self.level = None
+        self.physics = None
+        self.load_level("./resources/levels/scifi.tmx")
         '''init the main menu'''
-        self.menu = MainMenu(self)
+        self.network_connector = NetworkConnector()
+        self.menu = MainMenu(self, self.network_connector)
+        self.controller = Controller(self.physics.player, self.config, self.network_connector)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -70,58 +96,27 @@ class PyRunner(object):
                     key = event.key
                     '''key pressing events'''
                     if self.menu.in_menu:
-                        if key == K_SPACE:
-                            self.music_thread.play_sound(sound_shoot)
-                        elif key == K_LSHIFT:
-                            self.music_thread.play_sound('unscrew_lightbulb-mike-koenig.wav')
-                        else:
-                            self.menu.key_actions(key)
+                        self.menu.key_actions(key)
                     else:
-                        """controls and key settings if the game is in foreground"""
                         if key == K_ESCAPE:
                             self.menu.show_menu(True)
-                        # TODO move both players
-                        elif key == self.config.p1_left:
-                            print("Player 1 moves left")
-                        elif key == self.config.p1_right:
-                            print("Player 1 moves right")
-                        elif key == self.config.p1_up:
-                            print("Player 1 moves up")
-                        elif key == self.config.p1_down:
-                            print("Player 1 moves down")
-                        # TODO actions for both players
-                        elif key == self.config.p1_action_l:
-                            print("Player 1 digs left")
-                        elif key == self.config.p1_action_r:
-                            print("Player 1 digs right")
-                        elif key == self.config.p1_interact:
-                            print("Player 1 interacts")
-                        elif key == self.config.p1_taunt:
-                            print("Player 1 taunts")
-                        # TODO the same for player 2
-                        elif key == self.config.p2_left:
-                            print("Player 2 moves left")
-                        elif key == self.config.p2_right:
-                            print("Player 2 moves right")
-                        elif key == self.config.p2_up:
-                            print("Player 2 moves up")
-                        elif key == self.config.p2_down:
-                            print("Player 2 moves down")
-                        # TODO actions for both players
-                        elif key == self.config.p2_action_l:
-                            print("Player 2 digs left")
-                        elif key == self.config.p2_action_r:
-                            print("Player 2 digs right")
-                        elif key == self.config.p2_interact:
-                            print("Player 2 interacts")
-                        elif key == self.config.p2_taunt:
-                            print("Player 2 taunts")
-
+                        else:
+                            self.controller.interpret_key(key)
+                elif event.type == KEYUP:
+                    key = event.key
+                    '''key pressing events'''
+                    if self.menu.in_menu:
+                        pass
+                    else:
+                        self.controller.release_key(key)
             # save cpu resources
+            if not self.menu.in_menu:
+                self.render_thread.add_rect_to_update(self.physics.update())
             clock.tick(self.config.fps)
 
 
 if __name__ == "__main__":
     pyrunner = PyRunner()
-    # start the 4 in a row game
+    # start the pyrunner game
     pyrunner.start_game()
+
