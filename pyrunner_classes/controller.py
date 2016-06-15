@@ -11,7 +11,7 @@ class Controller(object):
 
     def __init__(self, player1, config):
         self.player1 = player1
-        #self.player2 = player2
+        # self.player2 = player2
         self.config = config
 
     def interpret_key(self, key):
@@ -27,13 +27,17 @@ class Controller(object):
             self.player1.go_down()
         # TODO actions for both players
         elif key == self.config.p1_action_l:
+            self.player1.dig_left()
             print("Player 1 digs left")
         elif key == self.config.p1_action_r:
+            self.player1.dig_right()
             print("Player 1 digs right")
         elif key == self.config.p1_interact:
             print("Player 1 interacts")
         elif key == self.config.p1_taunt:
             print("Player 1 taunts")
+        elif key == self.config.p1_jump:
+            pass
         # TODO the same for player 2
         elif key == self.config.p2_left:
             print("Player 2 moves left")
@@ -52,6 +56,8 @@ class Controller(object):
             print("Player 2 interacts")
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
+        elif key == self.config.p2_jump:
+            pass
 
     def release_key(self, key):
         """stop walking"""

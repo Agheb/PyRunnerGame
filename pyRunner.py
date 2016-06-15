@@ -100,5 +100,5 @@ class PyRunner(object):
 
 if __name__ == "__main__":
     pyrunner = PyRunner()
-    # start the 4 in a row game
+    # start the pyrunner game
     pyrunner.start_game()

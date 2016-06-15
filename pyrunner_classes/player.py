@@ -3,6 +3,8 @@
 """
 This module is used to hold the Player class. The Player represents the user-
 controlled sprite on the screen.
+Passing sprite_sheet.getimage(x position in pixels upper left corner, y position in pixels upper left corner,
+widht of image, height of image) to spritesheet_handling to cut the sprite out of the sprite sheet.
 """
 # Python 2 related fixes
 from __future__ import division
@@ -15,11 +17,13 @@ SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
 
 class Player(pygame.sprite.DirtySprite):
     """defines the main player"""
+
     def __init__(self):
         pygame.sprite.DirtySprite.__init__(self)
 
         self.on_ground = False
         self.on_ladder = False
+        self.on_rope = True
         self.stop_on_ground = False
         self.change_x = 0
         self.change_y = 0
@@ -28,6 +32,8 @@ class Player(pygame.sprite.DirtySprite):
         self.boundary_bottom = 0
         self.boundary_left = 0
         self.boundary_right = 0
+
+        self.gold_count = 0
 
         self.level = None
         self.player = None
@@ -80,16 +86,23 @@ class Player(pygame.sprite.DirtySprite):
         self.walking_frames_ud.append(image)
 
         # Load all the digging left images
+        image = sprite_sheet.get_image(64, 64, 32, 32)
+        self.digging_frames_l.append(image)
+        image = sprite_sheet.get_image(32, 64, 32, 32)
+        self.digging_frames_l.append(image)
         image = sprite_sheet.get_image(0, 64, 32, 32)
         self.digging_frames_l.append(image)
         image = sprite_sheet.get_image(16, 64, 32, 32)
         self.digging_frames_l.append(image)
 
         # Load all the digging left images and flip them do digging right
-        image = sprite_sheet.get_image(0, 64, 32, 32)
+        image = sprite_sheet.get_image(64, 64, 32, 32)
         image = pygame.transform.flip(image, True, False)
         self.digging_frames_r.append(image)
-        image = sprite_sheet.get_image(16, 64, 32, 32)
+        image = sprite_sheet.get_image(32, 64, 32, 32)
+        image = pygame.transform.flip(image, True, False)
+        self.digging_frames_r.append(image)
+        image = sprite_sheet.get_image(0, 64, 32, 32)
         image = pygame.transform.flip(image, True, False)
         self.digging_frames_r.append(image)
 
@@ -120,7 +133,7 @@ class Player(pygame.sprite.DirtySprite):
         # Stop Frame
         self.stop_frame = sprite_sheet.get_image(160, 0, 32, 32)
 
-        self.direction = "R"  # direction the player is facing
+        self.direction = "Stop"  # direction the player is facing at the beginning of the game
 
         # Set the image the player starts with
         self.image = self.walking_frames_r[0]
@@ -129,24 +142,32 @@ class Player(pygame.sprite.DirtySprite):
 
     # Player-controlled movement:
     def go_left(self):
-        """ Called when the user hits the left arrow. """
+        """" Called when the user hits the left arrow. Checks if player is on Rope to change animation """
         self.change_x = -5
-        self.direction = "L"
+        if self.on_rope:
+            self.direction = "RL"
+        else:
+            self.direction = "L"
 
     def go_right(self):
-        """ Called when the user hits the right arrow. """
+        """ Called when the user hits the right arrow. Checks if player is on Rope to change animation """
         self.change_x = 5
-        self.direction = "R"
+        if self.on_rope:
+            self.direction = "RR"
+            print(self.direction, self.on_rope)
+        else:
+            self.direction = "R"
 
     def go_up(self):
-        """ Called when the user hits the up arrow. """
-        self.change_y = -5
-        self.direction = 'UD'
-
+        """ Called when the user hits the up arrow. Only Possible when Player is on a ladder"""
+        if self.on_ladder:
+            self.change_y = -5
+            self.direction = 'UD'
     def go_down(self):
-        """ Called when the user hits the down arrow. """
-        self.change_y = 5
-        self.direction = 'UD'
+        """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
+        if self.on_ladder:
+            self.change_y = 5
+            self.direction = 'UD'
 
     def stop(self):
         """ Called when the user lets off the keyboard. """
@@ -157,14 +178,19 @@ class Player(pygame.sprite.DirtySprite):
     def schedule_stop(self):
         """stop player movements"""
         self.stop_on_ground = True
+        self.direction = "Stop"
 
     def dig_right(self):
         """dig to the right"""
         self.direction = "DR"
+        print("digging right")
+        self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
         self.direction = "DL"
+        print("digging left")
+        self.player_collide()
 
     def hang_left(self):
         """hang it left"""
@@ -176,7 +202,7 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = 2
         self.direction = "HR"
 
-    def update(self):  # updates the frames to create motion with sprites
+    def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
         # Gravity
         self.calc_grav()
@@ -187,7 +213,8 @@ class Player(pygame.sprite.DirtySprite):
         # Move left/right
         self.rect.x += self.change_x
         self.rect.y += self.change_y
-        #Animations
+
+        # Animations with Sprites
         posx = self.rect.x
         posy = self.rect.y
         if self.direction == "R":
@@ -205,16 +232,18 @@ class Player(pygame.sprite.DirtySprite):
         # Dig left/right
         if self.direction == "DL":
             self.image = self.digging_frames_l[0]
-            # self.image = self.digging_frames_l[1]
+            self.image = self.digging_frames_l[1]
+            self.image = self.digging_frames_l[2]
         elif self.direction == "DR":
             self.image = self.digging_frames_r[0]
-            # self.image = self.digging_frames_r[1]
+            self.image = self.digging_frames_r[1]
+            self.image = self.digging_frames_r[2]
 
         # Hang left/right
-        if self.direction == "HR":
+        if self.direction == "RR":
             frame = (posx // fps) % len(self.hanging_frames_r)
             self.image = self.hanging_frames_r[frame]
-        elif self.direction == "HL":
+        elif self.direction == "RL":
             frame = (posx // fps) % len(self.hanging_frames_l)
             self.image = self.hanging_frames_l[frame]
 
@@ -225,10 +254,15 @@ class Player(pygame.sprite.DirtySprite):
     def calc_grav(self):
         """ Calculate effect of gravity. """
 
-        # See if we are on the ground.
-        if not self.on_ground and not self.on_ladder:
+        # See if we are on the ground and not on a ladder or rope
+        if not self.on_ground and (not self.on_ladder or not self.on_rope):
             self.change_y += .35
         elif self.stop_on_ground:
             self.change_y = 0
             self.change_x = 0
             self.stop_on_ground = False
+
+    def player_collide(self):
+        col_list = pygame.sprite.collide_rect_ratio(1.5)
+        print(col_list)
+        return col_list

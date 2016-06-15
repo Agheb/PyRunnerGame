@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
 from .player import *
@@ -10,7 +9,6 @@ GRAVITY = 1
 MULTIPLICATOR = 1
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
-
 
 worldGroup = pygame.sprite.LayeredDirty()
 playerGroup = pygame.sprite.LayeredDirty()
@@ -82,6 +80,9 @@ class Physics(object):
                 self.check_world_boundaries(player)
                 player.on_ground = False
                 player.on_ladder = False
+                player.on_rope = False
+
+        return col
 
     @staticmethod
     def stop_horizontal_movement(player):
@@ -120,7 +121,7 @@ class Physics(object):
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
-    def __init__(self, tile, solid=True, climbable=False):
+    def __init__(self, tile, solid=True, climbable=False, climbable_horizontal=False):
         """world object item"""
         (pos_x, pos_y, self.image) = tile
         pygame.sprite.DirtySprite.__init__(self, worldGroup)
@@ -129,6 +130,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.rect.y = pos_y * TILE_HEIGHT
         self.solid = solid
         self.climbable = climbable
+        self.climbable_horizontal = climbable_horizontal
 
     def update(self):
         """update world objects"""
