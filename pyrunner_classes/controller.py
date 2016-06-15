@@ -38,6 +38,8 @@ class Controller:
             print("Player 1 interacts")
         elif key == self.config.p1_taunt:
             print("Player 1 taunts")
+        elif key == self.config.p1_jump:
+            pass
         # TODO the same for player 2
         elif key == self.config.p2_left:
             print("Player 2 moves left")
@@ -56,6 +58,8 @@ class Controller:
             print("Player 2 interacts")
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
+        elif key == self.config.p2_jump:
+            pass
 
     def release_key(self, key):
         """stop walking"""

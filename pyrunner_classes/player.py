@@ -6,7 +6,6 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 """
 import pygame
 from .spritesheet_handling import SpriteSheet
-from .level import *
 
 SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
 
@@ -172,10 +171,12 @@ class Player(pygame.sprite.DirtySprite):
     def dig_right(self):
         self.direction = "DR"
         print("digging right")
+        self.player_collisions()
 
     def dig_left(self):
         self.direction = "DL"
         print("digging left")
+        self.player_collisions()
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
@@ -193,7 +194,7 @@ class Player(pygame.sprite.DirtySprite):
         if self.direction == "R":
             frame = (posx // 30) % len(self.walking_frames_r)
             self.image = self.walking_frames_r[frame]
-        else:
+        elif self.direction == "L":
             frame = (posx // 30) % len(self.walking_frames_l)
             self.image = self.walking_frames_l[frame]
 
@@ -213,10 +214,10 @@ class Player(pygame.sprite.DirtySprite):
             self.image = self.digging_frames_r[2]
 
         # Hang left/right
-        if self.direction == "HR":
+        if self.direction == "RR":
             frame = (posx // 30) % len(self.hanging_frames_r)
             self.image = self.hanging_frames_r[frame]
-        elif self.direction == "HL":
+        elif self.direction == "RL":
             frame = (posx // 30) % len(self.hanging_frames_l)
             self.image = self.hanging_frames_l[frame]
 
@@ -235,3 +236,9 @@ class Player(pygame.sprite.DirtySprite):
             self.change_y = 0
             self.change_x = 0
             self.stop_on_ground = False
+
+    # See if we hit anything
+    def player_collisions(self):
+        block_hit_list = pygame.sprite.collide_rect_ratio(4)
+        print(block_hit_list)
+        return block_hit_list
