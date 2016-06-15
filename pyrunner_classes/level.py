@@ -47,7 +47,7 @@ class Level(object):
                         WorldObject(a, True)
                 if layer.properties['climbable_horizontal'] == 'true':
                     for a in layer.tiles():
-                        WorldObject(a, True,True)
+                        WorldObject(a, True, True)
                 # print(layer.properties)
 
     def render_tile_layer(self, surface, layer):

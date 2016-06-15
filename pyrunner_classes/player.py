@@ -18,7 +18,7 @@ class Player(pygame.sprite.DirtySprite):
 
         self.on_ground = False
         self.on_ladder = False
-        self.on_rope = False
+        self.on_rope = True
         self.stop_on_ground = False
         self.change_x = 0
         self.change_y = 0
@@ -124,7 +124,7 @@ class Player(pygame.sprite.DirtySprite):
         # Stop Frame
         self.stop_frame = sprite_sheet.get_image(160, 0, 32, 32)
 
-        self.direction = "R"  # direction the player is facing
+        self.direction = "Stop"  # direction the player is facing at the beginning of the game
 
         # Set the image the player starts with
         self.image = self.walking_frames_r[0]
@@ -145,6 +145,7 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = 5
         if self.on_rope:
             self.direction = "RR"
+            print(self.direction, self.on_rope)
         else:
             self.direction = "R"
 
@@ -171,12 +172,12 @@ class Player(pygame.sprite.DirtySprite):
     def dig_right(self):
         self.direction = "DR"
         print("digging right")
-        self.player_collisions()
+        self.player_collide()
 
     def dig_left(self):
         self.direction = "DL"
         print("digging left")
-        self.player_collisions()
+        self.player_collide()
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
@@ -228,8 +229,8 @@ class Player(pygame.sprite.DirtySprite):
     def calc_grav(self):
         """ Calculate effect of gravity. """
 
-        # See if we are on the ground.
-        if not self.on_ground or not self.on_ladder:
+        # See if we are on the ground and not on a ladder or rope
+        if not self.on_ground and (not self.on_ladder or not self.on_rope):
             self.change_y += .35
 
         if self.stop_on_ground and self.on_ground:
@@ -237,8 +238,7 @@ class Player(pygame.sprite.DirtySprite):
             self.change_x = 0
             self.stop_on_ground = False
 
-    # See if we hit anything
-    def player_collisions(self):
-        block_hit_list = pygame.sprite.collide_rect_ratio(4)
-        print(block_hit_list)
-        return block_hit_list
+    def player_collide(self):
+        col_list = pygame.sprite.collide_rect_ratio(1.5)
+        print(col_list)
+        return col_list
