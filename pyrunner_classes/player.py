@@ -129,12 +129,12 @@ class Player(pygame.sprite.DirtySprite):
     # Player-controlled movement:
     def go_left(self):
         """ Called when the user hits the left arrow. """
-        self.change_x = -2
+        self.change_x = -5
         self.direction = "L"
 
     def go_right(self):
         """ Called when the user hits the right arrow. """
-        self.change_x = 2
+        self.change_x = 5
         self.direction = "R"
 
     def go_up(self):
@@ -145,7 +145,7 @@ class Player(pygame.sprite.DirtySprite):
 
     def go_down(self):
         """ Called when the user hits the down arrow. """
-        self.change_y = 2
+        self.change_y = 5
         self.direction = 'UD'
 
     def stop(self):
@@ -175,6 +175,7 @@ class Player(pygame.sprite.DirtySprite):
         # Gravity
         self.calc_grav()
         self.dirty = 1
+        fps = 25
 
 
         # Move left/right
@@ -184,15 +185,15 @@ class Player(pygame.sprite.DirtySprite):
         posx = self.rect.x
         posy = self.rect.y
         if self.direction == "R":
-            frame = (posx // 30) % len(self.walking_frames_r)
+            frame = (posx // fps) % len(self.walking_frames_r)
             self.image = self.walking_frames_r[frame]
         else:
-            frame = (posx // 30) % len(self.walking_frames_l)
+            frame = (posx // fps) % len(self.walking_frames_l)
             self.image = self.walking_frames_l[frame]
 
         # Move up/down uses the same sprites
         if self.direction == "UD":
-            frame = (posy // 30) % len(self.walking_frames_ud)
+            frame = (posy // fps) % len(self.walking_frames_ud)
             self.image = self.walking_frames_ud[frame]
 
         # Dig left/right
@@ -205,10 +206,10 @@ class Player(pygame.sprite.DirtySprite):
 
         # Hang left/right
         if self.direction == "HR":
-            frame = (posx // 30) % len(self.hanging_frames_r)
+            frame = (posx // fps) % len(self.hanging_frames_r)
             self.image = self.hanging_frames_r[frame]
         elif self.direction == "HL":
-            frame = (posx // 30) % len(self.hanging_frames_l)
+            frame = (posx // fps) % len(self.hanging_frames_l)
             self.image = self.hanging_frames_l[frame]
 
         # stop frame

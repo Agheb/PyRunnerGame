@@ -15,6 +15,11 @@ from pyrunner_classes import *
 class PyRunner(object):
     """main PyRunner Class"""
 
+    def load_level(self, level_path):
+        """load another level"""
+        self.level = Level(level_path, self.bg_surface)
+        self.physics = Physics(self.render_thread.screen, self.bg_surface)
+
     def __init__(self):
         """initialize the game"""
         '''important settings'''
@@ -33,8 +38,9 @@ class PyRunner(object):
         self.render_thread.start()
         '''init the level and main game physics'''
         self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
-        self.level = Level("./resources/levels/scifi.tmx", self.bg_surface)
-        self.physics = Physics(self.render_thread.screen, self.bg_surface)
+        self.level = None
+        self.physics = None
+        self.load_level("./resources/levels/scifi.tmx")
         '''init the main menu'''
         self.menu = MainMenu(self)
         self.controller = Controller(self.physics.player, self.config)
