@@ -43,6 +43,7 @@ class Physics(object):
         """calculates collision for players and sprites"""
         # TODO: add head collide
         col = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False)
+        # print(col)
         if len(col) > 0:
             # some collision
             for playerObj in col.keys():
@@ -63,7 +64,6 @@ class Physics(object):
                 player.on_ground = False
                 player.on_ladder = False
         return col
-        print(col)
 
     @staticmethod
     def fix_pos(player, sprite):
