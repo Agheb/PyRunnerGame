@@ -126,6 +126,7 @@ class Player(pygame.sprite.DirtySprite):
         self.image = self.walking_frames_r[0]
         # Set a reference to the image rect.
         self.rect = self.image.get_rect()
+
     # Player-controlled movement:
     def go_left(self):
         """ Called when the user hits the left arrow. """
@@ -225,10 +226,9 @@ class Player(pygame.sprite.DirtySprite):
         """ Calculate effect of gravity. """
 
         # See if we are on the ground.
-        if not self.on_ground or not self.on_ladder:
+        if not self.on_ground and not self.on_ladder:
             self.change_y += .35
-
-        if self.stop_on_ground and self.on_ground:
+        elif self.stop_on_ground:
             self.change_y = 0
             self.change_x = 0
             self.stop_on_ground = False

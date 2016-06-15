@@ -89,9 +89,9 @@ class PyRunner(object):
                     key = event.key
                     '''key pressing events'''
                     if self.menu.in_menu:
-                      pass
+                        pass
                     else:
-                      self.controller.release_key(key)
+                        self.controller.release_key(key)
             # save cpu resources
             if not self.menu.in_menu:
                 self.render_thread.add_rect_to_update(self.physics.update())

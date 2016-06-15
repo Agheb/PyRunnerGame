@@ -65,6 +65,8 @@ class Physics(object):
             for player in col.keys():
                 for sprite in col[player]:
                     if sprite.climbable:
+                        if player.change_x is not 0:
+                            self.stop_horizontal_movement(player)
                         player.on_ladder = True
                     else:
                         # collision at feet
@@ -82,33 +84,37 @@ class Physics(object):
                 player.on_ladder = False
 
     @staticmethod
-    def fix_pos(player, sprite):
+    def stop_horizontal_movement(player):
+        """stop left/right movement"""
+        if player.change_x < 0:
+            player.change_x += 0.1
+        elif player.change_x > 0:
+            player.change_x -= 0.1
+
+    def fix_pos(self, player, sprite):
         """Used to place the player nicely"""
         # if player.rect.y > sprite.rect.y - player.rect.height:
         #    player.rect.y = sprite.rect.y - player.rect.height
-        if player.rect.left is not sprite.rect.right or player.rect.right is not sprite.rect.left:
-            if sprite.solid:
-                if player.change_y > 0:
-                    '''player hits the ground'''
-                    player.rect.bottom = sprite.rect.top
-                    player.change_y = 0
-                    player.on_ground = True
-                elif player.change_y < 0:
-                    '''player hits sprite from below'''
-                    player.rect.top = sprite.rect.bottom
-                    if player.change_x < 0:
-                        player.change_x += 0.25
-                    elif player.change_x > 0:
-                        player.change_x -= 0.25
-        elif player.rect.bottom is not sprite.rect.top:
-            if player.change_x > 0:
-                '''player hits the left side'''
-                player.rect.right = sprite.rect.left
-                player.change_x = 0
-            elif player.change_x < 0:
-                '''player hits the right side'''
-                player.rect.left = sprite.rect.right
-                player.change_x = 0
+        if sprite.solid:
+            if player.rect.left is not sprite.rect.right or player.rect.right is not sprite.rect.left:
+                    if player.change_y > 0:
+                        '''player hits the ground'''
+                        player.rect.bottom = sprite.rect.top
+                        player.change_y = 0
+                        player.on_ground = True
+                    elif player.change_y < 0:
+                        '''player hits sprite from below'''
+                        player.rect.top = sprite.rect.bottom
+                        self.stop_horizontal_movement(player)
+            elif player.rect.bottom is not sprite.rect.top:
+                if player.change_x > 0:
+                    '''player hits the left side'''
+                    player.rect.right = sprite.rect.left
+                    player.change_x = 0
+                elif player.change_x < 0:
+                    '''player hits the right side'''
+                    player.rect.left = sprite.rect.right
+                    player.change_x = 0
 
 
 class WorldObject(pygame.sprite.DirtySprite):
