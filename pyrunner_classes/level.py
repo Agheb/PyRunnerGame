@@ -36,19 +36,20 @@ class Level(object):
         self.render(self.surface)
 
     def render(self, surface):
+        """create the level"""
         for layer in self.tm.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 self.render_tile_layer(surface, layer)
                 if layer.properties['solid'] == 'true':
                     for a in layer.tiles():
-                        WorldObject(a)
-                if layer.properties['climbable'] == 'true':
+                        WorldObject(a, True)
+                elif layer.properties['climbable'] == 'true':
                     for a in layer.tiles():
-                        WorldObject(a,True)
+                        WorldObject(a, False, True)
                 #pprint(layer.properties)
 
     def render_tile_layer(self, surface, layer):
-        """create the level"""
+        """draw single tile"""
         tw = self.tm.tilewidth
         th = self.tm.tileheight
 
@@ -59,6 +60,7 @@ class Level(object):
         # TODO iterate over imageLayer
 
     def make_level(self):
+        """draw the level to a surface"""
         temp_surface = pygame.Surface(self.size)
         self.render(temp_surface)
         return temp_surface

@@ -138,7 +138,6 @@ class Player(pygame.sprite.DirtySprite):
         self.direction = "R"
 
     def go_up(self):
-
         """ Called when the user hits the up arrow. """
         self.change_y = -5
         self.direction = 'UD'
@@ -155,18 +154,24 @@ class Player(pygame.sprite.DirtySprite):
         self.direction = "Stop"
 
     def schedule_stop(self):
-      self.stop_on_ground = True
+        """stop player movements"""
+        self.stop_on_ground = True
+
     def dig_right(self):
+        """dig to the right"""
         self.direction = "DR"
 
     def dig_left(self):
+        """dig to the left"""
         self.direction = "DL"
 
     def hang_left(self):
+        """hang it left"""
         self.change_x = -2
         self.direction = "HL"
 
     def hang_right(self):
+        """hang it right"""
         self.change_x = 2
         self.direction = "HR"
 
