@@ -5,7 +5,7 @@
 from __future__ import division
 
 
-class Controller():
+class Controller(object):
 
     """player controls manager"""
 
