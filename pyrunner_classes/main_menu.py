@@ -14,11 +14,11 @@ from .network_connector import NetworkConnector
 class MainMenu(object):
     """initialize PyRunners main menu, save all required objects"""
 
-    def __init__(self, main):
+    def __init__(self, main, network_connector):
         self.main = main
         self.config = self.main.config
         self.render_thread = self.main.render_thread
-        self.network_connector = NetworkConnector()
+        self.network_connector = network_connector
         self.music_thread = self.main.music_thread
         self.bg_image = self.main.bg_image
         self.menu_pos = 1

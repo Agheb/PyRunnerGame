@@ -9,8 +9,9 @@ class Controller():
 
     """player controls manager"""
 
-    def __init__(self, player1, config):
+    def __init__(self, player1, config, network_connector):
         self.player1 = player1
+        self.network_connector = network_connector
         #self.player2 = player2
         self.config = config
 
@@ -18,6 +19,7 @@ class Controller():
         """controls and key settings if the game is in foreground"""
         # TODO move both players
         if key == self.config.p1_left:
+            self.current_action = "go_left"
             self.player1.go_left()
         elif key == self.config.p1_right:
             self.player1.go_right()
@@ -52,7 +54,7 @@ class Controller():
             print("Player 2 interacts")
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
-
+        self.network_connector.client.send_key(self.current_action)
     def release_key(self, key):
         """stop walking"""
         self.player1.schedule_stop()

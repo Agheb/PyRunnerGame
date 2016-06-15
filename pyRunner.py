@@ -10,11 +10,9 @@ from pygame.locals import *
 import sys
 import os
 import argparse
-import logging 
+import logging
 # pyRunner subclasses
 from pyrunner_classes import *
-
-
 
 
 #interpret command line ags
@@ -58,8 +56,9 @@ class PyRunner(object):
         self.physics = Physics(self.render_thread)
         # self.bg_image.blit(self.level, self.level.get_rect())
         self.render_thread.blit(self.bg_image, None, True)
-        self.menu = MainMenu(self)
-        self.controller = Controller(self.physics.player, self.config)
+        self.network_connector = NetworkConnector()
+        self.menu = MainMenu(self, self.network_connector)
+        self.controller = Controller(self.physics.player, self.config, self.network_connector)
 
     def quit_game(self, shutdown=True):
         """quit the game"""

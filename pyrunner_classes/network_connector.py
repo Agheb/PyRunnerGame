@@ -13,7 +13,7 @@ class NetworkConnector():
     
     def __init__(self):
         self.ip = "localhost"
-        self.port = 6791
+        self.port = 6790
     def start_server_prompt(self):
         self.server = Server(self.port)
         self.master = True
@@ -33,7 +33,7 @@ class Client(threading.Thread, MastermindClientTCP):
         threading.Thread.__init__(self)
         MastermindClientTCP.__init__(self)
     def send_key(self, key):
-        json.dumps({'type': 'key_update','data':str(key)})
+        data = json.dumps({'type': 'key_update','data':str(key)})
         self.send(data, compression = NetworkConnector.COMPRESSION)
     def run(self):
         logging.info("Connecting to ip %s" %str(self.target_ip))
@@ -78,7 +78,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.callback_client_send(connection_object, data)
         return super(MastermindServerTCP,self).callback_connect_client(connection_object)
     def send_key(self, key):
-        json.dumps({'type': 'key_update','data':str(key)})
+        data = json.dumps({'type': 'key_update','data':str(key)})
         self.send(data, compression = NetworkConnector.COMPRESSION)
     def kill(self):
         self.accepting_disallow()
