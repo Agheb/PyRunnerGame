@@ -60,7 +60,8 @@ class Controller(object):
             print("Player 2 taunts")
         elif key == self.config.p2_jump:
             pass
-        self.network_connector.client.send_key(self.current_action)
+        # TODO: get your crap done
+        # self.network_connector.client.send_key(self.current_action)
     def release_key(self, key):
         """stop walking"""
         self.player1.schedule_stop()
