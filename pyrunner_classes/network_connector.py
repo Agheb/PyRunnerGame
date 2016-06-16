@@ -92,13 +92,6 @@ class Server(threading.Thread, MastermindServerTCP):
         self.connect("localhost",self.port)
         self.accepting_allow()
         logging.info("server started and accepting connections")
-
-
-
-
-
-
-if __name__ == "__main__":
-    con = NetworkConnector()
-    #pdb.set_trace()
-        
+    def callback_disconnect(self):
+        logging.info("Server disconnected from network")
+        return super(MastermindServerTCP,self).callback_disconnect()
