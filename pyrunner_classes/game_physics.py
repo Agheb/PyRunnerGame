@@ -65,15 +65,18 @@ class Physics(object):
                         if player.change_x is not 0:
                             self.stop_horizontal_movement(player)
                         player.on_ladder = True
-                    if sprite.climbable_horizontal:
+                    elif sprite.climbable_horizontal:
                         if player.change_x is not 0:
                             self.stop_vertical_movement(player)
                             player.on_rope = True
-                    if sprite.collectible:
+                    elif sprite.collectible:
                         # TODO Gold Block enfernen siehe WorldObjects
                         player.gold_count += 1
                         print(player.gold_count)
-                        # WorldObject.kill(self)
+                        dirty_rect = self.background.subsurface(sprite)
+                        self.surface.blit(dirty_rect, sprite)
+                        WorldObject.kill(sprite)
+
                     else:
                         # collision at feet
                         self.fix_pos(player, sprite)
@@ -112,15 +115,15 @@ class Physics(object):
         """Used to place the player nicely"""
         if sprite.solid:
             if player.rect.left is not sprite.rect.right or player.rect.right is not sprite.rect.left:
-                    if player.change_y > 0:
-                        '''player hits the ground'''
-                        player.rect.bottom = sprite.rect.top
-                        player.change_y = 0
-                        player.on_ground = True
-                    elif player.change_y < 0:
-                        '''player hits sprite from below'''
-                        player.rect.top = sprite.rect.bottom
-                        self.stop_horizontal_movement(player)
+                if player.change_y > 0:
+                    '''player hits the ground'''
+                    player.rect.bottom = sprite.rect.top
+                    player.change_y = 0
+                    player.on_ground = True
+                elif player.change_y < 0:
+                    '''player hits sprite from below'''
+                    player.rect.top = sprite.rect.bottom
+                    self.stop_horizontal_movement(player)
             elif player.rect.bottom is not sprite.rect.top:
                 if player.change_x > 0:
                     '''player hits the left side'''
@@ -136,12 +139,12 @@ class Physics(object):
 
     def set_level_info_via_json(self, json):
         pass
-    
+
 
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
-    def __init__(self, tile, solid=True, climbable=False, climbable_horizontal=False, collectible=False):
+    def __init__(self, tile=None, solid=True, climbable=False, climbable_horizontal=False, collectible=False):
         """world object item"""
         (pos_x, pos_y, self.image) = tile
         pygame.sprite.DirtySprite.__init__(self, worldGroup)
@@ -157,12 +160,20 @@ class WorldObject(pygame.sprite.DirtySprite):
         """update world objects"""
         self.dirty = 1
 
-    def remove_block(self):
+
+class RemovableWorldObjects(WorldObject):
+    def __init__(self, spritesheet, tile=None, solid=True, climbable=False, climbable_horizontal=False,
+                 collectible=False):
+        (pos_x, pos_y, self.spritesheet) = tile
+        self.spritesheet = spritesheet
+        WorldObject(None, solid, climbable, climbable_horizontal, collectible)
+
+    def remove_block(self, pos_x, pos_y):
         """remove the block passed in by the block_id parameter. it has to be deleted from the sprite.group"""
         WorldObject.remove(worldGroup)
         pass
 
-    def add_removed_block(self):
+    def add_removed_block(self, pos_x, pos_y):
         """add the block passed in by the block_id parameter. it has to be added to the sprite.group"""
         WorldObject.add(worldGroup)
         pass

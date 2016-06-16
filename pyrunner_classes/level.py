@@ -36,6 +36,8 @@ class Level(object):
         self.surface = surface
         self.render(self.surface)
 
+    # TODO Render clean background
+
     def render(self, surface):
         """Create the level. Iterates through the layers in the TMX (see game_physics WorldObjects).
          For each Objects the properties are set as follows with defaults:
@@ -58,6 +60,14 @@ class Level(object):
                 elif layer.properties['collectible'] == 'true':
                     for a in layer.tiles():
                         WorldObject(a, False, False, False, True)
+                        # print(layer.properties)
+
+        for layer in self.tm.invisible_layers:
+            if isinstance(layer, pytmx.TiledTileLayer):
+                self.render_tile_layer(surface, layer)
+                if layer.properties['collectible'] == 'true':
+                    for a in layer.tiles():
+                        RemovableWorldObjects(a, False, False, False, True)
                         # print(layer.properties)
 
     def render_tile_layer(self, surface, layer):

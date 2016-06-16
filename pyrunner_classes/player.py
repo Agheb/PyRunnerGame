@@ -11,7 +11,6 @@ from __future__ import division
 import pygame
 from .spritesheet_handling import SpriteSheet
 
-
 SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
 
 

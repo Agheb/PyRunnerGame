@@ -13,8 +13,7 @@ import logging
 # pyRunner subclasses
 from pyrunner_classes import *
 
-
-#interpret command line ags
+# interpret command line ags
 parser = argparse.ArgumentParser(description='Testing')
 parser.add_argument('--log',
                     help='pass the log level desired (info, debug,...)', type=str)
@@ -27,6 +26,7 @@ if args.log is not None:
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log)
     logging.basicConfig(level=numeric_level)
+
 
 class PyRunner(object):
     """main PyRunner Class"""
@@ -119,4 +119,3 @@ if __name__ == "__main__":
     pyrunner = PyRunner()
     # start the pyrunner game
     pyrunner.start_game()
-
