@@ -34,6 +34,7 @@ class Player(pygame.sprite.DirtySprite):
         self.boundary_right = 0
 
         self.gold_count = 0
+        print(self.gold_count)
 
         self.level = None
         self.player = None
@@ -114,21 +115,21 @@ class Player(pygame.sprite.DirtySprite):
         image = sprite_sheet.get_image(224, 32, 32, 32)
         self.hanging_frames_l.append(image)
 
-        # Load the left hanging images into a list and flip them to right
+        # Load the left hanging images into a list and flip them to face right
         image = sprite_sheet.get_image(128, 32, 32, 32)
         image = pygame.transform.flip(image, True, False)
-        self.hanging_frames_l.append(image)
+        self.hanging_frames_r.append(image)
         image = sprite_sheet.get_image(160, 32, 32, 32)
         image = pygame.transform.flip(image, True, False)
-        self.hanging_frames_l.append(image)
+        self.hanging_frames_r.append(image)
         image = sprite_sheet.get_image(192, 32, 32, 32)
         image = pygame.transform.flip(image, True, False)
-        self.hanging_frames_l.append(image)
+        self.hanging_frames_r.append(image)
         image = sprite_sheet.get_image(224, 32, 32, 32)
         image = pygame.transform.flip(image, True, False)
-        self.hanging_frames_l.append(image)
+        self.hanging_frames_r.append(image)
 
-        # Stop Frame
+        # Stop Frame: Sprite when player is not moving on ground
         self.stop_frame = sprite_sheet.get_image(160, 0, 32, 32)
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
@@ -152,7 +153,6 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = 5
         if self.on_rope:
             self.direction = "RR"
-            print(self.direction, self.on_rope)
         else:
             self.direction = "R"
 
@@ -161,6 +161,7 @@ class Player(pygame.sprite.DirtySprite):
         if self.on_ladder:
             self.change_y = -5
             self.direction = 'UD'
+
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
         if self.on_ladder:
@@ -206,7 +207,6 @@ class Player(pygame.sprite.DirtySprite):
         self.calc_grav()
         self.dirty = 1
         fps = 25
-
 
         # Move left/right
         self.rect.x += self.change_x

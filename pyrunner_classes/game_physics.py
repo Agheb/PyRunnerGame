@@ -66,6 +66,14 @@ class Physics(object):
                         if player.change_x is not 0:
                             self.stop_horizontal_movement(player)
                         player.on_ladder = True
+                    if sprite.climbable_horizontal:
+                        if player.change_x is not 0:
+                            self.stop_horizontal_movement(player)
+                        player.on_rope = True
+                    if sprite.collectible:
+                        # TODO Gold Block enfernen siehe WorldObjects
+                        player.gold_count += 1
+                        WorldObject.remove(self)
                     else:
                         # collision at feet
                         self.fix_pos(player, sprite)
@@ -142,3 +150,9 @@ class WorldObject(pygame.sprite.DirtySprite):
     def update(self):
         """update world objects"""
         self.dirty = 1
+
+    def remove_block(self, block_id):
+        pass
+
+    def add_removed_block(self, block_id):
+        pass
