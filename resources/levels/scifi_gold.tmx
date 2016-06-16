@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="11">
+ <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
+  <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
+ </tileset>
+ <layer name="Background" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
+   <property name="solid" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt08cRQVEAheHnFSDTh0wfMn3gSX3I9CHTh8yMTAP+BTMWxupdG3fxbc7827M3KMoBR5xwxgVX3HDHXmBjVBXFBDMssMIGOxxwqmIbF9zwwAsf/AggiJDgJowIooghjgSSSCEtuMkgixw05FFAESWUBTcVVFFDHQ000UIbHcFNFz30McAQI4wxwVTH5rW/NzPMscASK6yxwRY7HRvtub83Ir8t/y//L///vfnl/z818v/y//L///v/B6wZoOM=
+  </data>
+ </layer>
+ <layer name="Block" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztlEsKwCAMRIP3P03tz7aH6+wb00EQW5gHb6EksxnUTIgn2ZHdizJaMkU/an14ZzaLzVb/3+Wty+gtq9v/0PI3M/17896+ECOZBrsmsw3usMADnvCq3GU4wyXFu+zcDe6fWZU=
+  </data>
+ </layer>
+ <layer name="Leiter" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="true"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
+   <property name="solid" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztldEJgDAMRNNNdBadRWfRWXQhncVi/FKkEtK74k8f9EtyT8lRRSqVm0NP/DGjCSJtwPxIRqdzPehHMgadG0E/kjHp3PyYzdnlOwN5L0YfED+jD4if0Qck62uXKayuML8lhdWV0n6rK6X9Vr5nlxebnt3ht/IXfbY6/Ix/EQLz7smBeffkULqvFt6+Vvycq3IhJg==
+  </data>
+ </layer>
+ <layer name="Seil" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="true"/>
+   <property name="collectible" type="bool" value="false"/>
+   <property name="solid" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFxIBvQPwdC/4BxD+B+BcQ/wbiPwPlwFFAVfCNARHn2OIYn9woGAUg8A0Nj4KRAUbLhVEwCkbBUAAAuF0i8Q==
+  </data>
+ </layer>
+ <layer name="Gold" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="true"/>
+   <property name="solid" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFxIBvQPwdC/4BxD+B+BcQ/wbiPzSyf9IA6x9sgNb++caAiHNscYxPjhxAa/8Mt/gnBgy0n7+hYWqDgfbfKMAOKCkX0OOUVnE8mnZGwSgYBQAYYyil
+  </data>
+ </layer>
+</map>

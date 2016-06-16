@@ -37,8 +37,6 @@ class Player(pygame.sprite.DirtySprite):
 
         self.level = None
         self.player = None
-        # TODO check if player is on a ladder or rope so he can walk up / down
-        # self.contactwith = None  # tells the player sprite which blocks he is in contact with
 
         # list holding the image for movement. Up and down movement uses the same sprites.
         self.walking_frames_l = []
