@@ -34,7 +34,6 @@ class Player(pygame.sprite.DirtySprite):
         self.boundary_right = 0
 
         self.gold_count = 0
-        print(self.gold_count)
 
         self.level = None
         self.player = None
@@ -145,7 +144,7 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = -5
         if self.on_rope:
             self.direction = "RL"
-        else:
+        elif not self.on_rope:
             self.direction = "L"
 
     def go_right(self):
@@ -153,7 +152,7 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = 5
         if self.on_rope:
             self.direction = "RR"
-        else:
+        elif not self.on_rope:
             self.direction = "R"
 
     def go_up(self):
@@ -190,16 +189,6 @@ class Player(pygame.sprite.DirtySprite):
         self.direction = "DL"
         print("digging left")
         self.player_collide()
-
-    def hang_left(self):
-        """hang it left"""
-        self.change_x = -2
-        self.direction = "HL"
-
-    def hang_right(self):
-        """hang it right"""
-        self.change_x = 2
-        self.direction = "HR"
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """

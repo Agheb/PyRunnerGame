@@ -56,7 +56,6 @@ class Physics(object):
 
     def collide(self):
         """calculates collision for players and sprites"""
-        # TODO: add head collide
         col = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False)
         if len(col) > 0:
             # some collision
@@ -68,12 +67,13 @@ class Physics(object):
                         player.on_ladder = True
                     if sprite.climbable_horizontal:
                         if player.change_x is not 0:
-                            self.stop_horizontal_movement(player)
-                        player.on_rope = True
+                            self.stop_vertical_movement(player)
+                            player.on_rope = True
                     if sprite.collectible:
                         # TODO Gold Block enfernen siehe WorldObjects
                         player.gold_count += 1
-                        WorldObject.remove(self)
+                        print(player.gold_count)
+                        # WorldObject.kill(self)
                     else:
                         # collision at feet
                         self.fix_pos(player, sprite)
@@ -100,10 +100,16 @@ class Physics(object):
         elif player.change_x > 0:
             player.change_x -= 0.1
 
+    @staticmethod
+    def stop_vertical_movement(player):
+        """stop left/right movement"""
+        if player.change_y < 0:
+            player.change_y += 0.1
+        elif player.change_y > 0:
+            player.change_y -= 0.1
+
     def fix_pos(self, player, sprite):
         """Used to place the player nicely"""
-        # if player.rect.y > sprite.rect.y - player.rect.height:
-        #    player.rect.y = sprite.rect.y - player.rect.height
         if sprite.solid:
             if player.rect.left is not sprite.rect.right or player.rect.right is not sprite.rect.left:
                     if player.change_y > 0:
@@ -151,8 +157,12 @@ class WorldObject(pygame.sprite.DirtySprite):
         """update world objects"""
         self.dirty = 1
 
-    def remove_block(self, block_id):
+    def remove_block(self):
+        """remove the block passed in by the block_id parameter. it has to be deleted from the sprite.group"""
+        WorldObject.remove(worldGroup)
         pass
 
-    def add_removed_block(self, block_id):
+    def add_removed_block(self):
+        """add the block passed in by the block_id parameter. it has to be added to the sprite.group"""
+        WorldObject.add(worldGroup)
         pass
