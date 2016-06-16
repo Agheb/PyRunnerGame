@@ -62,13 +62,13 @@ class Level(object):
                         WorldObject(a, False, False, False, True)
                         # print(layer.properties)
 
-        for layer in self.tm.invisible_layers:
-            if isinstance(layer, pytmx.TiledTileLayer):
-                self.render_tile_layer(surface, layer)
-                if layer.properties['collectible'] == 'true':
-                    for a in layer.tiles():
-                        RemovableWorldObjects(a, False, False, False, True)
-                        # print(layer.properties)
+#        for layer in self.tm.invisible_layers:
+#           if isinstance(layer, pytmx.TiledTileLayer):
+#                self.render_tile_layer(surface, layer)
+#                if layer.properties['collectible'] == 'true':
+#                    for a in layer.tiles():
+#                        RemovableWorldObjects(a, False, False, False, True)
+#                        # print(layer.properties)
 
     def render_tile_layer(self, surface, layer):
         """draw single tile"""
