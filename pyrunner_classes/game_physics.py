@@ -124,11 +124,10 @@ class Physics(object):
         pass
     
 
-
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
-    def __init__(self, tile, solid=True, climbable=False, climbable_horizontal=False):
+    def __init__(self, tile, solid=True, climbable=False, climbable_horizontal=False, collectible=False):
         """world object item"""
         (pos_x, pos_y, self.image) = tile
         pygame.sprite.DirtySprite.__init__(self, worldGroup)
@@ -138,6 +137,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.solid = solid
         self.climbable = climbable
         self.climbable_horizontal = climbable_horizontal
+        self.collectible = collectible
 
     def update(self):
         """update world objects"""

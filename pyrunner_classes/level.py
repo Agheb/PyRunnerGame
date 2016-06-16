@@ -6,6 +6,7 @@ from __future__ import division
 import pytmx
 from .game_physics import *
 from pytmx.util_pygame import load_pygame
+
 """
 Level Builder for PyRunner game
 PyTMX is used to load tilemap into game
@@ -14,12 +15,12 @@ TMX ( Tiled Map XML) to describe a map
 TMX- Specification:
 """
 
+
 # TODO TMX Specification:
 # TODO make collidable Rects from ObjectLayers
 
 
 class Level(object):
-
     """
     Level object loads tmx-file for game and draws each tile to screen
     filename: Tilesheet and TMX-File must be in same folder
@@ -36,22 +37,28 @@ class Level(object):
         self.render(self.surface)
 
     def render(self, surface):
-        """create the level"""
+        """Create the level. Iterates through the layers in the TMX (see game_physics WorldObjects).
+         For each Objects the properties are set as follows with defaults:
+         (self, tile, solid=True, climbable=False, climbable_horizontal=False)
+         """
         for layer in self.tm.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 self.render_tile_layer(surface, layer)
                 if layer.properties['solid'] == 'true':
                     for a in layer.tiles():
-                        WorldObject(a, True)
+                        WorldObject(a)
                 elif layer.properties['climbable'] == 'true':
                     for a in layer.tiles():
                         WorldObject(a, False, True)
-                #pprint(layer.properties)
+                # pprint(layer.properties)
                 elif layer.properties['climbable_horizontal'] == 'true':
-                    # TODO: check if correct
                     for a in layer.tiles():
                         WorldObject(a, False, False, True)
-                # print(layer.properties)
+                        # print(layer.properties)
+                elif layer.properties['collectible'] == 'true':
+                    for a in layer.tiles():
+                        WorldObject(a, False, False, False, True)
+                        print(layer.properties)
 
     def render_tile_layer(self, surface, layer):
         """draw single tile"""
@@ -61,8 +68,8 @@ class Level(object):
         # iterate over the tiles in the layer
         for x, y, image in layer.tiles():
             surface.blit(image, (x * tw, y * th))
-        # TODO iterate over object layer
-        # TODO iterate over imageLayer
+            # TODO iterate over object layer
+            # TODO iterate over imageLayer
 
     def make_level(self):
         """draw the level to a surface"""
