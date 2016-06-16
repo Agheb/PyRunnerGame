@@ -22,8 +22,10 @@ class Controller():
             self.current_action = "go_left"
             self.player1.go_left()
         elif key == self.config.p1_right:
+            self.current_action = "go_left"
             self.player1.go_right()
         elif key == self.config.p1_up:
+            self.current_action = "go_up"
             self.player1.go_up()
         elif key == self.config.p1_down:
             self.player1.go_down()

@@ -13,7 +13,7 @@ class NetworkConnector():
     
     def __init__(self):
         self.ip = "localhost"
-        self.port = 6790
+        self.port = 6791
     def start_server_prompt(self):
         self.server = Server(self.port)
         self.master = True
@@ -31,8 +31,10 @@ class Client(threading.Thread, MastermindClientTCP):
         self.port = port
         self.target_ip = ip
         threading.Thread.__init__(self)
+        self.deamon = True
         MastermindClientTCP.__init__(self)
     def send_key(self, key):
+        logging.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update','data':str(key)})
         self.send(data, compression = NetworkConnector.COMPRESSION)
     def run(self):
@@ -59,23 +61,25 @@ class Server(threading.Thread, MastermindServerTCP):
         self.port = port
         threading.Thread.__init__(self) 
         MastermindServerTCP.__init__(self)
+        self.deamon = True
     def callback_client_handle(self, connection_object, data):
-        logger.info("Server got: '%s'" %str(data))
+        logging.info("Server got: '%s'" %str(data))
         json_data = json.loads(data)
         self.interpret_client_data(json_data)
         self.callback_client_send(connection_object, data)
     def interpret_client_data(self, data):
-        if data.type is "key_update":
-            logger.info("Got key Update from Client")
+        logging.info("Got data '%s' from Client" %str(data))
+        if data['type'] is "key_update":
+            logging.info("Got key Update from Client")
             pass
-        if data.type is "complete_update":
-            logger.info("Got full update from Client")
+        if data['type'] is "complete_update":
+            logging.info("Got full update from Client")
             pass
     def callback_connect_client(self, connection_object):
         logging.info("New Client Connected, sending initial data.")
         #TODO insert initial data here
-        data = json.dumps(['foo', {'bar': ('baz', None, 1.0, 2)}])
-        self.callback_client_send(connection_object, data)
+        #data = json.dumps(['foo', {'bar': ('baz', None, 1.0, 2)}])
+        #self.callback_client_send(connection_object, data)
         return super(MastermindServerTCP,self).callback_connect_client(connection_object)
     def send_key(self, key):
         data = json.dumps({'type': 'key_update','data':str(key)})
