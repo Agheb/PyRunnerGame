@@ -47,7 +47,7 @@
    eJxjYBgFxIBvQPwdC/4BxD+B+BcQ/wbiPwPlwFFAVfCNARHn2OIYn9woGAUg8A0Nj4KRAUbLhVEwCkbBUAAAuF0i8Q==
   </data>
  </layer>
- <layer name="Gold" width="32" height="24" visible="0">
+ <layer name="Gold" width="32" height="24">
   <properties>
    <property name="climbable" type="bool" value="false"/>
    <property name="climbable_horizontal" type="bool" value="false"/>

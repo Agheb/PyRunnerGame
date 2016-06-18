@@ -166,12 +166,6 @@ class Player(pygame.sprite.DirtySprite):
             self.change_y = 5
             self.direction = 'UD'
 
-    def stop(self):
-        """ Called when the user lets off the keyboard. """
-        self.change_x = 0
-        self.change_y = 0
-        self.direction = "Stop"
-
     def schedule_stop(self):
         """stop player movements"""
         self.stop_on_ground = True
