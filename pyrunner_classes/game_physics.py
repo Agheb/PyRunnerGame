@@ -22,10 +22,13 @@ class Physics(object):
     def __init__(self, render_thread):
         self.gravity = GRAVITY
         self.render_thread = render_thread
-        self.player = Player()
-        playerGroup.add(self.player)
+        self.players = []
         return
-
+    def add_player(self):
+        newPlayer = Player()
+        self.players.append(newPlayer)
+        playerGroup.add(newPlayer)
+        
     def update(self):
         """updates all physics components"""
         #TODO: pass sprites to render thread
