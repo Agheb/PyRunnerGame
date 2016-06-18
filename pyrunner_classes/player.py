@@ -169,7 +169,10 @@ class Player(pygame.sprite.DirtySprite):
     def schedule_stop(self):
         """stop player movements"""
         self.stop_on_ground = True
-        self.direction = "Stop"
+        if self.on_rope:
+            pass
+        else:
+            self.direction = "Stop"
 
     def dig_right(self):
         """dig to the right"""

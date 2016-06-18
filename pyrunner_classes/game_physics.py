@@ -69,6 +69,7 @@ class Physics(object):
                         if player.change_x is not 0:
                             self.stop_vertical_movement(player)
                             player.on_rope = True
+                            player.rect.top = sprite.rect.top
                     elif sprite.collectible:
                         # TODO Gold Block enfernen siehe WorldObjects
                         player.gold_count += 1
