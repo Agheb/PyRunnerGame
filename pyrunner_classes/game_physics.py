@@ -98,7 +98,7 @@ class Physics(object):
     def collide_ratio(self):
         """calculates collision for players and sprites using a extended ratio around the rectangles of the sprites"""
         col_ratio = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False,
-                                               collided=pygame.sprite.collide_rect_ratio(1.2))
+                                               collided=pygame.sprite.collide_rect_ratio(1.4))
         if len(col_ratio) > 0:  # some collision
             for player in col_ratio.keys():
                 for sprite in col_ratio[player]:
