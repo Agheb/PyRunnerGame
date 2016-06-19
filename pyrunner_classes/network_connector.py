@@ -33,7 +33,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.physics = physics
         self.target_ip = ip
         threading.Thread.__init__(self)
-        self.deamon = True
+        self.daemon = True
         MastermindClientTCP.__init__(self)
     def send_key(self, key):
         logging.info("Sending key Action %s to server" % key)
@@ -75,7 +75,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.known_clients = []
         threading.Thread.__init__(self) 
         MastermindServerTCP.__init__(self)
-        self.deamon = True
+        self.daemon = True
 
     def callback_client_handle(self, connection_object, data):
         """Initial point of data arrival. Data is received and passed on"""
