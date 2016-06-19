@@ -34,8 +34,8 @@ class Physics(object):
 
         playerGroup.update()
         self.collide_rect()
-        # self.collide_center() TODO: eventuell eine zweite collision funktion,
-        # die collisions mit der mitte der Sprites überprüft.
+        self.collide_ratio()
+        # TODO: eventuell eine zweite collision funktion, die collisions mit der mitte der Sprites überprüft.
 
         playerGroup.clear(self.surface, self.background)
         worldGroup.clear(self.surface, self.background)
@@ -62,17 +62,13 @@ class Physics(object):
         if len(col_rect) > 0:  # some collision
             for player in col_rect.keys():
                 for sprite in col_rect[player]:
+
                     if sprite.climbable:
                         if player.change_x is not 0:
                             self.stop_horizontal_movement(player)
                         player.on_ladder = True
                         player.on_rope = False
-                    elif sprite.climbable_horizontal:
-                        if player.change_x is not 0:
-                            self.stop_vertical_movement(player)
-                            player.on_rope = True
-                            player.on_ladder = False
-                            player.rect.top = sprite.rect.top
+
                     elif sprite.collectible:
                         # TODO Gold Block enfernen siehe WorldObjects
                         player.gold_count += 1
@@ -98,6 +94,20 @@ class Physics(object):
                 player.on_rope = False
 
         return col_rect
+
+    def collide_ratio(self):
+        """calculates collision for players and sprites using a extended ratio around the rectangles of the sprites"""
+        col_ratio = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False,
+                                               collided=pygame.sprite.collide_rect_ratio(1.2))
+        if len(col_ratio) > 0:  # some collision
+            for player in col_ratio.keys():
+                for sprite in col_ratio[player]:
+                    if sprite.climbable_horizontal:
+                        if player.change_x is not 0:
+                            self.stop_vertical_movement(player)
+                            player.on_rope = True
+                            player.on_ladder = False
+                            player.rect.top = sprite.rect.bottom
 
     @staticmethod
     def stop_horizontal_movement(player):
