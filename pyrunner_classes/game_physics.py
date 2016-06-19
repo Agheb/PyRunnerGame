@@ -33,7 +33,9 @@ class Physics(object):
         rects.append(worldGroup.draw(self.surface))
 
         playerGroup.update()
-        self.collide()
+        self.collide_rect()
+        # self.collide_center() TODO: eventuell eine zweite collision funktion,
+        # die collisions mit der mitte der Sprites überprüft.
 
         playerGroup.clear(self.surface, self.background)
         worldGroup.clear(self.surface, self.background)
@@ -54,21 +56,22 @@ class Physics(object):
         elif player.rect.x < 0:
             player.rect.x = 0
 
-    def collide(self):
-        """calculates collision for players and sprites"""
-        col = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False)
-        if len(col) > 0:
-            # some collision
-            for player in col.keys():
-                for sprite in col[player]:
+    def collide_rect(self):
+        """calculates collision for players and sprites using the rectangles of the sprites"""
+        col_rect = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False)
+        if len(col_rect) > 0:  # some collision
+            for player in col_rect.keys():
+                for sprite in col_rect[player]:
                     if sprite.climbable:
                         if player.change_x is not 0:
                             self.stop_horizontal_movement(player)
                         player.on_ladder = True
+                        player.on_rope = False
                     elif sprite.climbable_horizontal:
                         if player.change_x is not 0:
                             self.stop_vertical_movement(player)
                             player.on_rope = True
+                            player.on_ladder = False
                             player.rect.top = sprite.rect.top
                     elif sprite.collectible:
                         # TODO Gold Block enfernen siehe WorldObjects
@@ -94,7 +97,7 @@ class Physics(object):
                 player.on_ladder = False
                 player.on_rope = False
 
-        return col
+        return col_rect
 
     @staticmethod
     def stop_horizontal_movement(player):

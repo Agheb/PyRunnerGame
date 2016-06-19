@@ -22,7 +22,7 @@ class Player(pygame.sprite.DirtySprite):
 
         self.on_ground = False
         self.on_ladder = False
-        self.on_rope = True
+        self.on_rope = False
         self.stop_on_ground = False
         self.change_x = 0
         self.change_y = 0
@@ -159,12 +159,16 @@ class Player(pygame.sprite.DirtySprite):
         if self.on_ladder:
             self.change_y = -5
             self.direction = 'UD'
+        elif self.on_rope:
+            pass
 
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
         if self.on_ladder:
             self.change_y = 5
             self.direction = 'UD'
+        elif self.on_rope:
+            pass
 
     def schedule_stop(self):
         """stop player movements"""
@@ -176,15 +180,21 @@ class Player(pygame.sprite.DirtySprite):
 
     def dig_right(self):
         """dig to the right"""
-        self.direction = "DR"
-        print("digging right")
-        self.player_collide()
+        if self.on_ladder or self.on_rope:
+            pass
+        else:
+            self.direction = "DR"
+            print("digging right")
+            self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
-        self.direction = "DL"
-        print("digging left")
-        self.player_collide()
+        if self.on_ladder or self.on_rope:
+            pass
+        else:
+            self.direction = "DL"
+            print("digging left")
+            self.player_collide()
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
@@ -245,7 +255,9 @@ class Player(pygame.sprite.DirtySprite):
             self.change_x = 0
             self.stop_on_ground = False
 
-    def player_collide(self):
+    @staticmethod
+    def player_collide():
+        # TODO Liste ausgeben lassen aller Sprites mit denen der Spieler kollidiert, auch für Graben
         col_list = pygame.sprite.collide_rect_ratio(1.5)
         print(col_list)
         return col_list

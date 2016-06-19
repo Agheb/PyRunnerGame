@@ -22,7 +22,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlEsOgCAMRBvufxrBH3o4Z60tFhKCJvOStyHtbCZFhJAnUbFmz8poyST9sDq59+PpysrQstj/tyl19nbP7PY/tPzPnv61eW2fkJFMg12CyAo3uMMMD3gabxEmOIfyrnfuAumwXcc=
+   eJztlEsKwCAMRIP3P03tx34O19mb1EQoupgHbxFJZjOgCCE1WTFyZ2X0ZJL/sDrR5khWJJvMh6fLVr9kfnr+aE//1r42EzKKZbB7EjlggSe84A0f4y3DFW7p+9a79wIKw2FG
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
@@ -33,7 +33,7 @@
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlcENgDAMA8so7MIu7MIuTMQuCPHgQVVkOXbEJ/evr1WstLWieHP+nDFPul/JWAx+JWM1+JWMrTsbmWWf8RC5l6MPit/RB8Xv6IOS9TXLEagrzreMQF3J9qOuZPtRPjPLm4P0o/yd9Dv+IgXn7ong3D0RsvuKYPtacFykbxCl
+   eJxjYBgFowAVKDIOrBmj9g8u+8kxC5ceappFDhi1n7Z6CKkdtX/U/lEwCkbB4AAAfcMEYw==
   </data>
  </layer>
  <layer name="Seil" width="32" height="24">
