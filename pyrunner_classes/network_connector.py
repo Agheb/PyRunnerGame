@@ -86,6 +86,8 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def interpret_client_data(self, data, address):
         """interprets data send from the client to the server"""
+
+
         if data['type'] == "key_update":
             logging.info("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(address))
@@ -99,6 +101,8 @@ class Server(threading.Thread, MastermindServerTCP):
         #adding ip to client list to generate the playerId
         if connection_object.address not in self.known_clients:
             self.known_clients.append(connection_object.address)
+
+
         #sending initial Data TODO: put inside data object,  add info about enemies, other players pos...
         data = json.dumps({'type': 'init','player_id': str(self.known_clients.index(connection_object.address))})
         self.callback_client_send(connection_object, data)

@@ -9,6 +9,9 @@ class Action():
     RIGHT = "go_right"
     UP = "go_up"
     DOWN = "go_down"
+    DIG_LEFT = "dig_left"
+    DIG_RIGHT = "dig_right"
+
 
 class Controller():
 
@@ -67,6 +70,7 @@ class Controller():
         """stop walking"""
         for p in self.players:
             p.schedule_stop()
+
     def do_action(self, action, playerNum):
         if action == Action.LEFT:
             self.players[playerNum].go_left()
