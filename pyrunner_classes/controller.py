@@ -61,13 +61,14 @@ class Controller():
         
         self.network_connector.client.send_key(self.current_action)
         command, playerNum = self.network_connector.client.get_last_command()
-        self.do_action(command)
+        self.do_action(command, playerNum)
 
     def release_key(self, key):
         """stop walking"""
         for p in self.players:
             p.schedule_stop()
     def do_action(self, action, playerNum):
+        playerNum = int(playerNum)
         if action == Action.LEFT:
             self.players[playerNum].go_left()
         elif action == Action.RIGHT:

@@ -14,7 +14,7 @@ class NetworkConnector():
     def __init__(self, physics):
         self.ip = "localhost"
         self.physics = physics
-        self.port = 6792
+        self.port = 6794
     def start_server_prompt(self):
         self.server = Server(self.port)
         self.master = True
@@ -81,14 +81,14 @@ class Server(threading.Thread, MastermindServerTCP):
         """Initial point of data arrival. Data is received and passed on"""
         logging.info("Server got: '%s'" %str(data))
         json_data = json.loads(data)
-        self.interpret_client_data(json_data, connection_object.address)
+        self.interpret_client_data(json_data, connection_object)
         self.callback_client_send(connection_object, data)
 
-    def interpret_client_data(self, data, address):
+    def interpret_client_data(self, data, con_obj):
         """interprets data send from the client to the server"""
         if data['type'] == "key_update":
             logging.info("Got key Update from Client")
-            self.send_key(data['data'], self.known_clients.index(address))
+            self.send_key(data['data'], self.known_clients.index(con_obj))
         if data['type'] == "complete_update":
             logging.info("Got full update from Client")
             pass
@@ -97,17 +97,19 @@ class Server(threading.Thread, MastermindServerTCP):
         """this methods gets called on initial connect of a client"""
         logging.info("New Client Connected %s" %str(connection_object.address))
         #adding ip to client list to generate the playerId
-        if connection_object.address not in self.known_clients:
-            self.known_clients.append(connection_object.address)
+        if connection_object not in self.known_clients:
+            self.known_clients.append(connection_object)
         #sending initial Data TODO: put inside data object,  add info about enemies, other players pos...
-        data = json.dumps({'type': 'init','player_id': str(self.known_clients.index(connection_object.address))})
+        data = json.dumps({'type': 'init','player_id': str(self.known_clients.index(connection_object))})
         self.callback_client_send(connection_object, data)
         return super(MastermindServerTCP,self).callback_connect_client(connection_object)
 
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
+        logging.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
         data = json.dumps({'type': 'key_update','data':str(key), 'player_id': str(player_id)})
-        self.send(data, compression = NetworkConnector.COMPRESSION)
+        connection_object = self.known_clients[player_id]
+        self.callback_client_send(connection_object, data)
     def kill(self):
         self.accepting_disallow()
         self.disconnect_clients()
