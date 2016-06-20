@@ -44,7 +44,7 @@
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFxIBvQPwdC/4BxD+B+BcQ/wbiPwPlwFFAVfCNARHn2OIYn9wowA42D7QD6Ay+oeEfA+ucUUAngKtcGOnxP9Ly/ygYBYMdAABVMiZH
+   eJxjYBgFxIBvQPwdC/4BxD+B+BcQ/wbiPwPlwFFAVfCNARHn2OIYWW4UEAc2D7QD6Ay+oeHRtDIyAK4yY6TH/0jL/6NgFAx2AAA67CJd
   </data>
  </layer>
  <layer name="Gold" width="32" height="24">

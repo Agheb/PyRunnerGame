@@ -174,7 +174,7 @@ class Player(pygame.sprite.DirtySprite):
         """stop player movements"""
         self.stop_on_ground = True
         if self.on_rope:
-            pass
+            pass  # TODO
         else:
             self.direction = "Stop"
 

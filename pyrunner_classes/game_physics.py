@@ -35,7 +35,7 @@ class Physics(object):
         playerGroup.update()
         self.collide_rect()
         self.collide_ratio()
-        # TODO: eventuell eine zweite collision funktion, die collisions mit der mitte der Sprites überprüft.
+        # TODO: eventuell eine dritte collision funktion, die collisions mit der mitte der Sprites überprüft.
 
         playerGroup.clear(self.surface, self.background)
         worldGroup.clear(self.surface, self.background)
@@ -70,7 +70,8 @@ class Physics(object):
                         player.on_rope = False
 
                     elif sprite.collectible:
-                        # TODO Gold Block enfernen siehe WorldObjects
+                        # TODO Gold Block enfernen, siehe WorldObjects
+                        # (drüber zeichnen, aus spritegroup wird die gold instanz schon entfernt)
                         player.gold_count += 1
                         print(player.gold_count)
                         dirty_rect = self.background.subsurface(sprite)
@@ -98,16 +99,26 @@ class Physics(object):
     def collide_ratio(self):
         """calculates collision for players and sprites using a extended ratio around the rectangles of the sprites"""
         col_ratio = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False,
-                                               collided=pygame.sprite.collide_rect_ratio(1.4))
+                                               collided=pygame.sprite.collide_rect_ratio(1.3))
         if len(col_ratio) > 0:  # some collision
             for player in col_ratio.keys():
                 for sprite in col_ratio[player]:
+                    # TODO Seitliche Kollision mi Seil soll Spieler nicht nach unten schieben
                     if sprite.climbable_horizontal:
-                        if player.change_x is not 0:
+                        if player.change_y is not 0:
                             self.stop_vertical_movement(player)
                             player.on_rope = True
                             player.on_ladder = False
+                            player.on_ground = True  # on_ground has to be set true so player only moves at keypress
                             player.rect.top = sprite.rect.bottom
+        else:
+            for player in playerGroup:
+                self.check_world_boundaries(player)
+                player.on_ground = False
+                player.on_ladder = False
+                player.on_rope = False
+
+        return col_ratio
 
     @staticmethod
     def stop_horizontal_movement(player):
@@ -175,7 +186,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.dirty = 1
 
 
-class RemovableWorldObjects(WorldObject):
+class RemovableWorldObjects(WorldObject):  # TODO
     def __init__(self, spritesheet, tile=None, solid=True, climbable=False, climbable_horizontal=False,
                  collectible=False):
         (pos_x, pos_y, self.spritesheet) = tile
