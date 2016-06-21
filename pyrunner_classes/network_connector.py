@@ -7,6 +7,9 @@ sys.path.insert(0,parentdir)
 from Mastermind import *
 
 
+netlog = logging.getLogger("Network")
+srvlog = netlog.getChild("Server")
+clientlog = netlog.getChild("Client")
 
 class NetworkConnector():
     COMPRESSION = None
@@ -36,28 +39,28 @@ class Client(threading.Thread, MastermindClientTCP):
         self.daemon = True
         MastermindClientTCP.__init__(self)
     def send_key(self, key):
-        logging.info("Sending key Action %s to server" % key)
+        clientlog.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update','data':str(key)})
         self.send(data, compression = NetworkConnector.COMPRESSION)
     def run(self):
-        logging.info("Connecting to ip %s" %str(self.target_ip))
+        clientlog.info("Connecting to ip %s" %str(self.target_ip))
         self.connect(self.target_ip,self.port)
-        logging.info("Client connecting, waiting for initData")
+        clientlog.info("Client connecting, waiting for initData")
         self.connected = True
         self.waitForInitData()
     def get_last_command(self):
         #for now, maybe we need non blocking later
         raw_data = self.receive(True)
         data = json.loads(raw_data)
-        logging.info("Go data from server")
+        clientlog.info("Got data from server: {}".format(str(data)))
         if data['type'] == 'key_update':
-            logging.info("got key_update from server")
+            clientlog.info("got key_update from server")
             return data['data'], data['player_id']
     def waitForInitData(self):
         initData_raw = self.receive(True)
         data = json.loads(initData_raw)
         if data['type'] == 'init':
-            logging.info("Client got init Data, creating new Player") 
+            clientlog.info("Client got init Data, creating new Player") 
             self.player_id = data['player_id']
             self.physics.add_player()
         else:
@@ -79,23 +82,23 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def callback_client_handle(self, connection_object, data):
         """Initial point of data arrival. Data is received and passed on"""
-        logging.info("Server got: '%s'" %str(data))
+        srvlog.info("got: '%s'" %str(data))
         json_data = json.loads(data)
         self.interpret_client_data(json_data, connection_object)
-        self.callback_client_send(connection_object, data)
+        #self.callback_client_send(connection_object, data)
 
     def interpret_client_data(self, data, con_obj):
         """interprets data send from the client to the server"""
         if data['type'] == "key_update":
-            logging.info("Got key Update from Client")
+            srvlog.info("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(con_obj))
         if data['type'] == "complete_update":
-            logging.info("Got full update from Client")
+            srvlog.info("Got full update from Client")
             pass
 
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
-        logging.info("New Client Connected %s" %str(connection_object.address))
+        srvlog.info("New Client Connected %s" %str(connection_object.address))
         #adding ip to client list to generate the playerId
         if connection_object not in self.known_clients:
             self.known_clients.append(connection_object)
@@ -106,7 +109,7 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
-        logging.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
+        srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
         data = json.dumps({'type': 'key_update','data':str(key), 'player_id': str(player_id)})
         connection_object = self.known_clients[player_id]
         self.callback_client_send(connection_object, data)
@@ -117,7 +120,7 @@ class Server(threading.Thread, MastermindServerTCP):
     def run(self):
         self.connect("localhost",self.port)
         self.accepting_allow()
-        logging.info("server started and accepting connections")
+        srvlog.info("server started and accepting connections")
     def callback_disconnect(self):
-        logging.info("Server disconnected from network")
+        srvlog.info("Server disconnected from network")
         return super(MastermindServerTCP,self).callback_disconnect()
