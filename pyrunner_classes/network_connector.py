@@ -17,9 +17,9 @@ class NetworkConnector():
     def __init__(self, physics):
         self.ip = "localhost"
         self.physics = physics
-        self.port = 6794
+        self.port = 6791
     def start_server_prompt(self):
-        self.server = Server(self.port)
+        self.server = Server(self.port, self.physics)
         self.master = True
         self.server.start()
     def join_server_prompt(self):
@@ -61,7 +61,12 @@ class Client(threading.Thread, MastermindClientTCP):
         data = json.loads(initData_raw)
         if data['type'] == 'init':
             clientlog.info("Client got init Data, creating new Player") 
-            self.player_id = data['player_id']
+            contents = data['data']
+            self.player_id = contents['player_id']
+            for pl in contents['players']:
+                #add the others
+                self.physics.add_player()
+            #add ourself
             self.physics.add_player()
         else:
             raise Exception('Did not get init as first Package') 
@@ -73,8 +78,9 @@ class Client(threading.Thread, MastermindClientTCP):
 
 
 class Server(threading.Thread, MastermindServerTCP):
-    def __init__(self,port):
+    def __init__(self,port, physics):
         self.port = port
+        self.physics = physics
         self.known_clients = []
         threading.Thread.__init__(self) 
         MastermindServerTCP.__init__(self)
@@ -100,9 +106,17 @@ class Server(threading.Thread, MastermindServerTCP):
         srvlog.info("New Client Connected %s" %str(connection_object.address))
         #adding ip to client list to generate the playerId
         if connection_object not in self.known_clients:
+            srvlog.info("Added client to known clients")
             self.known_clients.append(connection_object)
-        #sending initial Data TODO: put inside data object,  add info about enemies, other players pos...
-        data = json.dumps({'type': 'init','player_id': str(self.known_clients.index(connection_object))})
+        #sending initial Data TODO:  add info about enemies
+        level_info = self.physics.get_level_info_json()
+        misc_info = {'player_id': str(self.known_clients.index(connection_object))}
+        #concat the data
+        combined = {}
+        for d in (level_info, misc_info):
+            combined.update(d)
+        
+        data = json.dumps({'type': 'init','data': combined})
         self.callback_client_send(connection_object, data)
         return super(MastermindServerTCP,self).callback_connect_client(connection_object)
 
