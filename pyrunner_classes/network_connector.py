@@ -85,7 +85,6 @@ class Server(threading.Thread, MastermindServerTCP):
         srvlog.info("got: '%s'" %str(data))
         json_data = json.loads(data)
         self.interpret_client_data(json_data, connection_object)
-        #self.callback_client_send(connection_object, data)
 
     def interpret_client_data(self, data, con_obj):
         """interprets data send from the client to the server"""

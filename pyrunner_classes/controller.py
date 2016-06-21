@@ -77,4 +77,5 @@ class Controller():
             self.players[playerNum].go_left()
         elif action == Action.RIGHT:
             self.players[playerNum].go_right()
-        
+        elif action == Action.UP:
+            self.players[playerNum].go_up()
