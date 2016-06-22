@@ -13,6 +13,17 @@
    eJzt00cOAWEAhuHhADr30LmHzj107qFzD5176CQ6F/BuJpnFLOcXiX/x7N7dl+9sUpQLrrjhjgeeeOGNs8DGYlYUK2ywwwEnXHDDYxbbeOGDHwEEEUIYEUQFNzHEkUASKaSRQRY5wU0eBRRRQhkVVFFDXXDTQBMttNFBFz30MTCw0e6iNkOMMMYEU8wwxwJLAxvtLmqzwhobbLHDHgcccTKw0e6iNiK/Lf8v//9L/9drvvl/veab/9dr5P/l/+X///f/H+Jxnao=
   </data>
  </layer>
+ <layer name="Coins" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible " type="bool" value="true"/>
+   <property name="solid" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFgxnkUFE/pWaNAtoCXPFDSbyNxvnwAsTE52icD11AatwRUj+aFkbBYAfEptHRso/6AADVzQXp
+  </data>
+ </layer>
  <layer name="Block" width="32" height="24">
   <properties>
    <property name="climbable" type="bool" value="false"/>
