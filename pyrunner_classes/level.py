@@ -46,30 +46,41 @@ class Level(object):
          (self, tile, solid=True, climbable=False, climbable_horizontal=False)
          """
         for layer in self.tm.visible_layers:
-            try:
-                if isinstance(layer, pytmx.TiledTileLayer):
-                    self.render_tile_layer(surface, layer)
+            if isinstance(layer, pytmx.TiledTileLayer):
+                self.render_tile_layer(surface, layer)
+                try:
                     if layer.properties['solid'] == 'true':
                         for a in layer.tiles():
                             WorldObject(a)
-                    elif layer.properties['climbable'] == 'true':
+                except KeyError:
+                    pass
+                try:
+                    if layer.properties['climbable'] == 'true':
                         for a in layer.tiles():
                             Ladder(a)
                             # print(layer.properties)
-                    elif layer.properties['climbable_horizontal'] == 'true':
+                except KeyError:
+                    pass
+                try:
+                    if layer.properties['climbable_horizontal'] == 'true':
                         for a in layer.tiles():
                             Rope(a)
                             # print(layer.properties)
-                    elif layer.properties['collectible'] == 'true':
+                except KeyError:
+                    pass
+                try:
+                    if layer.properties['collectible'] == 'true':
                         for a in layer.tiles():
                             Collectible(a)
                             # print(layer.properties)
-                    else:
+                except KeyError:
+                    pass
+                try:
+                    if layer.name == "Background":
                         '''create a blank copy of the background layer'''
                         self.render_tile_layer(self.background, layer)
-            except KeyError:
-                '''not all layers may share the same keys'''
-                raise
+                except:
+                    raise
 
 #        for layer in self.tm.invisible_layers:
 #           if isinstance(layer, pytmx.TiledTileLayer):
