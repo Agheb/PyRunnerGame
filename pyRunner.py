@@ -56,7 +56,7 @@ class PyRunner(object):
         self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
         self.level = None
         self.physics = None
-        self.load_level("./resources/levels/scifi_gold.tmx")
+        self.load_level("./resources/levels/scifi.tmx")
         '''init the main menu'''
         self.network_connector = NetworkConnector()
         self.menu = MainMenu(self, self.network_connector)

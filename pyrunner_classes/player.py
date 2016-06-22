@@ -127,7 +127,7 @@ class Player(pygame.sprite.DirtySprite):
         else:
             self.direction = "DR"
             print("digging right")
-            self.player_collide()
+            # self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
@@ -136,7 +136,7 @@ class Player(pygame.sprite.DirtySprite):
         else:
             self.direction = "DL"
             print("digging left")
-            self.player_collide()
+            # self.player_collide()
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """

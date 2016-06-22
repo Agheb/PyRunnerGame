@@ -46,26 +46,30 @@ class Level(object):
          (self, tile, solid=True, climbable=False, climbable_horizontal=False)
          """
         for layer in self.tm.visible_layers:
-            if isinstance(layer, pytmx.TiledTileLayer):
-                self.render_tile_layer(surface, layer)
-                if layer.properties['solid'] == 'true':
-                    for a in layer.tiles():
-                        WorldObject(a)
-                elif layer.properties['climbable'] == 'true':
-                    for a in layer.tiles():
-                        WorldObject(a, False, True)
-                        # print(layer.properties)
-                elif layer.properties['climbable_horizontal'] == 'true':
-                    for a in layer.tiles():
-                        WorldObject(a, False, False, True)
-                        # print(layer.properties)
-                elif layer.properties['collectible'] == 'true':
-                    for a in layer.tiles():
-                        WorldObject(a, False, False, False, True)
-                        # print(layer.properties)
-                else:
-                    '''create a blank copy of the background layer'''
-                    self.render_tile_layer(self.background, layer)
+            try:
+                if isinstance(layer, pytmx.TiledTileLayer):
+                    self.render_tile_layer(surface, layer)
+                    if layer.properties['solid'] == 'true':
+                        for a in layer.tiles():
+                            WorldObject(a)
+                    elif layer.properties['climbable'] == 'true':
+                        for a in layer.tiles():
+                            WorldObject(a, False, True)
+                            # print(layer.properties)
+                    elif layer.properties['climbable_horizontal'] == 'true':
+                        for a in layer.tiles():
+                            WorldObject(a, False, False, True)
+                            # print(layer.properties)
+                    elif layer.properties['collectible'] == 'true':
+                        for a in layer.tiles():
+                            WorldObject(a, False, False, False, True)
+                            # print(layer.properties)
+                    else:
+                        '''create a blank copy of the background layer'''
+                        self.render_tile_layer(self.background, layer)
+            except KeyError:
+                '''not all layers may share the same keys'''
+                raise
 
 #        for layer in self.tm.invisible_layers:
 #           if isinstance(layer, pytmx.TiledTileLayer):

@@ -7,6 +7,7 @@
   <properties>
    <property name="climbable" type="bool" value="false"/>
    <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
@@ -17,7 +18,7 @@
   <properties>
    <property name="climbable" type="bool" value="false"/>
    <property name="climbable_horizontal" type="bool" value="false"/>
-   <property name="collectible " type="bool" value="true"/>
+   <property name="collectible" type="bool" value="true"/>
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
@@ -28,6 +29,7 @@
   <properties>
    <property name="climbable" type="bool" value="false"/>
    <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
@@ -38,6 +40,7 @@
   <properties>
    <property name="climbable" type="bool" value="true"/>
    <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
@@ -48,6 +51,7 @@
   <properties>
    <property name="climbable" type="bool" value="false"/>
    <property name="climbable_horizontal" type="bool" value="true"/>
+   <property name="collectible" type="bool" value="false"/>
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
