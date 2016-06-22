@@ -26,6 +26,7 @@ class Player(pygame.sprite.DirtySprite):
         self.stop_on_ground = False
         self.change_x = 0
         self.change_y = 0
+        self.speed = 5
 
         self.boundary_top = 0
         self.boundary_bottom = 0
@@ -140,7 +141,7 @@ class Player(pygame.sprite.DirtySprite):
     # Player-controlled movement:
     def go_left(self):
         """" Called when the user hits the left arrow. Checks if player is on Rope to change animation """
-        self.change_x = -5
+        self.change_x = -self.speed
         if self.on_rope:
             self.direction = "RL"
         elif not self.on_rope:
@@ -148,7 +149,7 @@ class Player(pygame.sprite.DirtySprite):
 
     def go_right(self):
         """ Called when the user hits the right arrow. Checks if player is on Rope to change animation """
-        self.change_x = 5
+        self.change_x = self.speed
         if self.on_rope:
             self.direction = "RR"
         elif not self.on_rope:
@@ -157,7 +158,7 @@ class Player(pygame.sprite.DirtySprite):
     def go_up(self):
         """ Called when the user hits the up arrow. Only Possible when Player is on a ladder"""
         if self.on_ladder:
-            self.change_y = -5
+            self.change_y = -self.speed
             self.direction = 'UD'
         elif self.on_rope:
             pass
@@ -165,10 +166,11 @@ class Player(pygame.sprite.DirtySprite):
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
         if self.on_ladder:
-            self.change_y = 5
+            self.change_y = self.speed
             self.direction = 'UD'
         elif self.on_rope:
-            self.change_y = 10
+            self.change_y = self.speed
+            self.rect.y += self.speed + self.speed
             self.direction = 'UD'
             self.on_rope = False
 
@@ -253,13 +255,22 @@ class Player(pygame.sprite.DirtySprite):
         if not self.on_ground and (not self.on_ladder or not self.on_rope):
             self.change_y += .35
         elif self.stop_on_ground:
-            self.change_y = 0
-            self.change_x = 0
+            if self.rect.y % 32:
+                self.change_y = 0
+            if self.rect.x % 32:
+                self.change_x = 0
             self.stop_on_ground = False
 
-    @staticmethod
-    def player_collide():
-        # TODO Liste ausgeben lassen aller Sprites mit denen der Spieler kollidiert, auch für Graben
-        col_list = pygame.sprite.collide_rect_ratio(1.5)
-        print(col_list)
-        return col_list
+    def stop_horizontal_movement(self):
+        """stop left/right movement"""
+        if self.change_x < 0:
+            self.change_x += 0.1
+        elif self.change_x > 0:
+            self.change_x -= 0.1
+
+    def stop_vertical_movement(self):
+        """stop left/right movement"""
+        if self.change_y < 0:
+            self.change_y += 0.1
+        elif self.change_y > 0:
+            self.change_y -= 0.1
