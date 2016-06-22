@@ -34,6 +34,7 @@ class Level(object):
         self.size = tm.width * tm.tilewidth, tm.height * tm.tileheight
         self.tm = tm
         self.surface = surface
+        self.background = surface.copy()
         self.render(self.surface)
 
     # TODO Render clean background
@@ -61,6 +62,9 @@ class Level(object):
                     for a in layer.tiles():
                         WorldObject(a, False, False, False, True)
                         # print(layer.properties)
+                else:
+                    '''create a blank copy of the background layer'''
+                    self.render_tile_layer(self.background, layer)
 
 #        for layer in self.tm.invisible_layers:
 #           if isinstance(layer, pytmx.TiledTileLayer):
