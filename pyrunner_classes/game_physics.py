@@ -34,6 +34,7 @@ class Physics(object):
         rects.append(worldGroup.draw(self.surface))
 
         playerGroup.update()
+
         self.collide_rect()
         self.collide_ratio()
         # TODO: eventuell eine dritte collision funktion, die collisions mit der mitte der Sprites überprüft.
@@ -65,8 +66,6 @@ class Physics(object):
                 for sprite in col_rect[player]:
 
                     if sprite.climbable:
-                        if player.change_x is not 0:
-                            self.stop_horizontal_movement(player)
                         player.on_ladder = True
                         player.on_rope = False
 
@@ -110,7 +109,6 @@ class Physics(object):
                     # TODO Seitliche Kollision mi Seil soll Spieler nicht nach unten schieben
                     if sprite.climbable_horizontal:
                         if player.change_y is not 0:
-                            self.stop_vertical_movement(player)
                             player.on_rope = True
                             player.on_ladder = False
                             player.on_ground = True  # on_ground has to be set true so player only moves at keypress
@@ -124,43 +122,28 @@ class Physics(object):
 
         return col_ratio
 
-    @staticmethod
-    def stop_horizontal_movement(player):
-        """stop left/right movement"""
-        if player.change_x < 0:
-            player.change_x += 0.1
-        elif player.change_x > 0:
-            player.change_x -= 0.1
-
-    @staticmethod
-    def stop_vertical_movement(player):
-        """stop left/right movement"""
-        if player.change_y < 0:
-            player.change_y += 0.1
-        elif player.change_y > 0:
-            player.change_y -= 0.1
-
     def fix_pos(self, player, sprite):
         """Used to place the player nicely"""
-        if sprite.solid:
-            if player.rect.left is not sprite.rect.right or player.rect.right is not sprite.rect.left:
-                if player.change_y > 0:
+        if sprite.solid and not player.on_ground:
+            if player.change_y > 0:
+                if player.rect.bottom is not sprite.rect.top:
                     '''player hits the ground'''
                     player.rect.bottom = sprite.rect.top
                     player.change_y = 0
                     player.on_ground = True
-                elif player.change_y < 0:
+            elif player.change_y < 0:
+                if player.rect.top is not sprite.rect.bottom:
                     '''player hits sprite from below'''
                     player.rect.top = sprite.rect.bottom
-                    self.stop_horizontal_movement(player)
-            elif player.rect.bottom is not sprite.rect.top:
-                if player.change_x > 0:
+            elif player.change_x > 0:
+                if player.rect.right is not sprite.rect.right:
                     '''player hits the left side'''
-                    player.rect.right = sprite.rect.left
+                    player.rect.right = sprite.rect.right
                     player.change_x = 0
-                elif player.change_x < 0:
+            elif player.change_x < 0:
+                if player.rect.left is not sprite.rect.left:
                     '''player hits the right side'''
-                    player.rect.left = sprite.rect.right
+                    player.rect.left = sprite.rect.left
                     player.change_x = 0
 
     def get_level_info_json(self):
@@ -188,21 +171,3 @@ class WorldObject(pygame.sprite.DirtySprite):
     def update(self):
         """update world objects"""
         self.dirty = 1
-
-
-class RemovableWorldObjects(WorldObject):  # TODO
-    def __init__(self, spritesheet, tile=None, solid=True, climbable=False, climbable_horizontal=False,
-                 collectible=False):
-        (pos_x, pos_y, self.spritesheet) = tile
-        self.spritesheet = spritesheet
-        WorldObject(None, solid, climbable, climbable_horizontal, collectible)
-
-    def remove_block(self, pos_x, pos_y):
-        """remove the block passed in by the block_id parameter. it has to be deleted from the sprite.group"""
-        WorldObject.remove(worldGroup)
-        pass
-
-    def add_removed_block(self, pos_x, pos_y):
-        """add the block passed in by the block_id parameter. it has to be added to the sprite.group"""
-        WorldObject.add(worldGroup)
-        pass

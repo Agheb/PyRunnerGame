@@ -26,17 +26,8 @@ class Player(pygame.sprite.DirtySprite):
         self.stop_on_ground = False
         self.change_x = 0
         self.change_y = 0
-        self.speed = 5
-
-        self.boundary_top = 0
-        self.boundary_bottom = 0
-        self.boundary_left = 0
-        self.boundary_right = 0
-
+        self.speed = 4
         self.gold_count = 0
-
-        self.level = None
-        self.player = None
 
         # list holding the image for movement. Up and down movement uses the same sprites.
         self.walking_frames_l = []
@@ -144,7 +135,7 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = -self.speed
         if self.on_rope:
             self.direction = "RL"
-        elif not self.on_rope:
+        else:
             self.direction = "L"
 
     def go_right(self):
@@ -152,35 +143,29 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = self.speed
         if self.on_rope:
             self.direction = "RR"
-        elif not self.on_rope:
+        else:
             self.direction = "R"
 
     def go_up(self):
         """ Called when the user hits the up arrow. Only Possible when Player is on a ladder"""
         if self.on_ladder:
             self.change_y = -self.speed
-            self.direction = 'UD'
-        elif self.on_rope:
-            pass
+            self.direction = "UD"
 
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
         if self.on_ladder:
             self.change_y = self.speed
-            self.direction = 'UD'
+            self.direction = "UD"
         elif self.on_rope:
             self.change_y = self.speed
             self.rect.y += self.speed + self.speed
-            self.direction = 'UD'
+            self.direction = "UD"
             self.on_rope = False
 
     def schedule_stop(self):
         """stop player movements"""
         self.stop_on_ground = True
-        if self.on_rope:
-            pass  # TODO
-        else:
-            self.direction = "Stop"
 
     def dig_right(self):
         """dig to the right"""
@@ -214,20 +199,30 @@ class Player(pygame.sprite.DirtySprite):
         # Animations with Sprites
         posx = self.rect.x
         posy = self.rect.y
+
+        '''movements'''
         if self.direction == "R":
             frame = (posx // fps) % len(self.walking_frames_r)
             self.image = self.walking_frames_r[frame]
-        else:
+        elif self.direction == "L":
             frame = (posx // fps) % len(self.walking_frames_l)
             self.image = self.walking_frames_l[frame]
-
-        # Move up/down uses the same sprites
-        if self.direction == "UD":
+        elif self.direction == "UD":
+            # Move up/down uses the same sprites
             frame = (posy // fps) % len(self.walking_frames_ud)
             self.image = self.walking_frames_ud[frame]
-
-        # Dig left/right
-        if self.direction == "DL":
+        elif self.direction == "RR":
+            # Hang left/right
+            frame = (posx // fps) % len(self.hanging_frames_r)
+            self.image = self.hanging_frames_r[frame]
+        elif self.direction == "RL":
+            frame = (posx // fps) % len(self.hanging_frames_l)
+            self.image = self.hanging_frames_l[frame]
+        elif self.direction == "Stop":
+            # stop frame
+            self.image = self.stop_frame
+        elif self.direction == "DL":
+            # Dig left/right
             self.image = self.digging_frames_l[0]
             self.image = self.digging_frames_l[1]
             self.image = self.digging_frames_l[2]
@@ -236,41 +231,29 @@ class Player(pygame.sprite.DirtySprite):
             self.image = self.digging_frames_r[1]
             self.image = self.digging_frames_r[2]
 
-        # Hang left/right
-        if self.direction == "RR":
-            frame = (posx // fps) % len(self.hanging_frames_r)
-            self.image = self.hanging_frames_r[frame]
-        elif self.direction == "RL":
-            frame = (posx // fps) % len(self.hanging_frames_l)
-            self.image = self.hanging_frames_l[frame]
-
-        # stop frame
-        if self.direction == "Stop":
-            self.image = self.stop_frame
-
     def calc_grav(self):
         """ Calculate effect of gravity. """
-
         # See if we are on the ground and not on a ladder or rope
         if not self.on_ground and (not self.on_ladder or not self.on_rope):
             self.change_y += .35
-        elif self.stop_on_ground:
-            if self.rect.y % 32:
+        if self.stop_on_ground:
+            if self.rect.y % 32 is not 0:
+                if self.change_y < 0:
+                    self.go_up()
+                else:
+                    self.go_down()
+            else:
                 self.change_y = 0
-            if self.rect.x % 32:
+
+            if self.rect.x % 32 is not 0:
+                if self.change_x > 0:
+                    self.go_right()
+                else:
+                    self.go_left()
+            else:
                 self.change_x = 0
-            self.stop_on_ground = False
 
-    def stop_horizontal_movement(self):
-        """stop left/right movement"""
-        if self.change_x < 0:
-            self.change_x += 0.1
-        elif self.change_x > 0:
-            self.change_x -= 0.1
+            if self.change_x is 0 and self.change_y is 0:
+                self.stop_on_ground = False
+                self.direction = "Stop"
 
-    def stop_vertical_movement(self):
-        """stop left/right movement"""
-        if self.change_y < 0:
-            self.change_y += 0.1
-        elif self.change_y > 0:
-            self.change_y -= 0.1

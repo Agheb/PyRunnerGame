@@ -19,7 +19,6 @@ class Controller(object):
         """controls and key settings if the game is in foreground"""
         # TODO move both players
         if key == self.config.p1_left:
-            self.current_action = "go_left"
             self.player1.go_left()
         elif key == self.config.p1_right:
             self.player1.go_right()
