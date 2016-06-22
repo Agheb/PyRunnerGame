@@ -54,15 +54,15 @@ class Level(object):
                             WorldObject(a)
                     elif layer.properties['climbable'] == 'true':
                         for a in layer.tiles():
-                            WorldObject(a, False, True)
+                            Ladder(a)
                             # print(layer.properties)
                     elif layer.properties['climbable_horizontal'] == 'true':
                         for a in layer.tiles():
-                            WorldObject(a, False, False, True)
+                            Rope(a)
                             # print(layer.properties)
                     elif layer.properties['collectible'] == 'true':
                         for a in layer.tiles():
-                            WorldObject(a, False, False, False, True)
+                            Collectible(a)
                             # print(layer.properties)
                     else:
                         '''create a blank copy of the background layer'''
