@@ -168,7 +168,9 @@ class Player(pygame.sprite.DirtySprite):
             self.change_y = 5
             self.direction = 'UD'
         elif self.on_rope:
-            pass
+            self.change_y = 10
+            self.direction = 'UD'
+            self.on_rope = False
 
     def schedule_stop(self):
         """stop player movements"""
