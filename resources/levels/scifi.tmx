@@ -10,7 +10,18 @@
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJzt00lyQWEYRuGPBWiC7EMTYh8IYR969sAsurAHZkJI9qGJpkoTzQac6a1SRvc38Q+e2al6R+/GIrLFDnv844AjTjhjo7CxWUXscMCJJ7jghgfPVrWNFz74EcALggjhFWHFTQRRxPCGOBJ4RxIpxU0aGWSRQx4FFFFCWXHzgRrqaKCJFj7RRkdx08cXBhjiGyOM8YNfE5uKiFTF2EwwxQxz/GGBJVZYm9h02e6JsVH5bf1//X/9/9vNPf9/rdH/1//X/3/c/18AvqigjA==
+   eJzt00cOAWEAhuHhADr30LmHzj107qFzD5176CQ6F/BuJpnFLOcXiX/x7N7dl+9sUpQLrrjhjgeeeOGNs8DGYlYUK2ywwwEnXHDDYxbbeOGDHwEEEUIYEUQFNzHEkUASKaSRQRY5wU0eBRRRQhkVVFFDXXDTQBMttNFBFz30MTCw0e6iNkOMMMYEU8wwxwJLAxvtLmqzwhobbLHDHgcccTKw0e6iNiK/Lf8v//9L/9drvvl/veab/9dr5P/l/+X///f/H+Jxnao=
+  </data>
+ </layer>
+ <layer name="Coins" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible " type="bool" value="true"/>
+   <property name="solid" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFgxnkUFE/pWaNAtoCXPFDSbyNxvnwAsTE52icD11AatwRUj+aFkbBYAfEptHRso/6AADVzQXp
   </data>
  </layer>
  <layer name="Block" width="32" height="24">
@@ -20,7 +31,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlEsKwCAMRIP3P03tz7aH6+wb00EQW5gHb6EksxnUTIgn2ZHdizJaMkU/an14ZzaLzVb/3+Wty+gtq9v/0PI3M/17896+ECOZBrsmsw3usMADnvCq3GU4wyXFu+zcDe6fWZU=
+   eJztk0sKgDAQQ4fe/zTWX9XDmb1GQ0GcRR48KKXJJjTCmCv1RjXH8r2d5jvYJuysdCm93j83b1sq+5r8KHuqmSAZ/3+TleFn5xKxwBU2uMEdHuSuwhFO5TmrvjsBp41f4A==
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
@@ -30,7 +41,7 @@
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztldEJgDAMRNNNdBadRWfRWXQhncVi/FKkEtK74k8f9EtyT8lRRSqVm0NP/DGjCSJtwPxIRqdzPehHMgadG0E/kjHp3PyYzdnlOwN5L0YfED+jD4if0Qck62uXKayuML8lhdWV0n6rK6X9Vr5nlxebnt3ht/IXfbY6/Ix/EQLz7smBeffkULqvFt6+Vvycq3IhJg==
+   eJxjYBgFowAVsAywfvUB1u81wPpzB1j/BCQ2OXE5AYe4BhlmURqXyMCbDD2UxiUyyCNDD6VxiQwmkqEHV1xiA4Tiipp+wQYIxdVA209puUgIEPIfqXmJVPcSSiuk5iVq5n1yADXzPjmA1umVEBjp/h8JAABXLApp
   </data>
  </layer>
  <layer name="Seil" width="32" height="24">
@@ -40,7 +51,7 @@
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFxIBvQPwdC/4BxD+B+BcQ/wbiPwPlwFFAVfCNARHn2OIYn9woGAUg8A0Nj4KRAUbLhVEwCkbBUAAAuF0i8Q==
+   eJxjYBgFQwEwkoBHAeWAlPAeDf9RgA5G08XIBCO9XNiMBY+CUTAKBicAAAumA6Y=
   </data>
  </layer>
 </map>
