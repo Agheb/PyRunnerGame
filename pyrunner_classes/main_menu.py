@@ -144,24 +144,16 @@ class MainMenu(object):
 
     def show_menu(self, boolean=True):
         """print the current menu to the screen"""
-        self.render_thread.fill_screen(BACKGROUND)
-        # TODO add game surface background / blank tile map here
-        # surface = pygame.Surface((screen_x, screen_y))
-        if self.bg_image.get_width() is not self.config.screen_x \
-                or self.bg_image.get_height() is not self.config.screen_y:
-            self.bg_image = pygame.transform.scale(self.bg_image, (self.config.screen_x, self.config.screen_y))
-        # save this as background surface for dirty rects
-        self.render_thread.bg_surface = self.bg_image
-        self.render_thread.blit(self.bg_image, (0, 0))
-
         if boolean:
             self.in_menu = True
+            self.render_thread.blit(self.main.level.background, None, True)
             self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
             self.render_thread.blit(self.current_menu.surface, None, True)
             # render_thread.add_rect_to_update(rects)
         else:
             self.in_menu = False
             self.menu_pos = 1
+            self.render_thread.blit(self.main.level.surface, None, True)
         # draw the selected surface to the screen
         self.render_thread.refresh_screen(True)
 
