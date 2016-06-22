@@ -34,6 +34,7 @@ class Level(object):
         self.size = tm.width * tm.tilewidth, tm.height * tm.tileheight
         self.tm = tm
         self.surface = surface
+        self.player_bg = surface.copy()
         self.background = surface.copy()
         self.render(self.surface)
 

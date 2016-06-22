@@ -17,10 +17,11 @@ playerGroup = pygame.sprite.LayeredDirty()
 class Physics(object):
     """physics"""
 
-    def __init__(self, surface, background):
+    def __init__(self, surface, level):
         self.gravity = GRAVITY
         self.surface = surface
-        self.background = background
+        self.lvl_surface = level.surface
+        self.background = level.background
         self.player = Player()
         playerGroup.add(self.player)
         return
@@ -37,7 +38,7 @@ class Physics(object):
         self.collide_ratio()
         # TODO: eventuell eine dritte collision funktion, die collisions mit der mitte der Sprites überprüft.
 
-        playerGroup.clear(self.surface, self.background)
+        playerGroup.clear(self.surface, self.lvl_surface)
         worldGroup.clear(self.surface, self.background)
         return rects
 
@@ -74,8 +75,11 @@ class Physics(object):
                         # (drüber zeichnen, aus spritegroup wird die gold instanz schon entfernt)
                         player.gold_count += 1
                         print(player.gold_count)
-                        dirty_rect = self.background.subsurface(sprite)
-                        self.surface.blit(dirty_rect, sprite)
+                        # clear the item
+                        dirty_rect = self.background.subsurface(sprite.rect)
+                        self.surface.blit(dirty_rect, sprite.rect)
+                        self.lvl_surface.blit(dirty_rect, sprite.rect)
+                        # sprite.dirty = 1
                         WorldObject.kill(sprite)
 
                     else:
