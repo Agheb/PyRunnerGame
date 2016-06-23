@@ -59,15 +59,24 @@ class Level(object):
          For each Objects the properties are set as follows with defaults:
          (self, tile, solid=True, climbable=False, climbable_horizontal=False)
          """
+        def check_solid(sprite):
+            """check if a sprite has a solid property set"""
+            try:
+                if sprite.solid:
+                    return True
+                else:
+                    return False
+            except AttributeError:
+                return False
+
         def check_property(current_layer, sprite_property, obj_type):
             """check layer for a specific property and if it exists create the corresponding object"""
             try:
                 if current_layer.properties[sprite_property] == 'true':
                     for a in current_layer.tiles():
-                        try:
-                            if obj_type is Ladder and a.solid:
-                                obj_type(a, True)
-                        except AttributeError:
+                        if obj_type is Ladder and check_solid(a):
+                            obj_type(a, True)
+                        else:
                             obj_type(a)
             except KeyError:
                 pass
@@ -117,7 +126,7 @@ class Level(object):
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
-    group = pygame.sprite.LayeredDirty()
+    group = pygame.sprite.LayeredDirty(default_layer=0)
 
     def __init__(self, tile, solid=True):
         """world object item"""

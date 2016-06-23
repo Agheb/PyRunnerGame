@@ -31,11 +31,13 @@ class Physics(object):
         rects.append(WorldObject.group.draw(self.surface))
 
         Player.group.update()
+        # WorldObject.group.update()
         # check for collisions
         self.collide_rect()
         # clean up the dirty background
         Player.group.clear(self.surface, self.lvl_surface)
         WorldObject.group.clear(self.surface, self.background)
+        # return the changed items
         return rects
 
     def check_world_boundaries(self, player):
@@ -55,54 +57,40 @@ class Physics(object):
 
     def collide_rect(self):
         """calculates collision for players and sprites using the rectangles of the sprites"""
-        col_rect = pygame.sprite.groupcollide(Player.group, WorldObject.group, False, False)
-
-        print(str(Player.group))
-        print(str(WorldObject.group))
-
-        print(str(col_rect))
-
         for player in Player.group:
             # check if the player is still on the screen
             self.check_world_boundaries(player)
 
-            if player in col_rect.keys():
-                print("hallo")
-                # assume the player is floating in the air
-                on_ladder = False
-                on_rope = False
-                on_ground = False
+            # assume the player is floating in the air
+            on_ladder = False
+            on_rope = False
+            on_ground = False
 
-                for sprite in col_rect[player]:
-                    if sprite.climbable:
-                        player.on_ladder = True
-                        print("ladder")
-                    elif sprite.climbable_horizontal:
-                        print("rope")
-                        player.on_rope = True
-                    elif sprite.solid:
-                        print("ground")
-                        player.on_ground = True
-                    # collect gold and remove the sprite
-                    if sprite.collectible:
-                        player.gold_count += 1
-                        print(player.gold_count)
-                        # clear the item
-                        dirty_rect = self.background.subsurface(sprite.rect)
-                        self.surface.blit(dirty_rect, sprite.rect)
-                        self.lvl_surface.blit(dirty_rect, sprite.rect)
-                        # sprite.dirty = 1
-                        sprite.kill()
-                    else:
-                        # collision at feet
-                        self.fix_pos(player, sprite)
+            for sprite in pygame.sprite.spritecollide(player, WorldObject.group, False, False):
+                if sprite.climbable:
+                    on_ladder = True
+                elif sprite.climbable_horizontal:
+                    on_rope = True
+                elif sprite.solid:
+                    on_ground = True
+                # collect gold and remove the sprite
+                if sprite.collectible:
+                    player.gold_count += 1
+                    print(player.gold_count)
+                    # clear the item
+                    dirty_rect = self.background.subsurface(sprite.rect)
+                    self.surface.blit(dirty_rect, sprite.rect)
+                    self.lvl_surface.blit(dirty_rect, sprite.rect)
+                    # sprite.dirty = 1
+                    sprite.kill()
+                else:
+                    # collision at feet
+                    self.fix_pos(player, sprite)
 
-                # update the players properties
-                # player.on_ladder = on_ladder
-                # player.on_rope = on_rope
-                # player.on_ground = on_ground
-
-        return col_rect
+            # update the players properties
+            player.on_ladder = on_ladder
+            player.on_rope = on_rope
+            player.on_ground = on_ground
 
     @staticmethod
     def fix_pos(player, sprite):

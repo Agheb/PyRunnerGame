@@ -15,15 +15,16 @@ SPRITE_SHEET_PATH = "./resources/sprites/"
 
 
 class Player(pygame.sprite.DirtySprite):
-    """defines the main player"""
+    """defines the main  player"""
 
-    group = pygame.sprite.LayeredDirty()
+    group = pygame.sprite.LayeredDirty(default_layer=1)
 
     def __init__(self, pos, sheet, bot=False, tile_size=32, fps=25):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.tile_size = tile_size
         self.fps = fps
         # positional attributes
+        self.x, self.y = pos
         self.on_ground = False
         self.on_ladder = False
         self.on_rope = False
@@ -70,8 +71,8 @@ class Player(pygame.sprite.DirtySprite):
         self.image = self.stop_frame
         # Set a reference to the image rect.
         self.rect = self.image.get_rect()
-
-        self.rect.x, self.rect.y = pos
+        # spawn the player at the desired location
+        self.rect.topleft = pos
 
     # Player-controlled movement:
     def go_left(self):
@@ -144,20 +145,19 @@ class Player(pygame.sprite.DirtySprite):
         self.rect.y += self.change_y
 
         # Animations with Sprites
-        pos_x = self.rect.x
-        pos_y = self.rect.y
+        self.x, self.y = self.rect.topleft
 
         '''movements'''
         if self.direction == "R":
-            self.image = self.sprite_sheet.get_frame(pos_x, self.walking_frames_r)
+            self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_r)
         elif self.direction == "L":
-            self.image = self.sprite_sheet.get_frame(pos_x, self.walking_frames_l)
+            self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_l)
         elif self.direction == "UD":
-            self.sprite_sheet.get_frame(pos_y, self.walking_frames_ud)
+            self.sprite_sheet.get_frame(self.y, self.walking_frames_ud)
         elif self.direction == "RR":
-            self.sprite_sheet.get_frame(pos_x, self.hanging_frames_r)
+            self.sprite_sheet.get_frame(self.x, self.hanging_frames_r)
         elif self.direction == "RL":
-            self.sprite_sheet.get_frame(pos_x, self.walking_frames_l)
+            self.sprite_sheet.get_frame(self.x, self.walking_frames_l)
         elif self.direction == "Stop":
             self.image = self.stop_frame
         elif self.direction == "DL":
