@@ -19,12 +19,15 @@ class Physics(object):
 
     def __init__(self, surface, background):
         self.gravity = GRAVITY
-        self.surface = surface
-        self.background = background
-        self.player = Player()
-        playerGroup.add(self.player)
+        self.render_thread = render_thread
+        #TODO: set level id on level id, via level.py or WorldObjects 
+        self.level_id = 0
+        self.players = []
         return
-
+    def add_player(self):
+        newPlayer = Player()
+        self.players.append(newPlayer)
+        playerGroup.add(newPlayer)
     def update(self):
         """updates all physics components"""
         # TODO: pass sprites to render thread
@@ -118,7 +121,13 @@ class Physics(object):
                     player.change_x = 0
 
     def get_level_info_json(self):
-        pass
+        #TODO: finish me, players cant be send using json, maybe just send info, or create new object
+        #data = {'players':self.players, 'level_id':self.level_id}
+        #this is just a placeholder:
+        a = []
+        for d in self.players: a.append(self.players.rect)
+        data = {'players' : a}
+        return data
 
     def set_level_info_via_json(self, json):
         pass
@@ -126,7 +135,7 @@ class Physics(object):
 
 
 class WorldObject(pygame.sprite.DirtySprite):
-    """hello world"""
+    """Base class for Generic world objects"""
 
     def __init__(self, tile, solid=True, climbable=False, climbable_horizontal=False):
         """world object item"""

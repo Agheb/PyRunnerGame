@@ -58,9 +58,9 @@ class PyRunner(object):
         self.physics = None
         self.load_level("./resources/levels/scifi.tmx")
         '''init the main menu'''
-        self.network_connector = NetworkConnector()
+        self.network_connector = NetworkConnector(self.physics)
         self.menu = MainMenu(self, self.network_connector)
-        self.controller = Controller(self.physics.player, self.config, self.network_connector)
+        self.controller = Controller(self.physics.players, self.config, self.network_connector)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
