@@ -44,7 +44,7 @@ class Level(object):
         except ValueError:
             p1_x, p1_y = 0, 0
         try:
-            p2_pos = self.tm.get_object_by_name("Player_1")
+            p2_pos = self.tm.get_object_by_name("Player_2")
             p2_x, p2_y = p2_pos.x, p2_pos.y
         except ValueError:
             p2_x, p2_y = 32, 0
