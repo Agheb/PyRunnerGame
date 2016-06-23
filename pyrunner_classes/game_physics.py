@@ -2,16 +2,11 @@
 # -*- coding: utf-8 -*-
 # Python 2 related fixes
 from __future__ import division
+from .level import *
 from .player import *
 import pygame
 
 GRAVITY = 1
-MULTIPLICATOR = 1
-TILE_WIDTH = 32
-TILE_HEIGHT = 32
-
-worldGroup = pygame.sprite.LayeredDirty()
-playerGroup = pygame.sprite.LayeredDirty()
 
 
 class Physics(object):
@@ -26,26 +21,21 @@ class Physics(object):
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png")
         self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png")
 
-        if self.player_1:
-            playerGroup.add(self.player_1)
-        if self.player_2:
-            playerGroup.add(self.player_2)
         return
 
     def update(self):
         """updates all physics components"""
-        # TODO: pass sprites to render thread
+        # pass all changed sprites to the render thread
         rects = []
-        rects.append(playerGroup.draw(self.surface))
-        rects.append(worldGroup.draw(self.surface))
+        rects.append(Player.playerGroup.draw(self.surface))
+        rects.append(WorldObject.worldGroup.draw(self.surface))
 
-        playerGroup.update()
-
+        Player.playerGroup.update()
+        # check for collisions
         self.collide_rect()
-        # TODO: eventuell eine dritte collision funktion, die collisions mit der mitte der Sprites überprüft.
-
-        playerGroup.clear(self.surface, self.lvl_surface)
-        worldGroup.clear(self.surface, self.background)
+        # clean up the dirty background
+        Player.playerGroup.clear(self.surface, self.lvl_surface)
+        WorldObject.worldGroup.clear(self.surface, self.background)
         return rects
 
     def check_world_boundaries(self, player):
@@ -65,25 +55,33 @@ class Physics(object):
 
     def collide_rect(self):
         """calculates collision for players and sprites using the rectangles of the sprites"""
-        col_rect = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False)
+        col_rect = pygame.sprite.groupcollide(Player.playerGroup, WorldObject.worldGroup, False, False)
 
-        for player in playerGroup:
+        print(str(col_rect))
+
+        for player in Player.playerGroup:
             # check if the player is still on the screen
             self.check_world_boundaries(player)
 
-            if player not in col_rect.keys():
-                player.on_ladder = False
-                player.on_rope = False
-                player.on_ground = False
-            else:
+            if player in col_rect.keys():
+                print("hallo")
+                # assume the player is floating in the air
+                on_ladder = False
+                on_rope = False
+                on_ground = False
+
                 for sprite in col_rect[player]:
-                    if sprite.climbable and player.change_x is 0:
+                    if sprite.climbable:
                         player.on_ladder = True
-                        player.on_rope = False
-                    elif sprite.climbable_horizontal and player.change_y is 0:
+                        print("ladder")
+                    elif sprite.climbable_horizontal:
+                        print("rope")
                         player.on_rope = True
-                        player.on_ladder = False
-                    elif sprite.collectible:
+                    elif sprite.solid:
+                        print("ground")
+                        player.on_ground = True
+                    # collect gold and remove the sprite
+                    if sprite.collectible:
                         player.gold_count += 1
                         print(player.gold_count)
                         # clear the item
@@ -95,6 +93,13 @@ class Physics(object):
                     else:
                         # collision at feet
                         self.fix_pos(player, sprite)
+
+                # update the players properties
+                # player.on_ladder = on_ladder
+                # player.on_rope = on_rope
+                # player.on_ground = on_ground
+
+
 
         return col_rect
 
@@ -109,6 +114,7 @@ class Physics(object):
                         player.rect.bottom = sprite.rect.top + 1
                         player.change_y = 0
                         player.on_ground = True
+                        player.on_ladder = False
                 elif player.change_y < 0 and not player.on_ladder:
                     if player.rect.top < sprite.rect.bottom:
                         '''player hits sprite from below'''
@@ -118,12 +124,12 @@ class Physics(object):
                 if player.change_x > 0:
                     if player.rect.right > sprite.rect.left:
                         '''player hits the left side'''
-                        player.rect.right = sprite.rect.left
+                        player.rect.right = sprite.rect.left - 1
                         player.change_x = 0
                 elif player.change_x < 0:
                     if player.rect.left < sprite.rect.right:
                         '''player hits the right side'''
-                        player.rect.left = sprite.rect.right
+                        player.rect.left = sprite.rect.right + 1
                         player.change_x = 0
 
     def get_level_info_json(self):
@@ -131,45 +137,3 @@ class Physics(object):
 
     def set_level_info_via_json(self, json):
         pass
-
-
-class WorldObject(pygame.sprite.DirtySprite):
-    """hello world"""
-
-    def __init__(self, tile=None, solid=True):
-        """world object item"""
-        (pos_x, pos_y, self.image) = tile
-        pygame.sprite.DirtySprite.__init__(self, worldGroup)
-        self.rect = self.image.get_rect()
-        self.rect.x = pos_x * TILE_WIDTH
-        self.rect.y = pos_y * TILE_HEIGHT
-        self.solid = solid
-        self.climbable = False
-        self.climbable_horizontal = False
-        self.collectible = False
-
-    def update(self):
-        """update world objects"""
-        self.dirty = 1
-
-
-class Ladder(WorldObject):
-
-    def __init__(self, tile):
-        WorldObject.__init__(self, tile, False)
-        self.climbable = True
-        self.solid = False
-
-
-class Rope(WorldObject):
-
-    def __init__(self, tile):
-        WorldObject.__init__(self, tile)
-        self.climbable_horizontal = True
-
-
-class Collectible(WorldObject):
-
-    def __init__(self, tile):
-        WorldObject.__init__(self, tile)
-        self.collectible = True

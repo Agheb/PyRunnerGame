@@ -13,11 +13,14 @@ from .spritesheet_handling import SpriteSheet
 
 SPRITE_SHEET_PATH = "./resources/sprites/"
 
+
 class Player(pygame.sprite.DirtySprite):
     """defines the main player"""
 
-    def __init__(self, pos, sheet, tile_size=32, fps=25):
-        pygame.sprite.DirtySprite.__init__(self)
+    playerGroup = pygame.sprite.LayeredDirty()
+
+    def __init__(self, pos, sheet, bot=False, tile_size=32, fps=25):
+        pygame.sprite.DirtySprite.__init__(self, Player.playerGroup)
         self.tile_size = tile_size
         self.fps = fps
         # positional attributes
@@ -35,29 +38,31 @@ class Player(pygame.sprite.DirtySprite):
         self.walking_frames_l = []
         self.walking_frames_r = []
         self.walking_frames_ud = []
-        self.digging_frames_l = []
-        self.digging_frames_r = []
         self.hanging_frames_l = []
         self.hanging_frames_r = []
         self.sprite_sheet = SpriteSheet(SPRITE_SHEET_PATH + sheet, self.tile_size, self.fps)
 
-        # Load all the left facing images into a list (x, y, height, width)
-        self.sprite_sheet.add_animation(0, 0, self.walking_frames_l, 4)
-        # Load all the left facing images into a list and flip them to make them face right
-        self.sprite_sheet.add_animation(0, 0, self.walking_frames_r, 4, True)
-        # Load all the up / down facing images into a list
-        self.sprite_sheet.add_animation(0, 1, self.walking_frames_ud, 4)
-        # Load all the digging left images
-        self.sprite_sheet.add_animation(0, 2, self.digging_frames_l, 3)
-        # Load all the digging left images and flip them do digging right
-        self.sprite_sheet.add_animation(0, 2, self.digging_frames_r, 3, True)
-        # Load the left hanging images into a list
-        self.sprite_sheet.add_animation(4, 1, self.hanging_frames_l, 4)
-        # Load the left hanging images into a list and flip them to face right
-        self.sprite_sheet.add_animation(4, 1, self.hanging_frames_r, 4, True)
+        if not bot:
+            self.digging_frames_l = []
+            self.digging_frames_r = []
 
-        # Stop Frame: Sprite when player is not moving on ground
-        self.stop_frame = self.sprite_sheet.add_animation(5, 0)
+            # Load all the left facing images into a list (x, y, height, width)
+            self.sprite_sheet.add_animation(0, 0, self.walking_frames_l, 4)
+            # Load all the left facing images into a list and flip them to make them face right
+            self.sprite_sheet.add_animation(0, 0, self.walking_frames_r, 4, True)
+            # Load all the up / down facing images into a list
+            self.sprite_sheet.add_animation(0, 1, self.walking_frames_ud, 4)
+            # Load all the digging left images
+            self.sprite_sheet.add_animation(0, 2, self.digging_frames_l, 3)
+            # Load all the digging left images and flip them do digging right
+            self.sprite_sheet.add_animation(0, 2, self.digging_frames_r, 3, True)
+            # Load the left hanging images into a list
+            self.sprite_sheet.add_animation(4, 1, self.hanging_frames_l, 4)
+            # Load the left hanging images into a list and flip them to face right
+            self.sprite_sheet.add_animation(4, 1, self.hanging_frames_r, 4, True)
+
+            # Stop Frame: Sprite when player is not moving on ground
+            self.stop_frame = self.sprite_sheet.add_animation(5, 0)
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
 

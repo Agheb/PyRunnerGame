@@ -4,7 +4,7 @@
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
   <tile id="39">
    <properties>
-    <property name="ladder_top" type="bool" value="true"/>
+    <property name="solid" type="bool" value="true"/>
    </properties>
   </tile>
  </tileset>
