@@ -17,10 +17,10 @@ SPRITE_SHEET_PATH = "./resources/sprites/"
 class Player(pygame.sprite.DirtySprite):
     """defines the main player"""
 
-    playerGroup = pygame.sprite.LayeredDirty()
+    group = pygame.sprite.LayeredDirty()
 
     def __init__(self, pos, sheet, bot=False, tile_size=32, fps=25):
-        pygame.sprite.DirtySprite.__init__(self, Player.playerGroup)
+        pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.tile_size = tile_size
         self.fps = fps
         # positional attributes

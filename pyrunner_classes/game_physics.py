@@ -27,15 +27,15 @@ class Physics(object):
         """updates all physics components"""
         # pass all changed sprites to the render thread
         rects = []
-        rects.append(Player.playerGroup.draw(self.surface))
-        rects.append(WorldObject.worldGroup.draw(self.surface))
+        rects.append(Player.group.draw(self.surface))
+        rects.append(WorldObject.group.draw(self.surface))
 
-        Player.playerGroup.update()
+        Player.group.update()
         # check for collisions
         self.collide_rect()
         # clean up the dirty background
-        Player.playerGroup.clear(self.surface, self.lvl_surface)
-        WorldObject.worldGroup.clear(self.surface, self.background)
+        Player.group.clear(self.surface, self.lvl_surface)
+        WorldObject.group.clear(self.surface, self.background)
         return rects
 
     def check_world_boundaries(self, player):
@@ -55,11 +55,14 @@ class Physics(object):
 
     def collide_rect(self):
         """calculates collision for players and sprites using the rectangles of the sprites"""
-        col_rect = pygame.sprite.groupcollide(Player.playerGroup, WorldObject.worldGroup, False, False)
+        col_rect = pygame.sprite.groupcollide(Player.group, WorldObject.group, False, False)
+
+        print(str(Player.group))
+        print(str(WorldObject.group))
 
         print(str(col_rect))
 
-        for player in Player.playerGroup:
+        for player in Player.group:
             # check if the player is still on the screen
             self.check_world_boundaries(player)
 
@@ -98,8 +101,6 @@ class Physics(object):
                 # player.on_ladder = on_ladder
                 # player.on_rope = on_rope
                 # player.on_ground = on_ground
-
-
 
         return col_rect
 

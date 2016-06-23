@@ -117,11 +117,11 @@ class Level(object):
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
-    worldGroup = pygame.sprite.LayeredDirty()
+    group = pygame.sprite.LayeredDirty()
 
     def __init__(self, tile, solid=True):
         """world object item"""
-        pygame.sprite.DirtySprite.__init__(self, WorldObject.worldGroup)
+        pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
         (pos_x, pos_y, self.image) = tile
         self.rect = self.image.get_rect()
         self.rect.x = pos_x * TILE_WIDTH
