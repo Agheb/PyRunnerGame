@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="23">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="11">
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
  </tileset>
  <layer name="Background" width="32" height="24">
   <properties>
    <property name="climbable" type="bool" value="false"/>
-   <property name="climbable_horizontal" type="bool" value="false"/>
    <property name="collectible" type="bool" value="false"/>
    <property name="solid" type="bool" value="false"/>
   </properties>
@@ -58,16 +57,4 @@
    eJxjYBgFQwEwkoBHAeWAlPAeDf9RgA5G08XIBCO9XNiMBY+CUTAKBicAAAumA6Y=
   </data>
  </layer>
- <objectgroup name="Spawn_Locations">
-  <object id="20" name="Player_1" x="64" y="220">
-   <properties>
-    <property name="players" type="bool" value="true"/>
-   </properties>
-  </object>
-  <object id="22" name="Enemies" x="960" y="100">
-   <properties>
-    <property name="enemies" type="bool" value="true"/>
-   </properties>
-  </object>
- </objectgroup>
 </map>
