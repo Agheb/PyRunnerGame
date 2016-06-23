@@ -12,8 +12,19 @@ class Controller(object):
     def __init__(self, level, config, network_connector):
         self.player_1 = level.player_1
         self.player_2 = level.player_2
+        self.player_1_movements = []
+        self.player_2_movements = []
         self.network_connector = network_connector
         self.config = config
+        '''only stop player if movement key got released'''
+        self.player_1_movements.append(self.config.p1_left)
+        self.player_1_movements.append(self.config.p1_right)
+        self.player_1_movements.append(self.config.p1_up)
+        self.player_1_movements.append(self.config.p1_down)
+        self.player_2_movements.append(self.config.p2_left)
+        self.player_2_movements.append(self.config.p2_right)
+        self.player_2_movements.append(self.config.p2_up)
+        self.player_2_movements.append(self.config.p2_down)
 
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
@@ -66,7 +77,7 @@ class Controller(object):
 
     def release_key(self, key):
         """stop walking"""
-        if self.player_1:
+        if self.player_1 and key in self.player_1_movements:
             self.player_1.schedule_stop()
-        if self.player_2:
+        if self.player_2 and key in self.player_2_movements:
             self.player_2.schedule_stop()
