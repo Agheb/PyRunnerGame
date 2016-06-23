@@ -19,7 +19,8 @@ class Physics(object):
 
     def __init__(self, surface, background):
         self.gravity = GRAVITY
-        self.render_thread = render_thread
+        self.surface = surface
+        self.background = background
         #TODO: set level id on level id, via level.py or WorldObjects 
         self.level_id = 0
         self.players = []
