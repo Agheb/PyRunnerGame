@@ -109,7 +109,7 @@ class Physics(object):
                         player.rect.bottom = sprite.rect.top + 1
                         player.change_y = 0
                         player.on_ground = True
-                elif player.change_y < 0:
+                elif player.change_y < 0 and not player.on_ladder:
                     if player.rect.top < sprite.rect.bottom:
                         '''player hits sprite from below'''
                         player.rect.top = sprite.rect.bottom + 5
