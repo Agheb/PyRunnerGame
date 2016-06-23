@@ -23,8 +23,8 @@ class Physics(object):
         self.level = level
         self.lvl_surface = self.level.surface
         self.background = self.level.background
-        self.player_1 = Player(self.level.player_1_pos)
-        self.player_2 = Player(self.level.player_2_pos)
+        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png")
+        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png")
 
         if self.player_1:
             playerGroup.add(self.player_1)

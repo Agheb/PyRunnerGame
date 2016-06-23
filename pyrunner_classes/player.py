@@ -11,13 +11,12 @@ from __future__ import division
 import pygame
 from .spritesheet_handling import SpriteSheet
 
-SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
-
+SPRITE_SHEET_PATH = "./resources/sprites/"
 
 class Player(pygame.sprite.DirtySprite):
     """defines the main player"""
 
-    def __init__(self, pos, tile_size=32, fps=25):
+    def __init__(self, pos, sheet, tile_size=32, fps=25):
         pygame.sprite.DirtySprite.__init__(self)
         self.tile_size = tile_size
         self.fps = fps
@@ -40,7 +39,7 @@ class Player(pygame.sprite.DirtySprite):
         self.digging_frames_r = []
         self.hanging_frames_l = []
         self.hanging_frames_r = []
-        self.sprite_sheet = SpriteSheet(SPRITE_SHEET_PATH, self.tile_size, self.fps)
+        self.sprite_sheet = SpriteSheet(SPRITE_SHEET_PATH + sheet, self.tile_size, self.fps)
 
         # Load all the left facing images into a list (x, y, height, width)
         self.sprite_sheet.add_animation(0, 0, self.walking_frames_l, 4)
