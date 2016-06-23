@@ -2,6 +2,11 @@
 <map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="25">
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
+  <tile id="39">
+   <properties>
+    <property name="ladder_top" type="bool" value="true"/>
+   </properties>
+  </tile>
  </tileset>
  <layer name="Background" width="32" height="24">
   <properties>
@@ -33,7 +38,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztk0sKgDAQQ4fe/zTWX9XDmb1GQ0GcRR48KKXJJjTCmCv1RjXH8r2d5jvYJuysdCm93j83b1sq+5r8KHuqmSAZ/3+TleFn5xKxwBU2uMEdHuSuwhFO5TmrvjsBp41f4A==
+   eJztkkEOgCAMBBv+/xpAFPVx7l2riwmBw04yCSHdXrZmQtxJD7I5L/93p+iH14n3ZnYxe9X/3Hx1yfQr5ofpszXDzupGxGjiYEswW+EGK9zhAU/nL8EMl/CeZecutsxhRg==
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
@@ -44,7 +49,7 @@
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFowAVsAywfvUB1u81wPpzB1j/BCQ2OXE5AYe4BhlmURqXyMCbDD2UxiUyyCNDD6VxiQwmkqEHV1xiA4Tiipp+wQYIxdVA209puUgIEPIfqXmJVPcSSiuk5iVq5n1yADXzPjmA1umVEBjp/h8JAABXLApp
+   eJxjYBgFowAVaAywfvUB1u81wPpzB1j/ZiQ2OXG5GYc4OWZRGpfIwJsMPZTGJTLII0MPpXGJDCYSqQ45nnDFJTZASC2xfiEnnogBtLafkD4WGttPyH+k5iVKy3FKATXzPjmAmnmfHEDNvE8OGOn+HwkAAHSJC9Q=
   </data>
  </layer>
  <layer name="Seil" width="32" height="24">
@@ -54,7 +59,7 @@
    <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQwFsB2JGIvCOgXLgMAPEhDUuPApGwWi6GJlgpJcLm7HgUTAKRsHgBACvWAUT
+   eJxjYBgFQwFsB2JGIvCOgXLgMAPEhDUuPApGwWi6GJlgtFwYBaNgFAwVAADmPQGU
   </data>
  </layer>
  <objectgroup name="Spawn_Locations">
