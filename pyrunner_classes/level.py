@@ -5,6 +5,7 @@
 from __future__ import division
 import pytmx
 from .game_physics import *
+from .player import Player
 from pytmx.util_pygame import load_pygame
 
 """
@@ -37,8 +38,18 @@ class Level(object):
         self.player_bg = surface.copy()
         self.background = surface.copy()
         self.render(self.surface)
-
-    # TODO Render clean background
+        try:
+            p1_pos = self.tm.get_object_by_name("Player_1")
+            p1_x, p1_y = p1_pos.x, p1_pos.y
+        except ValueError:
+            p1_x, p1_y = 0, 0
+        try:
+            p2_pos = self.tm.get_object_by_name("Player_1")
+            p2_x, p2_y = p2_pos.x, p2_pos.y
+        except ValueError:
+            p2_x, p2_y = 32, 0
+        self.player_1_pos = p1_x, p1_y
+        self.player_2_pos = p2_x, p2_y
 
     def render(self, surface):
         """Create the level. Iterates through the layers in the TMX (see game_physics WorldObjects).
@@ -81,6 +92,14 @@ class Level(object):
                         self.render_tile_layer(self.background, layer)
                 except:
                     raise
+
+        for group in self.tm.objectgroups:
+            for obj in group:
+                try:
+                    if obj.name == "Player_1":
+                        self.player_1_pos = obj.x, obj.y
+                except (KeyError, AttributeError, ValueError):
+                    pass
 
 #        for layer in self.tm.invisible_layers:
 #           if isinstance(layer, pytmx.TiledTileLayer):

@@ -17,7 +17,7 @@ SPRITE_SHEET_PATH = "./resources/sprites/LRCharacters32.png"
 class Player(pygame.sprite.DirtySprite):
     """defines the main player"""
 
-    def __init__(self, tile_size=32, fps=25):
+    def __init__(self, pos, tile_size=32, fps=25):
         pygame.sprite.DirtySprite.__init__(self)
         self.tile_size = tile_size
         self.fps = fps
@@ -66,6 +66,8 @@ class Player(pygame.sprite.DirtySprite):
         self.image = self.stop_frame
         # Set a reference to the image rect.
         self.rect = self.image.get_rect()
+
+        self.rect.x, self.rect.y = pos
 
     # Player-controlled movement:
     def go_left(self):

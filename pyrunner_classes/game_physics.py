@@ -20,10 +20,16 @@ class Physics(object):
     def __init__(self, surface, level):
         self.gravity = GRAVITY
         self.surface = surface
-        self.lvl_surface = level.surface
-        self.background = level.background
-        self.player = Player()
-        playerGroup.add(self.player)
+        self.level = level
+        self.lvl_surface = self.level.surface
+        self.background = self.level.background
+        self.player_1 = Player(self.level.player_1_pos)
+        self.player_2 = Player(self.level.player_2_pos)
+
+        if self.player_1:
+            playerGroup.add(self.player_1)
+        if self.player_2:
+            playerGroup.add(self.player_2)
         return
 
     def update(self):
