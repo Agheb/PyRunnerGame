@@ -61,18 +61,13 @@ class Physics(object):
             # check if the player is still on the screen
             self.check_world_boundaries(player)
 
-            # assume the player is floating in the air
-            on_ladder = False
-            on_rope = False
-            on_ground = False
+            collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
 
-            for sprite in pygame.sprite.spritecollide(player, WorldObject.group, False, False):
-                if sprite.climbable:
-                    on_ladder = True
-                elif sprite.climbable_horizontal:
-                    on_rope = True
-                elif sprite.solid:
-                    on_ground = True
+            player.on_rope = True if any(sprite.climbable_horizontal for sprite in collisions) else False
+            player.on_ladder = True if any(sprite.climbable for sprite in collisions) else False
+            player.on_ground = True if any(sprite.solid for sprite in collisions) else False
+
+            for sprite in collisions:
                 # collect gold and remove the sprite
                 if sprite.collectible:
                     player.gold_count += 1
@@ -87,39 +82,49 @@ class Physics(object):
                     # collision at feet
                     self.fix_pos(player, sprite)
 
-            # update the players properties
-            player.on_ladder = on_ladder
-            player.on_rope = on_rope
-            player.on_ground = on_ground
-
     @staticmethod
     def fix_pos(player, sprite):
         """Used to place the player nicely"""
+        def hit_top():
+            """player hits the ground"""
+            if player.rect.bottom - 1 > sprite.rect.top:
+                player.rect.bottom = sprite.rect.top - 1
+                player.on_ground = True
+                player.change_y = 0
+
+        def hit_bottom():
+            """player hits higher level from below"""
+            if player.rect.top < sprite.rect.bottom:
+                player.rect.top = sprite.rect.bottom + 5
+                if not player.on_ground:
+                    player.change_y = 0
+
+        def hit_left():
+            """player hits left side of a sprite"""
+            if player.rect.right > sprite.rect.left:
+                player.rect.right = sprite.rect.left - 1
+                player.change_x = 0
+
+        def hit_right():
+            """player hits right side of a sprite"""
+            if player.rect.left < sprite.rect.right:
+                player.rect.left = sprite.rect.right + 1
+                player.change_x = 0
+
         if sprite.solid:
-            if not sprite.climbable_horizontal:
-                if player.change_y >= 0:
-                    if player.rect.bottom > sprite.rect.top + 1:
-                        '''player hits the ground'''
-                        player.rect.bottom = sprite.rect.top + 1
-                        player.change_y = 0
-                        player.on_ground = True
-                        player.on_ladder = False
-                elif player.change_y < 0 and not player.on_ladder:
-                    if player.rect.top < sprite.rect.bottom:
-                        '''player hits sprite from below'''
-                        player.rect.top = sprite.rect.bottom + 5
-                        player.on_ground = False
-            elif player.on_ladder:
+            if player.change_y > 0 and not player.on_ground:
+                if not sprite.climbable:
+                    hit_top()
+            elif player.change_y < 0:
+                if sprite.climbable:
+                    hit_bottom()
+            if player.on_ladder and not player.on_ground:
                 if player.change_x > 0:
-                    if player.rect.right > sprite.rect.left:
-                        '''player hits the left side'''
-                        player.rect.right = sprite.rect.left - 1
-                        player.change_x = 0
+                    if not player.on_rope:
+                        hit_left()
                 elif player.change_x < 0:
-                    if player.rect.left < sprite.rect.right:
-                        '''player hits the right side'''
-                        player.rect.left = sprite.rect.right + 1
-                        player.change_x = 0
+                    if not player.on_rope:
+                        hit_right()
 
     def get_level_info_json(self):
         pass
