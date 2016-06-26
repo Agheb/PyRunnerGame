@@ -29,7 +29,7 @@ class Physics(object):
         rects = []
 
         Player.group.update()
-        # WorldObject.group.update()
+        WorldObject.group.update()
 
         # check for collisions
         self.collide_rect()

@@ -35,9 +35,9 @@ class Level(object):
     3. draw layer by layer
     """
 
-    def __init__(self,surface,levelnumber=0):
-        self.level_id = levelnumber
-        tm = load_pygame(LEVEL_LIST[levelnumber], pixelalpha=True)
+    def __init__(self, surface, level_number=0):
+        self.level_id = level_number
+        tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
         self.size = tm.width * tm.tilewidth, tm.height * tm.tileheight
         self.tm = tm
         self.surface = surface
@@ -132,8 +132,6 @@ class Level(object):
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
 
 
-
-
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
@@ -151,14 +149,38 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.climbable = False
         self.climbable_horizontal = False
         self.collectible = False
+        self.killed = False
 
     def update(self):
         """update world objects"""
-        # self.dirty = 1
-        pass
+        if self.killed:
+            x, y = self.rect.topleft
+            w, h = self.rect.size
+            y += 2
+            h -= 2
+            rect = pygame.Rect(x, y, w, h)
+            self.image = pygame.transform.scale(self.image, (w, h))
+            self.rect = rect
+
+            if h is 0:
+                self.super_kill()
+
+            self.dirty = 1
+
+    def kill(self):
+        """remove this sprite"""
+        if self.removable:
+            self.killed = True
+        else:
+            self.super_kill()
+
+    def super_kill(self):
+        """call the parent class kill function"""
+        pygame.sprite.DirtySprite.kill(self)
 
 
 class Ladder(WorldObject):
+    """climbable ladder"""
 
     def __init__(self, tile, solid=False):
         WorldObject.__init__(self, tile, solid)
@@ -166,14 +188,14 @@ class Ladder(WorldObject):
 
 
 class Rope(WorldObject):
-
+    """hangable rope"""
     def __init__(self, tile):
         WorldObject.__init__(self, tile)
         self.climbable_horizontal = True
 
 
 class Collectible(WorldObject):
-
+    """collectible gold"""
     def __init__(self, tile):
         WorldObject.__init__(self, tile)
         self.collectible = True
