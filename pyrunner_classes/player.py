@@ -45,6 +45,7 @@ class Player(pygame.sprite.DirtySprite):
         self.sprite_sheet = SpriteSheet(SPRITE_SHEET_PATH + sheet, self.tile_size, self.fps)
         self.killed = False
         self.killed_frame = 0
+        self.digging_frame = 0
 
         if not bot:
             self.digging_frames_l = []
@@ -169,23 +170,26 @@ class Player(pygame.sprite.DirtySprite):
             #    self.image = self.stop_frame
             elif self.direction == "DL":
                 # Dig left/right
-                self.image = self.digging_frames_l[0]
-                self.image = self.digging_frames_l[1]
-                self.image = self.digging_frames_l[2]
+                self.image = self.digging_frames_l[self.digging_frame // 4]
+                self.digging_frame += 1
+                if self.digging_frame is len(self.digging_frames_l) * 4:
+                    self.digging_frame = 0
+                    self.direction = "Stop"
             elif self.direction == "DR":
-                self.image = self.digging_frames_r[0]
-                self.image = self.digging_frames_r[1]
-                self.image = self.digging_frames_r[2]
+                self.image = self.digging_frames_r[self.digging_frame // 4]
+                self.digging_frame += 1
+                if self.digging_frame is len(self.digging_frames_l) * 4:
+                    self.digging_frame = 0
+                    self.direction = "Stop"
 
             # Gravity
             self.calc_gravity()
         else:
-            self.image = self.death_frames[self.killed_frame]
+            self.image = self.death_frames[self.killed_frame // 2]
             self.killed_frame += 1
 
-            if self.killed_frame is len(self.death_frames):
+            if self.killed_frame is len(self.death_frames) * 2:
                 pygame.sprite.DirtySprite.kill(self)
-
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """
