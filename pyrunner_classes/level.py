@@ -77,6 +77,7 @@ class Level(object):
                 ladder = check_property(layer, 'climbable')
                 rope = check_property(layer, 'climbable_horizontal')
                 gold = check_property(layer, 'collectible')
+                removable = check_property(layer, 'removable')
                 solid = check_property(layer, 'solid')
 
                 '''create the sprites'''
@@ -87,8 +88,10 @@ class Level(object):
                         Rope(a)
                     elif gold:
                         Collectible(a)
+                    elif removable:
+                        WorldObject(a, solid, removable)
                     elif solid:
-                        WorldObject(a)
+                        WorldObject(a, solid)
 
                 try:
                     if layer.name == "Background":
@@ -134,7 +137,7 @@ class WorldObject(pygame.sprite.DirtySprite):
 
     group = pygame.sprite.LayeredDirty(default_layer=0)
 
-    def __init__(self, tile, solid=True):
+    def __init__(self, tile, solid=True, removable=False):
         """world object item"""
         pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
         (pos_x, pos_y, self.image) = tile
@@ -142,6 +145,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.rect.x = pos_x * TILE_WIDTH
         self.rect.y = pos_y * TILE_HEIGHT
         self.solid = solid
+        self.removable = removable
         self.climbable = False
         self.climbable_horizontal = False
         self.collectible = False

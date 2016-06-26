@@ -83,14 +83,14 @@ class Physics(object):
                 '''remove the bottom sprite to the right'''
                 right_sprite = self.find_collision(player.rect.centerx + player.tile_size, player.rect.bottom + 1)
 
-                if right_sprite:
+                if right_sprite and right_sprite.removable:
                     self.level.clean_sprite(right_sprite)
                     right_sprite.kill()
             elif player.direction is "DL":
                 '''remove the bottom sprite to the left'''
                 left_sprite = self.find_collision(player.rect.centerx - player.tile_size, player.rect.bottom + 1)
 
-                if left_sprite:
+                if left_sprite and left_sprite.removable:
                     self.level.clean_sprite(left_sprite)
                     left_sprite.kill()
             elif player.direction is "UD" and not player.on_ladder:
