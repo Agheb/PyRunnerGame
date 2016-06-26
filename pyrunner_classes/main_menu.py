@@ -8,17 +8,19 @@ import pygame
 from pygame.locals import *
 from .menu import Menu, MenuItem
 from .constants import *
+from .network_connector import NetworkConnector
 
 
 class MainMenu(object):
     """initialize PyRunners main menu, save all required objects"""
 
-    def __init__(self, main):
+    def __init__(self, main, network_connector):
         self.main = main
         self.config = self.main.config
         self.render_thread = self.main.render_thread
+        self.network_connector = network_connector
         self.music_thread = self.main.music_thread
-        self.bg_image = self.main.bg_image
+        self.bg_image = self.main.bg_surface
         self.menu_pos = 1
         self.in_menu = True
         self.current_menu = None
@@ -86,6 +88,8 @@ class MainMenu(object):
         #   multiplayer
         menu_ng_multiplayer = Menu(self, "Multiplayer", surface, menu_new_game, h2_size, item_size)
         menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
+        #TODO: Add nice ip input
+        menu_ng_multiplayer.add_item(MenuItem("Start Server",self.network_connector.start_server_prompt))
         menu_ng_multiplayer.add_item(MenuItem("Network Game", None))
         menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
         # finish top menu with sub menus
@@ -140,24 +144,16 @@ class MainMenu(object):
 
     def show_menu(self, boolean=True):
         """print the current menu to the screen"""
-        self.render_thread.fill_screen(BACKGROUND)
-        # TODO add game surface background / blank tile map here
-        # surface = pygame.Surface((screen_x, screen_y))
-        if self.bg_image.get_width() is not self.config.screen_x \
-                or self.bg_image.get_height() is not self.config.screen_y:
-            self.bg_image = pygame.transform.scale(self.bg_image, (self.config.screen_x, self.config.screen_y))
-        # save this as background surface for dirty rects
-        self.render_thread.bg_surface = self.bg_image
-        self.render_thread.blit(self.bg_image, (0, 0))
-
         if boolean:
             self.in_menu = True
+            self.render_thread.blit(self.main.level.background, None, True)
             self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
             self.render_thread.blit(self.current_menu.surface, None, True)
             # render_thread.add_rect_to_update(rects)
         else:
             self.in_menu = False
             self.menu_pos = 1
+            self.render_thread.blit(self.main.level.surface, None, True)
         # draw the selected surface to the screen
         self.render_thread.refresh_screen(True)
 

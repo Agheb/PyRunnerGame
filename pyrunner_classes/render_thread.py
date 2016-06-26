@@ -50,6 +50,7 @@ class RenderThread(threading.Thread):
         display_modes (list(resolutions)): read only access to _display_modes
         fullscreen (bool): set fullscreen on/off, automatically updates the screen
     """
+    lock = threading.Lock()
 
     def __init__(self, caption, width, height, fps=25, fullscreen=False, switch_resolution=False, daemon=True):
         threading.Thread.__init__(self)
@@ -61,7 +62,6 @@ class RenderThread(threading.Thread):
         self._fullscreen = fullscreen
         self.switch_resolution = switch_resolution
         self.daemon = daemon
-        self.lock = threading.Lock()
         # clock thread @ fps
         self.clock = pygame.time.Clock()
         # dirty rects list to only partially update the screen
@@ -75,7 +75,7 @@ class RenderThread(threading.Thread):
         self._fps_dirty_rect = None
         self._fps_pos = None
         self._fps_margin = None
-        self._fps_font_size = width >> 5    # results in 25 pt at 800x600, 32 at 1024x768
+        self._fps_font_size = width >> 5  # results in 25 pt at 800x600, 32 at 1024x768
         self.show_framerate = False
         if switch_resolution:
             self._surface = None
@@ -112,7 +112,7 @@ class RenderThread(threading.Thread):
             # only update screen parts that changed
             if self._rects_to_update:
                 self.refresh_screen()
-            #   run_counter += 1
+            # run_counter += 1
 
             if self.show_framerate:
                 if fps_counter >= fps_interval:
@@ -143,7 +143,7 @@ class RenderThread(threading.Thread):
                 self._screen = pygame.display.set_mode((screen_x, screen_y), fs_options, bitsize)
         else:
             pygame.mouse.set_visible(True)
-            self._screen = pygame.display.set_mode((screen_x, screen_y), 0, bitsize)    # RESIZABLE
+            self._screen = pygame.display.set_mode((screen_x, screen_y), 0, bitsize)  # RESIZABLE
 
         self.refresh_screen(True)
 
@@ -251,7 +251,7 @@ class RenderThread(threading.Thread):
             x, y = self._fps_pos
             pos = (x, y)
             self.blit(self._fps_dirty_rect, pos)
-            self.blit(surf, pos)
+            self.blit(surf, (x + 10, y + 10))
             # update the dirty rect area because it's a little bit bigger
             self.add_rect_to_update(self._fps_dirty_rect.get_rect(), surf, pos, False)
 
@@ -303,11 +303,12 @@ class RenderThread(threading.Thread):
             pos (int, int): the offset of that surface on the screen (obsolete if centered is True)
             centered (bool): if the surface is centered on the screen or not (pos required if False)
         """
+
         def add_rect(single_rect):
             """make sure not to add something wrong because pygame.display.update is very sensible"""
-            if isinstance(single_rect, pygame.Rect):
+            try:
                 self._rects_to_update.insert(0, single_rect)
-            else:
+            except TypeError:
                 print("%s is no valid pygame.Rect" % single_rect)
 
         if surface:
@@ -372,6 +373,7 @@ class RenderThread(threading.Thread):
 
         Returns: list(pygame.Rect) with all altered rects
         """
+
         def fix_rect():
             """fix a rect passed from a smaller surface than the screen"""
             m_dim = 4  # 2 pixels wider in each direction

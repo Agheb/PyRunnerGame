@@ -39,6 +39,7 @@ _CONF_CONT_AL = "action left"
 _CONF_CONT_AR = "action right"
 _CONF_CONT_INT = "interact"
 _CONF_CONT_TAUNT = "taunt"
+_CONF_CONT_JUMP = "jump"
 
 
 class MainConfig(object):
@@ -68,6 +69,7 @@ class MainConfig(object):
         self.p1_action_r = None
         self.p1_interact = None
         self.p1_taunt = None
+        self.p1_jump = None
         '''controls for player 2'''
         self.p2_left = None
         self.p2_right = None
@@ -77,6 +79,7 @@ class MainConfig(object):
         self.p2_action_r = None
         self.p2_interact = None
         self.p2_taunt = None
+        self.p2_jump = None
         '''read the configuration file to initialize above variables'''
         self.config_parser = self.init_config_parser()
         self.read_settings()
@@ -122,6 +125,7 @@ class MainConfig(object):
             self.p1_action_r = config.getint(_CONF_CONT_P1, _CONF_CONT_AR)
             self.p1_interact = config.getint(_CONF_CONT_P1, _CONF_CONT_INT)
             self.p1_taunt = config.getint(_CONF_CONT_P1, _CONF_CONT_TAUNT)
+            self.p1_jump = config.getint(_CONF_CONT_P1, _CONF_CONT_JUMP)
             '''controls for player 2'''
             self.p2_left = config.getint(_CONF_CONT_P2, _CONF_CONT_LEFT)
             self.p2_right = config.getint(_CONF_CONT_P2, _CONF_CONT_RIGHT)
@@ -131,6 +135,7 @@ class MainConfig(object):
             self.p2_action_r = config.getint(_CONF_CONT_P2, _CONF_CONT_AR)
             self.p2_interact = config.getint(_CONF_CONT_P2, _CONF_CONT_INT)
             self.p2_taunt = config.getint(_CONF_CONT_P2, _CONF_CONT_TAUNT)
+            self.p1_jump = config.getint(_CONF_CONT_P1, _CONF_CONT_JUMP)
         except (configparser.NoSectionError, configparser.NoOptionError, TypeError, ValueError, AttributeError):
             self.write_settings(True)
 
@@ -174,6 +179,7 @@ class MainConfig(object):
                 self.p1_action_r = K_RSHIFT
                 self.p1_interact = K_BACKSPACE
                 self.p1_taunt = K_RETURN
+                self.p1_jump = K_SPACE
                 # controls for player 2
                 self.p2_left = K_a
                 self.p2_right = K_d
@@ -183,6 +189,7 @@ class MainConfig(object):
                 self.p2_action_r = K_e
                 self.p2_interact = K_LSHIFT
                 self.p2_taunt = K_TAB
+                self.p2_jump = K_LSUPER
 
             '''info part'''
             try:
@@ -222,6 +229,7 @@ class MainConfig(object):
             config.set(_CONF_CONT_P1, _CONF_CONT_AR, self.p1_action_r)
             config.set(_CONF_CONT_P1, _CONF_CONT_INT, self.p1_interact)
             config.set(_CONF_CONT_P1, _CONF_CONT_TAUNT, self.p1_taunt)
+            config.set(_CONF_CONT_P1, _CONF_CONT_JUMP, self.p1_jump)
             '''controls for player 2'''
             try:
                 config.add_section(_CONF_CONT_P2)
@@ -235,6 +243,7 @@ class MainConfig(object):
             config.set(_CONF_CONT_P2, _CONF_CONT_AR, self.p2_action_r)
             config.set(_CONF_CONT_P2, _CONF_CONT_INT, self.p2_interact)
             config.set(_CONF_CONT_P2, _CONF_CONT_TAUNT, self.p2_taunt)
+            config.set(_CONF_CONT_P2, _CONF_CONT_JUMP, self.p2_jump)
 
             with open(CONFIG, 'w') as configfile:
                 config.write(configfile)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="1">
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
-  <image source="../../Dropbox/SS16/PP/scifi_platformTiles_32x32.png" width="1120" height="736"/>
+  <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
  </tileset>
  <layer name="Background" width="32" height="24">
   <data encoding="base64" compression="zlib">
@@ -15,7 +15,7 @@
  </layer>
  <layer name="Leiter" width="32" height="24">
   <data encoding="base64" compression="zlib">
-   eJztzUEVACAIRMGlrGbBLNJRrgTw7eVPgZEA4L8V0g5+fn6H7PsY/9t3GX8A0wOoowga
+   eJxjYBgF2MBfIP43gPYrMDIwKDIOnP3OQLtdBtD+NKDd6QNofyfQ7i40+78B8Xcg/gHEP4H4FxD/xiP+hwL71wDtXjuA/qcFGOg4HbV/1P6RbD+2Mo2eYDiWaaNgFAxlAAA/cBrC
   </data>
  </layer>
 </map>
