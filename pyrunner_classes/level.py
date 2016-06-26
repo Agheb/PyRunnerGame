@@ -59,26 +59,36 @@ class Level(object):
          For each Objects the properties are set as follows with defaults:
          (self, tile, solid=True, climbable=False, climbable_horizontal=False)
          """
-        def check_property(current_layer, sprite_property, obj_type):
+        def check_property(current_layer, sprite_property):
             """check layer for a specific property and if it exists create the corresponding object"""
             try:
                 if current_layer.properties[sprite_property] == 'true':
-                    for a in current_layer.tiles():
-                        if obj_type is Ladder and layer is 'Leiter_Top':
-                            obj_type(a, True)
-                        else:
-                            obj_type(a)
+                    return True
+                else:
+                    return False
             except KeyError:
-                pass
+                return False
 
         for layer in self.tm.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 self.render_tile_layer(surface, layer)
 
-                check_property(layer, 'solid', WorldObject)
-                check_property(layer, 'climbable', Ladder)
-                check_property(layer, 'climbable_horizontal', Rope)
-                check_property(layer, 'collectible', Collectible)
+                '''first check all layer properties'''
+                ladder = check_property(layer, 'climbable')
+                rope = check_property(layer, 'climbable_horizontal')
+                gold = check_property(layer, 'collectible')
+                solid = check_property(layer, 'solid')
+
+                '''create the sprites'''
+                for a in layer.tiles():
+                    if ladder:
+                        Ladder(a, solid)
+                    elif rope:
+                        Rope(a)
+                    elif gold:
+                        Collectible(a)
+                    elif solid:
+                        WorldObject(a)
 
                 try:
                     if layer.name == "Background":
