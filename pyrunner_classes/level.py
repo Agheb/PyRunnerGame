@@ -112,6 +112,12 @@ class Level(object):
         self.render(temp_surface)
         return temp_surface
 
+    def clean_sprite(self, sprite):
+        """overdraw an old sprite with a clean background"""
+        # clear the item
+        dirty_rect = self.background.subsurface(sprite.rect)
+        self.surface.blit(dirty_rect, sprite.rect)
+        # self.lvl_surface.blit(dirty_rect, sprite.rect)
 
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
