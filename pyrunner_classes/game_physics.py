@@ -100,6 +100,14 @@ class Physics(object):
                 if bottom_sprite and bottom_sprite.climbable and player.change_y > 0:
                     player.on_ladder = True
                     go_down = True
+            else:
+                '''make sure there's ground below the player'''
+                bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + 1)
+
+                if not bottom_sprite and not player.on_rope:
+                    '''if there's no ground below the feet'''
+                    player.schedule_stop()
+                    on_ground = False
 
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
