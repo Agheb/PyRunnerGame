@@ -58,6 +58,14 @@ class Physics(object):
         elif player.rect.x < 0:
             player.rect.x = 0
 
+    @staticmethod
+    def find_collision(x, y):
+        """find a sprite that has no direct collision with the player sprite"""
+        for sprite in WorldObject.group:
+            if sprite.rect.collidepoint(x, y):
+                return sprite
+        return None
+
     def collide_rect(self):
         """calculates collision for players and sprites using the rectangles of the sprites"""
         for player in Player.group:
@@ -68,8 +76,32 @@ class Physics(object):
             on_rope = False
             on_ladder = False
             on_ground = False
+            go_down = False
 
-            # get all collisions for the player
+            '''find collisions according to certain actions outside of the direct sprite collision'''
+            if player.direction is "DR":
+                '''remove the bottom sprite to the right'''
+                right_sprite = self.find_collision(player.rect.centerx + player.tile_size, player.rect.bottom + 1)
+
+                if right_sprite:
+                    self.level.clean_sprite(right_sprite)
+                    right_sprite.kill()
+            elif player.direction is "DL":
+                '''remove the bottom sprite to the left'''
+                left_sprite = self.find_collision(player.rect.centerx - player.tile_size, player.rect.bottom + 1)
+
+                if left_sprite:
+                    self.level.clean_sprite(left_sprite)
+                    left_sprite.kill()
+            elif player.direction is "UD" and not player.on_ladder:
+                '''go down the top part of a solid ladder'''
+                bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + 1)
+
+                if bottom_sprite and bottom_sprite.climbable and player.change_y > 0:
+                    player.on_ladder = True
+                    go_down = True
+
+            '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
             for sprite in collisions:
                 # collect gold and remove the sprite
@@ -91,7 +123,7 @@ class Physics(object):
                         on_ladder = True
                 elif sprite.rect.collidepoint(player.rect.midbottom):
                     """if the player hits a solid sprite at his feet"""
-                    if sprite.solid and not sprite.climbable_horizontal:
+                    if sprite.solid and not sprite.climbable_horizontal and not go_down:
                         on_ground = True
                         self.hit_top(player, sprite)
                 else:

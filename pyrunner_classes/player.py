@@ -105,10 +105,10 @@ class Player(pygame.sprite.DirtySprite):
 
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
-        if self.on_ladder or self.on_rope:
-            self.change_y = self.speed
-            self.direction = "UD"
-            self.on_rope = False
+        self.direction = "UD"
+
+        self.change_y = self.speed
+        self.on_rope = False
 
     def schedule_stop(self):
         """stop player movements"""
@@ -116,18 +116,16 @@ class Player(pygame.sprite.DirtySprite):
 
     def dig_right(self):
         """dig to the right"""
-        if self.on_ladder or self.on_rope:
-            pass
-        else:
+        if not self.on_ladder or not self.on_rope:
+            self.schedule_stop()
             self.direction = "DR"
             print("digging right")
             # self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
-        if self.on_ladder or self.on_rope:
-            pass
-        else:
+        if not self.on_ladder or not self.on_rope:
+            self.schedule_stop()
             self.direction = "DL"
             print("digging left")
             # self.player_collide()
