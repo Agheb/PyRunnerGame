@@ -32,22 +32,33 @@ class SpriteSheet(object):
         # Return the image
         return image
 
-    def add_animation(self, pos_x, pos_y, list=None, frames=1, flip=False):
+    def add_animation(self, pos_x, pos_y, frames=1):
         """define which images on a sprite sheet to use for an animation"""
         ts = self.tile_size
         pos_y *= ts
+        pos_x *= ts
 
-        try:
+        if frames is not 1:
+            frame_list = []
             for i in range(frames):
                 image = self.get_image(pos_x, pos_y, ts, ts)
-                if flip:
-                    image = pygame.transform.flip(image, True, False)
-                list.append(image)
+                frame_list.append(image)
                 pos_x += ts
 
-            return list
-        except AttributeError:
-            return self.get_image(pos_x * ts, pos_y * ts, ts, ts)
+            return frame_list
+        else:
+            return self.get_image(pos_x, pos_y, ts, ts)
+
+    @staticmethod
+    def flip_list(frames):
+        """horizontal flip all frames in a list (make left movements to right etc)"""
+        flipped_list = []
+
+        for i in frames:
+            image = pygame.transform.flip(i, True, False)
+            flipped_list.append(image)
+
+        return flipped_list
 
     def get_frame(self, position, frame_list):
         """returns the next frame in order"""

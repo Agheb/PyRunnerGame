@@ -3,10 +3,13 @@
 """main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
+import pygame
 import pytmx
-from .game_physics import *
-from .player import Player
 from pytmx.util_pygame import load_pygame
+
+MULTIPLICATOR = 1
+TILE_WIDTH = 32
+TILE_HEIGHT = 32
 
 """
 Level Builder for PyRunner game
@@ -56,36 +59,27 @@ class Level(object):
          For each Objects the properties are set as follows with defaults:
          (self, tile, solid=True, climbable=False, climbable_horizontal=False)
          """
+        def check_property(current_layer, sprite_property, obj_type):
+            """check layer for a specific property and if it exists create the corresponding object"""
+            try:
+                if current_layer.properties[sprite_property] == 'true':
+                    for a in current_layer.tiles():
+                        if obj_type is Ladder and layer is 'Leiter_Top':
+                            obj_type(a, True)
+                        else:
+                            obj_type(a)
+            except KeyError:
+                pass
+
         for layer in self.tm.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 self.render_tile_layer(surface, layer)
-                try:
-                    if layer.properties['solid'] == 'true':
-                        for a in layer.tiles():
-                            WorldObject(a)
-                except KeyError:
-                    pass
-                try:
-                    if layer.properties['climbable'] == 'true':
-                        for a in layer.tiles():
-                            Ladder(a)
-                            # print(layer.properties)
-                except KeyError:
-                    pass
-                try:
-                    if layer.properties['climbable_horizontal'] == 'true':
-                        for a in layer.tiles():
-                            Rope(a)
-                            # print(layer.properties)
-                except KeyError:
-                    pass
-                try:
-                    if layer.properties['collectible'] == 'true':
-                        for a in layer.tiles():
-                            Collectible(a)
-                            # print(layer.properties)
-                except KeyError:
-                    pass
+
+                check_property(layer, 'solid', WorldObject)
+                check_property(layer, 'climbable', Ladder)
+                check_property(layer, 'climbable_horizontal', Rope)
+                check_property(layer, 'collectible', Collectible)
+
                 try:
                     if layer.name == "Background":
                         '''create a blank copy of the background layer'''
@@ -100,14 +94,6 @@ class Level(object):
                         self.player_1_pos = obj.x, obj.y
                 except (KeyError, AttributeError, ValueError):
                     pass
-
-#        for layer in self.tm.invisible_layers:
-#           if isinstance(layer, pytmx.TiledTileLayer):
-#                self.render_tile_layer(surface, layer)
-#                if layer.properties['collectible'] == 'true':
-#                    for a in layer.tiles():
-#                        RemovableWorldObjects(a, False, False, False, True)
-#                        # print(layer.properties)
 
     def render_tile_layer(self, surface, layer):
         """draw single tile"""
@@ -125,3 +111,53 @@ class Level(object):
         temp_surface = pygame.Surface(self.size)
         self.render(temp_surface)
         return temp_surface
+
+    def clean_sprite(self, sprite):
+        """overdraw an old sprite with a clean background"""
+        # clear the item
+        dirty_rect = self.background.subsurface(sprite.rect)
+        self.surface.blit(dirty_rect, sprite.rect)
+        # self.lvl_surface.blit(dirty_rect, sprite.rect)
+
+class WorldObject(pygame.sprite.DirtySprite):
+    """hello world"""
+
+    group = pygame.sprite.LayeredDirty(default_layer=0)
+
+    def __init__(self, tile, solid=True):
+        """world object item"""
+        pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
+        (pos_x, pos_y, self.image) = tile
+        self.rect = self.image.get_rect()
+        self.rect.x = pos_x * TILE_WIDTH
+        self.rect.y = pos_y * TILE_HEIGHT
+        self.solid = solid
+        self.climbable = False
+        self.climbable_horizontal = False
+        self.collectible = False
+
+    def update(self):
+        """update world objects"""
+        # self.dirty = 1
+        pass
+
+
+class Ladder(WorldObject):
+
+    def __init__(self, tile, solid=False):
+        WorldObject.__init__(self, tile, solid)
+        self.climbable = True
+
+
+class Rope(WorldObject):
+
+    def __init__(self, tile):
+        WorldObject.__init__(self, tile)
+        self.climbable_horizontal = True
+
+
+class Collectible(WorldObject):
+
+    def __init__(self, tile):
+        WorldObject.__init__(self, tile)
+        self.collectible = True
