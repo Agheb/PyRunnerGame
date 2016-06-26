@@ -41,7 +41,10 @@ class Player(pygame.sprite.DirtySprite):
         self.walking_frames_ud = []
         self.hanging_frames_l = []
         self.hanging_frames_r = []
+        self.death_frames = []
         self.sprite_sheet = SpriteSheet(SPRITE_SHEET_PATH + sheet, self.tile_size, self.fps)
+        self.killed = False
+        self.killed_frame = 0
 
         if not bot:
             self.digging_frames_l = []
@@ -61,6 +64,8 @@ class Player(pygame.sprite.DirtySprite):
             self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4)
             # Load the left hanging images into a list and flip them to face right
             self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
+            # death animation
+            self.death_frames = self.sprite_sheet.add_animation(5, 2, 8)
 
             # Stop Frame: Sprite when player is not moving on ground
             self.stop_frame = self.sprite_sheet.add_animation(5, 0)
@@ -134,45 +139,53 @@ class Player(pygame.sprite.DirtySprite):
         """ Move the player. """
         self.dirty = 1
 
-        # Move left/right
-        self.rect.x += self.change_x
-        self.rect.y += self.change_y
-        self.x, self.y = self.rect.topleft
+        if not self.killed:
+            # Move left/right
+            self.rect.x += self.change_x
+            self.rect.y += self.change_y
+            self.x, self.y = self.rect.topleft
 
-        '''keep the correct movement animation according to the direction on screen'''
-        if self.change_x < 0:
-            self.direction = "RL" if self.on_rope else "L"
-        elif self.change_x > 0:
-            self.direction = "RR" if self.on_rope else "R"
-        elif not self.on_ground and not self.on_rope:
-            self.direction = "UD"
+            '''keep the correct movement animation according to the direction on screen'''
+            if self.change_x < 0:
+                self.direction = "RL" if self.on_rope else "L"
+            elif self.change_x > 0:
+                self.direction = "RR" if self.on_rope else "R"
+            elif not self.on_ground and not self.on_rope:
+                self.direction = "UD"
 
-        # Animations with Sprites
-        '''movements'''
-        if self.direction == "R":
-            self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_r)
-        elif self.direction == "L":
-            self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_l)
-        elif self.direction == "UD":
-            self.image = self.sprite_sheet.get_frame(self.y, self.walking_frames_ud)
-        elif self.direction == "RR":
-            self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_r)
-        elif self.direction == "RL":
-            self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_l)
-        # elif self.direction == "Stop":
-        #    self.image = self.stop_frame
-        elif self.direction == "DL":
-            # Dig left/right
-            self.image = self.digging_frames_l[0]
-            self.image = self.digging_frames_l[1]
-            self.image = self.digging_frames_l[2]
-        elif self.direction == "DR":
-            self.image = self.digging_frames_r[0]
-            self.image = self.digging_frames_r[1]
-            self.image = self.digging_frames_r[2]
+            # Animations with Sprites
+            '''movements'''
+            if self.direction == "R":
+                self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_r)
+            elif self.direction == "L":
+                self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_l)
+            elif self.direction == "UD":
+                self.image = self.sprite_sheet.get_frame(self.y, self.walking_frames_ud)
+            elif self.direction == "RR":
+                self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_r)
+            elif self.direction == "RL":
+                self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_l)
+            # elif self.direction == "Stop":
+            #    self.image = self.stop_frame
+            elif self.direction == "DL":
+                # Dig left/right
+                self.image = self.digging_frames_l[0]
+                self.image = self.digging_frames_l[1]
+                self.image = self.digging_frames_l[2]
+            elif self.direction == "DR":
+                self.image = self.digging_frames_r[0]
+                self.image = self.digging_frames_r[1]
+                self.image = self.digging_frames_r[2]
 
-        # Gravity
-        self.calc_gravity()
+            # Gravity
+            self.calc_gravity()
+        else:
+            self.image = self.death_frames[self.killed_frame]
+            self.killed_frame += 1
+
+            if self.killed_frame is len(self.death_frames):
+                pygame.sprite.DirtySprite.kill(self)
+
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """
@@ -205,3 +218,7 @@ class Player(pygame.sprite.DirtySprite):
 
             if self.change_x is 0 and self.change_y is 0:
                 self.stop_on_ground = False
+
+    def kill(self):
+        """kill animation"""
+        self.killed = True

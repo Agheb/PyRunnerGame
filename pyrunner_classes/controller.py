@@ -44,6 +44,7 @@ class Controller(object):
             elif key == self.config.p1_action_r:
                 self.player_1.dig_right()
             elif key == self.config.p1_interact:
+                self.player_1.kill()
                 print("Player 1 interacts")
             elif key == self.config.p1_taunt:
                 print("Player 1 taunts")
