@@ -2,41 +2,45 @@
 # -*- coding: utf-8 -*-
 # Python 2 related fixes
 from __future__ import division
+from .level import *
 from .player import *
 import pygame
 
 GRAVITY = 1
-MULTIPLICATOR = 1
-TILE_WIDTH = 32
-TILE_HEIGHT = 32
-
-worldGroup = pygame.sprite.LayeredDirty()
-playerGroup = pygame.sprite.LayeredDirty()
 
 
 class Physics(object):
     """physics"""
 
-    def __init__(self, surface, background):
+    def __init__(self, surface, level):
         self.gravity = GRAVITY
         self.surface = surface
-        self.background = background
-        self.player = Player()
-        playerGroup.add(self.player)
+        self.level = level
+        self.lvl_surface = self.level.surface
+        self.background = self.level.background
+        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png")
+        self.player_2 = None  # Player(self.level.player_2_pos, "LRCharacters32_p2.png")
+
         return
 
     def update(self):
         """updates all physics components"""
-        # TODO: pass sprites to render thread
+        # pass all changed sprites to the render thread
         rects = []
-        rects.append(playerGroup.draw(self.surface))
-        rects.append(worldGroup.draw(self.surface))
 
-        playerGroup.update()
-        self.collide()
+        Player.group.update()
+        # WorldObject.group.update()
 
-        playerGroup.clear(self.surface, self.background)
-        worldGroup.clear(self.surface, self.background)
+        # check for collisions
+        self.collide_rect()
+
+        rects.append(Player.group.draw(self.surface))
+        rects.append(WorldObject.group.draw(self.surface))
+
+        # clean up the dirty background
+        Player.group.clear(self.surface, self.lvl_surface)
+        WorldObject.group.clear(self.surface, self.background)
+        # return the changed items
         return rects
 
     def check_world_boundaries(self, player):
@@ -54,91 +58,96 @@ class Physics(object):
         elif player.rect.x < 0:
             player.rect.x = 0
 
-    def collide(self):
-        """calculates collision for players and sprites"""
-        # TODO: add head collide
-        col = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False)
-        if len(col) > 0:
-            # some collision
-            for player in col.keys():
-                for sprite in col[player]:
-                    if sprite.climbable:
-                        if player.change_x is not 0:
-                            self.stop_horizontal_movement(player)
-                        player.on_ladder = True
-                    else:
-                        # collision at feet
-                        self.fix_pos(player, sprite)
-                        """
-                        else:
-                          print("right %s" %sprite.rect.collidepoint(playerObj.rect.bottomright))
-                          print("left %s" %sprite.rect.collidepoint(playerObj.rect.bottomleft))
-                          print(sprite.rect.collidepoint(playerObj.rect.topright))
-                          print(sprite.rect.collidepoint(playerObj.rect.topleft))"""
-        else:
-            for player in playerGroup:
-                self.check_world_boundaries(player)
-                player.on_ground = False
-                player.on_ladder = False
-                player.on_rope = False
+    def collide_rect(self):
+        """calculates collision for players and sprites using the rectangles of the sprites"""
+        for player in Player.group:
+            # check if the player is still on the screen
+            self.check_world_boundaries(player)
 
-        return col
+            # assume he's flying in the air
+            on_rope = False
+            on_ladder = False
+            on_ground = False
+
+            # get all collisions for the player
+            collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
+            for sprite in collisions:
+                # collect gold and remove the sprite
+                if sprite.collectible:
+                    player.gold_count += 1
+                    print(player.gold_count)
+                    # clear the item
+                    self.level.clean_sprite(sprite)
+                    # and remove it
+                    sprite.kill()
+                elif sprite.rect.collidepoint(player.rect.center):
+                    """check which sprite contains the player"""
+                    if sprite.climbable_horizontal and player.direction is not "UD":
+                        """player is hanging on the rope"""
+                        on_rope = True
+                        player.rect.top = sprite.rect.top
+                    elif sprite.climbable:
+                        """player is climbing a ladder"""
+                        on_ladder = True
+                elif sprite.rect.collidepoint(player.rect.midbottom):
+                    """if the player hits a solid sprite at his feet"""
+                    if sprite.solid and not sprite.climbable_horizontal:
+                        on_ground = True
+                        self.hit_top(player, sprite)
+                else:
+                    self.fix_pos(player, sprite)
+
+            # update the player variables
+            player.on_rope = on_rope
+            player.on_ladder = on_ladder
+            player.on_ground = on_ground
 
     @staticmethod
-    def stop_horizontal_movement(player):
-        """stop left/right movement"""
-        if player.change_x < 0:
-            player.change_x += 0.1
-        elif player.change_x > 0:
-            player.change_x -= 0.1
+    def hit_top(player, sprite):
+        """player hits the ground"""
+        if player.rect.bottom > sprite.rect.top:
+            player.rect.bottom = sprite.rect.top + 1    # for permanent ground collision
+            player.change_y = 0
+
+    @staticmethod
+    def hit_bottom(player, sprite):
+        """player hits higher level from below"""
+        if player.rect.top < sprite.rect.bottom:
+            player.rect.top = sprite.rect.bottom
+
+    @staticmethod
+    def hit_left(player, sprite):
+        """player hits left side of a sprite"""
+        if player.rect.right > sprite.rect.left:
+            player.rect.right = sprite.rect.left
+            player.change_x = 0
+
+    @staticmethod
+    def hit_right(player, sprite):
+        """player hits right side of a sprite"""
+        if player.rect.left < sprite.rect.right:
+            player.rect.left = sprite.rect.right
+            player.change_x = 0
 
     def fix_pos(self, player, sprite):
         """Used to place the player nicely"""
-        # if player.rect.y > sprite.rect.y - player.rect.height:
-        #    player.rect.y = sprite.rect.y - player.rect.height
+
         if sprite.solid:
-            if player.rect.left is not sprite.rect.right or player.rect.right is not sprite.rect.left:
-                    if player.change_y > 0:
-                        '''player hits the ground'''
-                        player.rect.bottom = sprite.rect.top
-                        player.change_y = 0
-                        player.on_ground = True
-                    elif player.change_y < 0:
-                        '''player hits sprite from below'''
-                        player.rect.top = sprite.rect.bottom
-                        self.stop_horizontal_movement(player)
-            elif player.rect.bottom is not sprite.rect.top:
-                if player.change_x > 0:
-                    '''player hits the left side'''
-                    player.rect.right = sprite.rect.left
-                    player.change_x = 0
-                elif player.change_x < 0:
-                    '''player hits the right side'''
-                    player.rect.left = sprite.rect.right
-                    player.change_x = 0
+            if not sprite.climbable_horizontal and not sprite.climbable and not player.on_ladder:
+                if player.change_y > 0:
+                    self.hit_top(player, sprite)
+                elif player.change_y < 0:
+                    self.hit_bottom(player, sprite)
+
+                """ignore left/right collisions with sprites that are below the player"""
+                if sprite.rect.y < player.rect.y:
+                    if player.change_x > 0:
+                        self.hit_left(player, sprite)
+                    elif player.change_x < 0:
+                        self.hit_right(player, sprite)
 
     def get_level_info_json(self):
         pass
 
     def set_level_info_via_json(self, json):
         pass
-    
-
-
-class WorldObject(pygame.sprite.DirtySprite):
-    """hello world"""
-
-    def __init__(self, tile, solid=True, climbable=False, climbable_horizontal=False):
-        """world object item"""
-        (pos_x, pos_y, self.image) = tile
-        pygame.sprite.DirtySprite.__init__(self, worldGroup)
-        self.rect = self.image.get_rect()
-        self.rect.x = pos_x * TILE_WIDTH
-        self.rect.y = pos_y * TILE_HEIGHT
-        self.solid = solid
-        self.climbable = climbable
-        self.climbable_horizontal = climbable_horizontal
-
-    def update(self):
-        """update world objects"""
-        self.dirty = 1

@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="25">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="11">
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
  </tileset>
  <layer name="Background" width="32" height="24">
+  <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
+   <property name="solid" type="bool" value="false"/>
+  </properties>
   <data encoding="base64" compression="zlib">
    eJzt00cOAWEAhuHhADr30LmHzj107qFzD5176CQ6F/BuJpnFLOcXiX/x7N7dl+9sUpQLrrjhjgeeeOGNs8DGYlYUK2ywwwEnXHDDYxbbeOGDHwEEEUIYEUQFNzHEkUASKaSRQRY5wU0eBRRRQhkVVFFDXXDTQBMttNFBFz30MTCw0e6iNkOMMMYEU8wwxwJLAxvtLmqzwhobbLHDHgcccTKw0e6iNiK/Lf8v//9L/9drvvl/veab/9dr5P/l/+X///f/H+Jxnao=
   </data>
  </layer>
  <layer name="Coins" width="32" height="24">
   <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
    <property name="collectible" type="bool" value="true"/>
+   <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
    eJxjYBgFgxnkUFE/pWaNAtoCXPFDSbyNxvnwAsTE52icD11AatwRUj+aFkbBYAfEptHRso/6AADVzQXp
@@ -18,47 +26,35 @@
  </layer>
  <layer name="Block" width="32" height="24">
   <properties>
+   <property name="climbable" type="bool" value="false"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztk0sKwCAQQ4P3P432Yz+Ha/ZWiYViC3nwNjKZzRjAmJJ0o5qr5Z/uNEB8aa9yH/VWPbt8/2+j9tfd/jdKX3sz6qz/iBlNHOwSgJVmutGdHvSsvCU60Tm0s+rcBYU3ZMQ=
+   eJztk0sKgDAQQ4fe/zTWX9XDmb1GQ0GcRR48KKXJJjTCmCv1RjXH8r2d5jvYJuysdCm93j83b1sq+5r8KHuqmSAZ/3+TleFn5xKxwBU2uMEdHuSuwhFO5TmrvjsBp41f4A==
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
   <properties>
    <property name="climbable" type="bool" value="true"/>
+   <property name="climbable_horizontal" type="bool" value="false"/>
+   <property name="collectible" type="bool" value="false"/>
+   <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2BwAfUB1u81wPpzB1j/YAKUxiUy8CZDD6VxiQzyyNBDzbicSEWzyAHE+oWceBoM9hPSx0Jj+wn5j5p5iR5goN1LzbxPDhjocnyk+38kAABw3wgY
-  </data>
- </layer>
- <layer name="Leiter_Top" width="32" height="24">
-  <properties>
-   <property name="climbable" type="bool" value="true"/>
-   <property name="solid" type="bool" value="true"/>
-  </properties>
-  <data encoding="base64" compression="zlib">
-   eJxjYBgFowAVaAyw/lEweAA143I0XQwNMBpPowAERtPBKBgFwxsAAA7JAPE=
+   eJxjYBgFowAVsAywfvUB1u81wPpzB1j/BCQ2OXE5AYe4BhlmURqXyMCbDD2UxiUyyCNDD6VxiQwmkqEHV1xiA4Tiipp+wQYIxdVA209puUgIEPIfqXmJVPcSSiuk5iVq5n1yADXzPjmA1umVEBjp/h8JAABXLApp
   </data>
  </layer>
  <layer name="Seil" width="32" height="24">
   <properties>
+   <property name="climbable" type="bool" value="false"/>
    <property name="climbable_horizontal" type="bool" value="true"/>
+   <property name="collectible" type="bool" value="false"/>
+   <property name="solid" type="bool" value="false"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQwFsB2JGIvCOgXLgMAPEhDUuPApGwWi6GJlgtFwYBaNgFAwVAADmPQGU
+   eJxjYBgFQwEwkoBHAeWAlPAeDf9RgA5G08XIBCO9XNiMBY+CUTAKBicAAAumA6Y=
   </data>
  </layer>
- <objectgroup name="Spawn_Locations">
-  <object id="20" name="Player_1" x="64" y="220">
-   <properties>
-    <property name="players" type="bool" value="true"/>
-   </properties>
-  </object>
-  <object id="24" name="Enemies" x="960" y="100">
-   <properties>
-    <property name="enemies" type="bool" value="true"/>
-   </properties>
-  </object>
- </objectgroup>
 </map>

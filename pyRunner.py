@@ -13,8 +13,7 @@ import logging
 # pyRunner subclasses
 from pyrunner_classes import *
 
-
-#interpret command line ags
+# interpret command line ags
 parser = argparse.ArgumentParser(description='Testing')
 parser.add_argument('--log',
                     help='pass the log level desired (info, debug,...)', type=str)
@@ -28,13 +27,14 @@ if args.log is not None:
         raise ValueError('Invalid log level: %s' % args.log)
     logging.basicConfig(level=numeric_level)
 
+
 class PyRunner(object):
     """main PyRunner Class"""
 
     def load_level(self, level_path):
         """load another level"""
         self.level = Level(level_path, self.bg_surface)
-        self.physics = Physics(self.render_thread.screen, self.bg_surface)
+        self.physics = Physics(self.render_thread.screen, self.level)
 
     def __init__(self):
         """initialize the game"""
@@ -60,7 +60,7 @@ class PyRunner(object):
         '''init the main menu'''
         self.network_connector = NetworkConnector()
         self.menu = MainMenu(self, self.network_connector)
-        self.controller = Controller(self.physics.player, self.config, self.network_connector)
+        self.controller = Controller(self.physics, self.config, self.network_connector)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -103,12 +103,9 @@ class PyRunner(object):
                         else:
                             self.controller.interpret_key(key)
                 elif event.type == KEYUP:
-                    key = event.key
                     '''key pressing events'''
-                    if self.menu.in_menu:
-                        pass
-                    else:
-                        self.controller.release_key(key)
+                    if not self.menu.in_menu:
+                        self.controller.release_key(event.key)
             # save cpu resources
             if not self.menu.in_menu:
                 self.render_thread.add_rect_to_update(self.physics.update())
@@ -119,4 +116,3 @@ if __name__ == "__main__":
     pyrunner = PyRunner()
     # start the pyrunner game
     pyrunner.start_game()
-
