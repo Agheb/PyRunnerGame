@@ -231,11 +231,11 @@ class RenderThread(threading.Thread):
             x, y, = self._fps_pos
             m_x, m_y = self._fps_margin
 
-        if not self._fps_dirty_rect and self.bg_surface:
+        if not self._fps_dirty_rect:
             '''get the clean background rect with some additional security padding around it'''
             try:
-                self._fps_dirty_rect = self.bg_surface.subsurface(
-                    (x, y, m_x, m_y))
+                surface = self.bg_surface.copy()
+                self._fps_dirty_rect = surface.subsurface((x, y, m_x, m_y))
             except ValueError:
                 '''if the subsurface bounces out of the main surface disable fps to avoid a render thread crash'''
                 self.show_framerate = False
@@ -250,8 +250,8 @@ class RenderThread(threading.Thread):
             surf, pos = self._fps_surface
             x, y = self._fps_pos
             pos = (x, y)
-            self.blit(self._fps_dirty_rect, pos)
-            self.blit(surf, (x + 10, y + 10))
+            self.bg_surface.blit(self._fps_dirty_rect, pos)
+            self.bg_surface.blit(surf, (x + 10, y + 10))
             # update the dirty rect area because it's a little bit bigger
             self.add_rect_to_update(self._fps_dirty_rect.get_rect(), surf, pos, False)
 
