@@ -81,7 +81,7 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.on_rope:
             self.direction = "RL"
-        elif not self.on_ground and self.on_ladder:
+        elif self.on_ladder and not self.on_ground:
             self.direction = "UD"
         else:
             self.direction = "L"

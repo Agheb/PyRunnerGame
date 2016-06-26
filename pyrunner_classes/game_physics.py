@@ -173,14 +173,14 @@ class Physics(object):
         """Used to place the player nicely"""
 
         if sprite.solid:
-            if not sprite.climbable_horizontal and not sprite.climbable and not player.on_ladder:
+            if sprite.climbable and not player.on_ladder:
                 if player.change_y > 0:
                     self.hit_top(player, sprite)
                 elif player.change_y < 0:
                     self.hit_bottom(player, sprite)
-
-                """ignore left/right collisions with sprites that are below the player"""
+            elif not sprite.climbable_horizontal:
                 if sprite.rect.y < player.rect.y:
+                    """ignore left/right collisions with sprites that are below the player"""
                     if player.change_x > 0:
                         self.hit_left(player, sprite)
                     elif player.change_x < 0:
