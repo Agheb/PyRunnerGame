@@ -113,7 +113,7 @@ class Physics(object):
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
             for sprite in collisions:
                 # collect gold and remove the sprite
-                if sprite.collectible:
+                if sprite.collectible and not sprite.killed:
                     player.gold_count += 1
                     print(player.gold_count)
                     # clear the item

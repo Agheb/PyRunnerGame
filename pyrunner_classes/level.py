@@ -135,7 +135,7 @@ class Level(object):
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
-    group = pygame.sprite.LayeredDirty(default_layer=0)
+    group = pygame.sprite.LayeredDirty(default_layer=-1)
 
     def __init__(self, tile, solid=True, removable=False):
         """world object item"""
@@ -156,10 +156,16 @@ class WorldObject(pygame.sprite.DirtySprite):
         if self.killed:
             x, y = self.rect.topleft
             w, h = self.rect.size
-            y += 2
-            h -= 2
+            if self.removable:
+                y += 2
+                h -= 2
+            elif self.collectible:
+                x += 4
+                y += 4
+                w -= 8
+                h -= 8
             rect = pygame.Rect(x, y, w, h)
-            self.image = pygame.transform.scale(self.image, (w, h))
+            self.image = pygame.transform.scale(self.image, (w, h)).convert_alpha()
             self.rect = rect
 
             if h is 0:
@@ -169,7 +175,7 @@ class WorldObject(pygame.sprite.DirtySprite):
 
     def kill(self):
         """remove this sprite"""
-        if self.removable:
+        if self.removable or self.collectible:
             self.killed = True
         else:
             self.super_kill()
