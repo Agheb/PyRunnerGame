@@ -10,6 +10,8 @@ from pytmx.util_pygame import load_pygame
 MULTIPLICATOR = 1
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
+LEVEL_LIST = ["./resources/levels/scifi.tmx", "./resources/levels/level2.tmx",
+                           "./resources/levels/level3.tmx"]
 
 """
 Level Builder for PyRunner game
@@ -33,14 +35,17 @@ class Level(object):
     3. draw layer by layer
     """
 
-    def __init__(self, filename, surface):
-        tm = load_pygame(filename, pixelalpha=True)
+    def __init__(self,surface,levelnumber=0):
+        self.level_id = levelnumber
+        tm = load_pygame(LEVEL_LIST[levelnumber], pixelalpha=True)
         self.size = tm.width * tm.tilewidth, tm.height * tm.tileheight
         self.tm = tm
         self.surface = surface
         self.player_bg = surface.copy()
         self.background = surface.copy()
         self.render(self.surface)
+
+
         try:
             p1_pos = self.tm.get_object_by_name("Player_1")
             p1_x, p1_y = p1_pos.x, p1_pos.y
@@ -119,18 +124,15 @@ class Level(object):
             # TODO iterate over object layer
             # TODO iterate over imageLayer
 
-    def make_level(self):
-        """draw the level to a surface"""
-        temp_surface = pygame.Surface(self.size)
-        self.render(temp_surface)
-        return temp_surface
-
     def clean_sprite(self, sprite):
         """overdraw an old sprite with a clean background"""
         # clear the item
         dirty_rect = self.background.subsurface(sprite.rect)
         self.surface.blit(dirty_rect, sprite.rect)
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
+
+
+
 
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
