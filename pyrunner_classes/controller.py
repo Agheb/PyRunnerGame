@@ -41,10 +41,8 @@ class Controller(object):
             # TODO actions for both players
             elif key == self.config.p1_action_l:
                 self.player_1.dig_left()
-                print("Player 1 digs left")
             elif key == self.config.p1_action_r:
                 self.player_1.dig_right()
-                print("Player 1 digs right")
             elif key == self.config.p1_interact:
                 print("Player 1 interacts")
             elif key == self.config.p1_taunt:
@@ -63,7 +61,6 @@ class Controller(object):
                 self.player_2.go_down()
             elif key == self.config.p2_action_l:
                 self.player_2.dig_left()
-                print("Player 1 digs left")
             elif key == self.config.p2_action_r:
                 self.player_2.dig_right()
             elif key == self.config.p2_interact:
