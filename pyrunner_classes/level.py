@@ -141,8 +141,8 @@ class WorldObject(pygame.sprite.DirtySprite):
         """world object item"""
         pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
         self.tile = tile
-        self.pos_x, self.pos_y, self.image = self.tile
-        self.rect = self.image.get_rect()
+        self.pos_x, self.pos_y, self.image_backup = self.tile
+        self.rect = self.image_backup.get_rect()
         self.rect.x = self.pos_x * TILE_WIDTH
         self.rect.y = self.pos_y * TILE_HEIGHT
         self.solid = solid
@@ -152,11 +152,13 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.collectible = False
         self.killed = False
         self.restoring = restoring
-        self.image_backup = self.image
 
         if restoring:
+            self.image = pygame.Surface((TILE_WIDTH, TILE_HEIGHT), SRCALPHA)
             self.rect.y += TILE_HEIGHT
             self.rect.height = 0
+        else:
+            self.image = self.image_backup
 
     def update(self):
         """update world objects"""
@@ -176,7 +178,7 @@ class WorldObject(pygame.sprite.DirtySprite):
                 h -= 8
 
             rect = pygame.Rect(x, y, w, h)
-            self.image = pygame.transform.scale(self.image, (w, h)).convert_alpha()
+            self.image = pygame.transform.scale(self.image_backup, (w, h)).convert_alpha()
             self.rect = rect
 
             if h is 0 and self.killed:
