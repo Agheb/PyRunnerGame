@@ -77,7 +77,7 @@ class Player(pygame.sprite.DirtySprite):
     # Player-controlled movement:
     def go_left(self):
         """" Called when the user hits the left arrow. Checks if player is on Rope to change animation """
-        self.change_x = -self.speed if self.change_y is 0 else 0
+        self.change_x = -self.speed if self.change_y <= self.speed else 0
 
         if self.on_rope:
             self.direction = "RL"
@@ -88,7 +88,7 @@ class Player(pygame.sprite.DirtySprite):
 
     def go_right(self):
         """ Called when the user hits the right arrow. Checks if player is on Rope to change animation """
-        self.change_x = self.speed if self.change_y is 0 else 0
+        self.change_x = self.speed if self.change_y <= self.speed else 0
 
         if self.on_rope:
             self.direction = "RR"
