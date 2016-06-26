@@ -6,6 +6,7 @@ from __future__ import division
 import pygame
 import pytmx
 from pytmx.util_pygame import load_pygame
+from pygame.locals import *
 
 MULTIPLICATOR = 1
 TILE_WIDTH = 32
@@ -41,10 +42,8 @@ class Level(object):
         self.size = tm.width * tm.tilewidth, tm.height * tm.tileheight
         self.tm = tm
         self.surface = surface
-        self.player_bg = surface.copy()
         self.background = surface.copy()
         self.render(self.surface)
-
 
         try:
             p1_pos = self.tm.get_object_by_name("Player_1")
@@ -136,27 +135,38 @@ class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
     group = pygame.sprite.LayeredDirty(default_layer=-1)
+    removed = pygame.sprite.LayeredDirty(default_layer=0)
 
-    def __init__(self, tile, solid=True, removable=False):
+    def __init__(self, tile, solid=True, removable=False, restoring=False):
         """world object item"""
         pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
-        (pos_x, pos_y, self.image) = tile
+        self.tile = tile
+        self.pos_x, self.pos_y, self.image = self.tile
         self.rect = self.image.get_rect()
-        self.rect.x = pos_x * TILE_WIDTH
-        self.rect.y = pos_y * TILE_HEIGHT
+        self.rect.x = self.pos_x * TILE_WIDTH
+        self.rect.y = self.pos_y * TILE_HEIGHT
         self.solid = solid
         self.removable = removable
         self.climbable = False
         self.climbable_horizontal = False
         self.collectible = False
         self.killed = False
+        self.restoring = restoring
+        self.image_backup = self.image
+
+        if restoring:
+            self.rect.y += TILE_HEIGHT
+            self.rect.height = 0
 
     def update(self):
         """update world objects"""
-        if self.killed:
+        if self.killed or self.restoring:
             x, y = self.rect.topleft
             w, h = self.rect.size
-            if self.removable:
+            if self.restoring:
+                y -= 2
+                h += 2
+            elif self.removable:
                 y += 2
                 h -= 2
             elif self.collectible:
@@ -164,18 +174,25 @@ class WorldObject(pygame.sprite.DirtySprite):
                 y += 4
                 w -= 8
                 h -= 8
+
             rect = pygame.Rect(x, y, w, h)
             self.image = pygame.transform.scale(self.image, (w, h)).convert_alpha()
             self.rect = rect
 
-            if h is 0:
+            if h is 0 and self.killed:
                 self.super_kill()
+            elif h is TILE_HEIGHT and self.restoring:
+                self.image = self.image_backup
+                self.restoring = False
 
             self.dirty = 1
 
     def kill(self):
         """remove this sprite"""
         if self.removable or self.collectible:
+            if not self.killed and self.removable:
+                print(str(self.rect))
+                RemovedBlock(self.tile, self.rect.size, 4)
             self.killed = True
         else:
             self.super_kill()
@@ -205,3 +222,30 @@ class Collectible(WorldObject):
     def __init__(self, tile):
         WorldObject.__init__(self, tile)
         self.collectible = True
+
+
+class RemovedBlock(pygame.sprite.DirtySprite):
+    """store values of removed blocks to restore them later on"""
+    def __init__(self, tile, size, time_out, fps=25):
+        pygame.sprite.DirtySprite.__init__(self, WorldObject.removed)
+        self.tile = tile
+        self.pos_x, self.pos_y, self.restore_image = self.tile
+        self.image = pygame.Surface(size, SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.rect.x = self.pos_x * TILE_WIDTH
+        self.rect.y = self.pos_y * TILE_HEIGHT
+        self.time_out = time_out
+        self.fps = fps
+        self.counter = 0
+
+    def update(self):
+        """countdown on each update until the object get's restored"""
+        self.counter += 1
+
+        if self.counter is self.fps * self.time_out:
+            self.restore()
+            self.kill()
+
+    def restore(self):
+        """recreate a sprite with the same values"""
+        return WorldObject(self.tile, True, True, True)
