@@ -21,7 +21,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztk0EKwCAQAxf//5ra1rb6uObeKlEQFTIwF9nsZY2ZEF/8j2wul2/dKfrB3Ie9Vc0u3X9u2P6q22vD9LU2w87qj4jRbIM9nVmAF7zhAyNMmTcPd3i4cpadewG3rWQS
+   eJztk0sKwCAQQ4P3P432Yz+Ha/ZWiYViC3nwNjKZzRjAmJJ0o5qr5Z/uNEB8aa9yH/VWPbt8/2+j9tfd/jdKX3sz6qz/iBlNHOwSgJVmutGdHvSsvCU60Tm0s+rcBYU3ZMQ=
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
