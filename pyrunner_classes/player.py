@@ -112,7 +112,9 @@ class Player(pygame.sprite.DirtySprite):
 
     def schedule_stop(self):
         """stop player movements"""
-        self.stop_on_ground = True
+        if self.change_y <= self.speed:
+            '''make sure the player is not falling down'''
+            self.stop_on_ground = True
 
     def dig_right(self):
         """dig to the right"""
