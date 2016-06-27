@@ -87,6 +87,8 @@ class Level(object):
         y //= self.tm.tileheight
         x *= self.tile_width
         y *= self.tile_height
+        x += self.margin_left
+        y += self.margin_top
 
         return x, y
 
