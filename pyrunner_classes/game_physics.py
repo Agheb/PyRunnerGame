@@ -58,8 +58,8 @@ class Physics(object):
             player.rect.y = self.level.height
         elif player.rect.y < self.level.margin_top:
             player.rect.y = self.level.margin_top
-        if player.rect.x > self.level.width - player.size:
-            player.rect.x = self.level.width - player.size
+        if player.rect.x > self.level.width + self.level.margin_left - player.size * 2:
+            player.rect.x = self.level.width + self.level.margin_left - player.size * 2
         elif player.rect.x < self.level.margin_left:
             player.rect.x = self.level.margin_left
 

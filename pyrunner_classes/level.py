@@ -47,14 +47,14 @@ class Level(object):
             self.height = self.tm.height * (self.tm.tileheight + self.pixel_diff)
             self.margin_left = (s_width - self.width) // 2
             self.margin_top = (s_height - self.height) // 2
-            rect = pygame.Rect(self.margin_left, self.margin_top, self.width, self.height)
-            print(str(rect))
-            self.surface = surface.subsurface(rect)
+            # rect = pygame.Rect(self.margin_left, self.margin_top, self.width, self.height)
+            # print(str(rect))
+            # self.surface = surface.subsurface(rect)
         else:
             self.pixel_diff = 0
             self.margin_left = 0
             self.margin_top = 0
-            self.surface = surface
+        self.surface = surface
         self.background = self.surface.copy()
         self.render()
 
@@ -139,8 +139,7 @@ class Level(object):
                 except (KeyError, AttributeError, ValueError):
                     pass
 
-    @staticmethod
-    def render_tile(surface, tile):
+    def render_tile(self, surface, tile):
         """draw single tile"""
         x, y, image = tile
 
@@ -204,7 +203,7 @@ class WorldObject(pygame.sprite.DirtySprite):
 
             if (h <= 0 or w <= 0) and self.killed:
                 self.super_kill()
-            elif h is self.height and self.restoring:
+            elif h >= self.height and self.restoring:
                 self.image = self.image_backup
                 self.rect.x = self.pos_x
                 self.rect.y = self.pos_y

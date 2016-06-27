@@ -33,7 +33,7 @@ class Player(pygame.sprite.DirtySprite):
         # movement related
         self.change_x = 0
         self.change_y = 0
-        self.speed = 4
+        self.speed = self.size // 10 * 2
         # score related
         self.gold_count = 0
         # lists holding the image for movement. Up and down movement uses the same sprites.
@@ -47,6 +47,7 @@ class Player(pygame.sprite.DirtySprite):
         self.killed = False
         self.killed_frame = 0
         self.digging_frame = 0
+        self.stop_at = None
 
         if not bot:
             self.digging_frames_l = []
@@ -204,27 +205,69 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.stop_on_ground:
             if self.change_x is not 0:
-                if self.rect.x % self.size is not 0:
+                print(str(self.stop_at))
+                self.set_stop_point(self.change_x)
+                stop_x, stop_y = self.stop_at
+                if self.reached_next_tile(self.change_x):
+                    self.rect.x = stop_x
+                    self.change_x = 0
+                    self.stop_at = None
+                else:
                     if self.change_x > 0:
                         self.go_right()
                     else:
                         self.go_left()
-                else:
-                    self.change_x = 0
 
             if self.change_y is not 0:
+                self.set_stop_point(self.change_y)
+                stop_x, stop_y = self.stop_at
                 if self.change_y <= self.speed:
-                    # the player is lowered by one for a constant ground collision
-                    if (self.rect.y - 1) % self.size is not 0:
+                    if self.reached_next_tile(self.change_y):
+                        self.rect.y = stop_y
+                        self.change_y = 0
+                        self.stop_at = None
+                    else:
+                        print(str(self.stop_at), " ", str(self.rect.topleft))
                         if self.change_y < 0:
                             self.go_up()
                         else:
                             self.go_down()
-                    else:
-                        self.change_y = 0
 
             if self.change_x is 0 and self.change_y is 0:
                 self.stop_on_ground = False
+                self.stop_at = None
+
+    def set_stop_point(self, speed):
+        """set the coordinates where the player should stop"""
+        if self.stop_at is None:
+            x, y = self.rect.topleft
+
+            if speed is self.change_x:
+                diff = self.size - (x % self.size)
+                x += diff if speed > 0 else -diff
+            else:
+                diff = self.size - (y % self.size)
+                y += diff if speed > 0 else -diff
+
+            self.stop_at = x, y
+
+    def reached_next_tile(self, speed):
+        """stop the player in a certain direction"""
+        stopped = False
+        pos_x, pos_y = self.rect.topleft
+
+        x, y = self.stop_at
+
+        if speed is self.change_x and speed > 0 and pos_x >= x:
+            stopped = True
+        elif speed is self.change_x and speed < 0 and pos_x <= x:
+            stopped = True
+        elif speed is self.change_y and speed > 0 and pos_y >= y:
+            stopped = True
+        elif speed is self.change_y and speed < 0 and pos_y <= y:
+            stopped = True
+
+        return stopped
 
     def kill(self):
         """kill animation"""
