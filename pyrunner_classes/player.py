@@ -181,8 +181,7 @@ class Player(pygame.sprite.DirtySprite):
             elif self.direction == "RL":
                 self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_l)
             elif self.direction == "Stop":
-                pass
-            #    self.image = self.stop_frame
+                self.image = self.stop_frame
             elif self.direction == "DL":
                 # Dig left/right
                 self.image = self.digging_frames_l[self.digging_frame // 4]

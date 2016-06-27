@@ -116,6 +116,8 @@ class Physics(object):
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
             if removed_collision:
+                player.direction = "Stop"
+                on_ground = True
                 self.hit_inner_bottom(player, removed_collision)
 
             '''if a removed block contains another player we can walk over it'''
