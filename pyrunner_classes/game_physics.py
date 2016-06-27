@@ -35,11 +35,10 @@ class Physics(object):
 
         '''draw the level'''
         rects.append(WorldObject.group.draw(self.level.surface))
-        # rects.append(WorldObject.removed.draw(self.level.surface))
-        '''update the refreshed level surface to the main screen'''
         self.surface.blit(self.level.surface, (0, 0))
-
+        '''draw the player'''
         rects.append(Player.group.draw(self.surface))
+        # rects.append(WorldObject.removed.draw(self.level.surface))
 
         '''clean up the dirty background'''
         Player.group.clear(self.surface, self.level.surface)

@@ -44,7 +44,6 @@ class Level(object):
         self.surface = surface
         self.background = surface.copy()
         self.render(self.surface)
-
         try:
             p1_pos = self.tm.get_object_by_name("Player_1")
             p1_x, p1_y = p1_pos.x, p1_pos.y
@@ -54,7 +53,7 @@ class Level(object):
             p2_pos = self.tm.get_object_by_name("Player_2")
             p2_x, p2_y = p2_pos.x, p2_pos.y
         except ValueError:
-            p2_x, p2_y = 32, 0
+            p2_x, p2_y = p1_x + 32, p1_y
         self.player_1_pos = p1_x, p1_y
         self.player_2_pos = p2_x, p2_y
 
