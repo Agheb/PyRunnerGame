@@ -77,7 +77,7 @@ class RenderThread(threading.Thread):
         self._fps_margin = None
         self._fps_font_size = width >> 5  # results in 25 pt at 800x600, 32 at 1024x768
         self.show_framerate = False
-        if switch_resolution:
+        if self.switch_resolution:
             self._surface = None
         # initialize pygame in case it's not already
         try:
@@ -126,7 +126,7 @@ class RenderThread(threading.Thread):
         """switch to windowed or fullscreen mode"""
         display = pygame.display.Info()
         bitsize = display.bitsize
-        screen_x, screen_y = self._screen_x, self._screen_y
+        screen_size = self._screen_x, self._screen_y
 
         if self.fullscreen:
             # HWSURFACE and DOUBLEBUF probably only work on Windows, maybe on Linux if the moons are aligned correctly
@@ -135,15 +135,21 @@ class RenderThread(threading.Thread):
             pygame.mouse.set_visible(False)
             '''if switch resolution is False, render to a smaller surface but show it centered on the full screen'''
             if not self.switch_resolution:
-                self._screen = pygame.display.set_mode((display.current_w, display.current_h), fs_options, bitsize)
-                self._surface = pygame.Surface((screen_x, screen_y))
-                self.blit(self._surface, None, True)
+                display_size = display.current_w, display.current_h
+                self._screen = pygame.display.set_mode(display_size, fs_options, bitsize)
+                '''
+                    create a centered subsurface which takes all drawings and has a smaller size
+                    this will save us self.blit(self._surface, None, True)....
+                '''
+                self._surface = pygame.Surface(screen_size)
+                offset_x, offset_y = self.get_screen_offset()
+                surface_rect = pygame.Rect(offset_x, offset_y, self._screen_x, self._screen_y)
+                self._surface = self._screen.subsurface(surface_rect)
             else:
-                '''switch screen resolution to the desired one'''
-                self._screen = pygame.display.set_mode((screen_x, screen_y), fs_options, bitsize)
+                self._screen = pygame.display.set_mode(screen_size, fs_options, bitsize)
         else:
             pygame.mouse.set_visible(True)
-            self._screen = pygame.display.set_mode((screen_x, screen_y), 0, bitsize)  # RESIZABLE
+            self._screen = pygame.display.set_mode(screen_size, 0, bitsize)  # RESIZABLE
 
         self.refresh_screen(True)
 
@@ -323,6 +329,10 @@ class RenderThread(threading.Thread):
                 add_rect(item)
         else:
             add_rect(rects)
+
+    def get_screen_offset(self):
+        """get the screen offset for hard coded positions"""
+        return self._offsets_for_centered_surface(self.screen, None, True)
 
     def _offsets_for_centered_surface(self, surface, pos, centered):
         """This function calculates the offsets to center smaller surfaces on the main screen

@@ -17,7 +17,7 @@ class Physics(object):
         self.surface = surface
         self.level = level
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png")
-        self.player_2 = None  # Player(self.level.player_2_pos, "LRCharacters32_p2.png")
+        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png")
 
         return
 
@@ -35,11 +35,10 @@ class Physics(object):
 
         '''draw the level'''
         rects.append(WorldObject.group.draw(self.level.surface))
-        # rects.append(WorldObject.removed.draw(self.level.surface))
-        '''update the refreshed level surface to the main screen'''
         self.surface.blit(self.level.surface, (0, 0))
-
+        '''draw the player'''
         rects.append(Player.group.draw(self.surface))
+        # rects.append(WorldObject.removed.draw(self.level.surface))
 
         '''clean up the dirty background'''
         Player.group.clear(self.surface, self.level.surface)
@@ -115,9 +114,16 @@ class Physics(object):
                     player.schedule_stop()
                     on_ground = False
 
+            '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
             if removed_collision:
                 self.hit_inner_bottom(player, removed_collision)
+
+            '''if a removed block contains another player we can walk over it'''
+            top_collision = self.find_collision(player.rect.centerx, player.rect.bottom + 1, Player.group)
+            if top_collision:
+                on_ground = True
+                self.hit_top(player, top_collision)
 
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
@@ -149,9 +155,6 @@ class Physics(object):
                     if sprite.solid and not sprite.climbable_horizontal and not go_down:
                         on_ground = True
                         self.hit_top(player, sprite)
-                        if player.change_x is 0:
-                            '''make sure the player stands in a correct position'''
-                            player.rect.centerx = sprite.rect.centerx
                 else:
                     self.fix_pos(player, sprite)
 
@@ -173,6 +176,9 @@ class Physics(object):
         if player.rect.bottom > sprite.rect.top:
             player.rect.bottom = sprite.rect.top + 1    # for permanent ground collision
             player.change_y = 0
+            if player.change_x is 0:
+                '''make sure the player stands in a correct position'''
+                player.rect.centerx = sprite.rect.centerx
 
     @staticmethod
     def hit_bottom(player, sprite):

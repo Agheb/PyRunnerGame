@@ -112,9 +112,11 @@ class Player(pygame.sprite.DirtySprite):
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
         self.direction = "UD"
-
-        self.change_y = self.speed
-        self.on_rope = False
+        if self.change_y < self.speed:
+            '''don't let the player slow down while falling by pressing the down key again'''
+            self.rect.y += self.speed
+            self.change_y = self.speed
+            self.on_rope = False
 
     def schedule_stop(self):
         """stop player movements"""
@@ -212,14 +214,15 @@ class Player(pygame.sprite.DirtySprite):
                     self.change_x = 0
 
             if self.change_y is not 0:
-                # the player is lowered by one for a constant ground collision
-                if (self.rect.y - 1) % self.tile_size is not 0:
-                    if self.change_y < 0:
-                        self.go_up()
+                if self.change_y <= self.speed:
+                    # the player is lowered by one for a constant ground collision
+                    if (self.rect.y - 1) % self.tile_size is not 0:
+                        if self.change_y < 0:
+                            self.go_up()
+                        else:
+                            self.go_down()
                     else:
-                        self.go_down()
-                else:
-                    self.change_y = 0
+                        self.change_y = 0
 
             if self.change_x is 0 and self.change_y is 0:
                 self.stop_on_ground = False
