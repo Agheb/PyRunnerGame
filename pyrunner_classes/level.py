@@ -33,14 +33,30 @@ class Level(object):
     3. draw layer by layer
     """
 
-    def __init__(self, surface, level_number=0, pixel_diff=-2):
+    def __init__(self, surface, level_number=0):
         self.level_id = level_number
-        tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
-        self.pixel_diff = pixel_diff
-        self.tm = tm
-        self.surface = surface
-        self.background = surface.copy()
-        self.render(self.surface)
+        self.tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
+        self.tm_width = self.tm.width * self.tm.tilewidth
+        self.tm_height = self.tm.height * self.tm.tileheight
+        s_width, s_height = surface.get_size()
+        if self.tm_height is not s_height:
+            '''automatically scale the tilemap'''
+            height = (s_height - self.tm_height)
+            self.pixel_diff = height // self.tm.height
+            self.width = self.tm.width * (self.tm.tilewidth + self.pixel_diff)
+            self.height = self.tm.height * (self.tm.tileheight + self.pixel_diff)
+            self.margin_left = (s_width - self.width) // 2
+            self.margin_top = (s_height - self.height) // 2
+            rect = pygame.Rect(self.margin_left, self.margin_top, self.width, self.height)
+            print(str(rect))
+            self.surface = surface.subsurface(rect)
+        else:
+            self.pixel_diff = 0
+            self.margin_left = 0
+            self.margin_top = 0
+            self.surface = surface
+        self.background = self.surface.copy()
+        self.render()
 
         try:
             p1_pos = self.tm.get_object_by_name("Player_1")
@@ -52,10 +68,16 @@ class Level(object):
             p2_x, p2_y = p2_pos.x, p2_pos.y
         except ValueError:
             p2_x, p2_y = p1_x + 32, p1_y
+
+        p1_x += self.margin_left
+        p1_y += self.margin_top
+        p2_x += self.margin_left
+        p2_y += self.margin_top
+
         self.player_1_pos = p1_x, p1_y
         self.player_2_pos = p2_x, p2_y
 
-    def render(self, surface):
+    def render(self):
         """Create the level. Iterates through the layers in the TMX (see game_physics WorldObjects).
          For each Objects the properties are set as follows with defaults:
          (self, tile, solid=True, climbable=False, climbable_horizontal=False)
@@ -86,6 +108,8 @@ class Level(object):
                     if self.pixel_diff is not 0:
                         pos_x, pos_y, image = a
                         size = width + self.pixel_diff, height + self.pixel_diff
+                        pos_x = self.margin_left + width * pos_x
+                        pos_y = self.margin_top + height * pos_y
                         image = pygame.transform.scale(image, size)
                         a = pos_x, pos_y, image
                     else:
@@ -115,17 +139,12 @@ class Level(object):
                 except (KeyError, AttributeError, ValueError):
                     pass
 
-    def render_tile(self, surface, tile):
+    @staticmethod
+    def render_tile(surface, tile):
         """draw single tile"""
         x, y, image = tile
-        tw, th = image.get_size()
 
-        if self.pixel_diff is not 0:
-            tw += self.pixel_diff
-            th += self.pixel_diff
-            image = pygame.transform.scale(image, (tw, th))
-
-        surface.blit(image, (x * tw, y * th))
+        surface.blit(image, (x, y))
 
     def clean_sprite(self, sprite):
         """overdraw an old sprite with a clean background"""
@@ -149,8 +168,8 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.width, self.height = self.size
         self.pos_x, self.pos_y, self.image_backup = self.tile
         self.rect = self.image_backup.get_rect()
-        self.rect.x = self.pos_x * self.width
-        self.rect.y = self.pos_y * self.height
+        self.rect.x = self.pos_x
+        self.rect.y = self.pos_y
         self.solid = solid
         self.removable = removable
         self.climbable = False
@@ -187,8 +206,8 @@ class WorldObject(pygame.sprite.DirtySprite):
                 self.super_kill()
             elif h is self.height and self.restoring:
                 self.image = self.image_backup
-                self.rect.x = self.pos_x * self.width
-                self.rect.y = self.pos_y * self.height
+                self.rect.x = self.pos_x
+                self.rect.y = self.pos_y
                 self.restoring = False
             else:
                 rect = pygame.Rect(x, y, w, h)
@@ -244,8 +263,8 @@ class RemovedBlock(pygame.sprite.DirtySprite):
         self.pos_x, self.pos_y, self.restore_image = self.tile
         self.image = pygame.Surface(size, SRCALPHA)
         self.rect = self.image.get_rect()
-        self.rect.x = self.pos_x * self.height
-        self.rect.y = self.pos_y * self.width
+        self.rect.x = self.pos_x
+        self.rect.y = self.pos_y
         self.time_out = time_out
         self.fps = fps
         self.counter = 0

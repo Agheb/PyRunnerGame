@@ -12,9 +12,10 @@ GRAVITY = 1
 class Physics(object):
     """physics"""
 
-    def __init__(self, surface, level):
+    def __init__(self, render_thread, level):
         self.gravity = GRAVITY
-        self.surface = surface
+        self.render_thread = render_thread
+        self.surface = self.render_thread.screen
         self.level = level
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
         self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 32, self.level.pixel_diff)
@@ -35,7 +36,7 @@ class Physics(object):
 
         '''draw the level'''
         rects.append(WorldObject.group.draw(self.level.surface))
-        self.surface.blit(self.level.surface, (0, 0))
+        self.render_thread.blit(self.level.surface, None, True)
         '''draw the player'''
         rects.append(Player.group.draw(self.surface))
         # rects.append(WorldObject.removed.draw(self.level.surface))
@@ -53,14 +54,14 @@ class Physics(object):
         width -= player.rect.width
         height -= player.rect.height
 
-        if player.rect.y > height:
-            player.rect.y = height
-        elif player.rect.y < 0:
-            player.rect.y = 0
-        if player.rect.x > width:
-            player.rect.x = width
-        elif player.rect.x < 0:
-            player.rect.x = 0
+        if player.rect.y > self.level.height:
+            player.rect.y = self.level.height
+        elif player.rect.y < self.level.margin_top:
+            player.rect.y = self.level.margin_top
+        if player.rect.x > self.level.width - player.size:
+            player.rect.x = self.level.width - player.size
+        elif player.rect.x < self.level.margin_left:
+            player.rect.x = self.level.margin_left
 
     @staticmethod
     def find_collision(x, y, group=WorldObject.group):
