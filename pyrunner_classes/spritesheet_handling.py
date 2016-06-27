@@ -32,7 +32,7 @@ class SpriteSheet(object):
         if pixel_diff is not 0:
             width += pixel_diff
             height += pixel_diff
-            pygame.transform.scale(image, (width, height))
+            image = pygame.transform.scale(image, (width, height))
 
         # Return the image
         return image

@@ -22,6 +22,7 @@ class Player(pygame.sprite.DirtySprite):
     def __init__(self, pos, sheet, tile_size=32, pixel_diff=0, bot=False, fps=25):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.tile_size = tile_size
+        self.size = self.tile_size + pixel_diff
         self.fps = fps
         # positional attributes
         self.x, self.y = pos
@@ -203,7 +204,7 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.stop_on_ground:
             if self.change_x is not 0:
-                if self.rect.x % self.tile_size is not 0:
+                if self.rect.x % self.size is not 0:
                     if self.change_x > 0:
                         self.go_right()
                     else:
@@ -214,7 +215,7 @@ class Player(pygame.sprite.DirtySprite):
             if self.change_y is not 0:
                 if self.change_y <= self.speed:
                     # the player is lowered by one for a constant ground collision
-                    if (self.rect.y - 1) % self.tile_size is not 0:
+                    if (self.rect.y - 1) % self.size is not 0:
                         if self.change_y < 0:
                             self.go_up()
                         else:

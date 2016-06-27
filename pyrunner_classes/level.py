@@ -187,6 +187,8 @@ class WorldObject(pygame.sprite.DirtySprite):
                 self.super_kill()
             elif h is self.height and self.restoring:
                 self.image = self.image_backup
+                self.rect.x = self.pos_x * self.width
+                self.rect.y = self.pos_y * self.height
                 self.restoring = False
             else:
                 rect = pygame.Rect(x, y, w, h)
