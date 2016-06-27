@@ -64,23 +64,31 @@ class Level(object):
         self.render()
 
         try:
-            p1_pos = self.tm.get_object_by_name("Player_1")
-            p1_x, p1_y = p1_pos.x, p1_pos.y
+            p1_obj = self.tm.get_object_by_name("Player_1")
+            p1_pos = self.calc_object_pos((p1_obj.x, p1_obj.y))
         except ValueError:
-            p1_x, p1_y = 0, 0
+            p1_pos = 0, 0
         try:
-            p2_pos = self.tm.get_object_by_name("Player_2")
-            p2_x, p2_y = p2_pos.x, p2_pos.y
+            p2_obj = self.tm.get_object_by_name("Player_2")
+            p2_pos = self.calc_object_pos((p2_obj.x, p2_obj.y))
         except ValueError:
-            p2_x, p2_y = p1_x + 32, p1_y
+            x, y = p1_pos
+            p2_pos = x + 32, y
 
-        p1_x += self.margin_left
-        p1_y += self.margin_top
-        p2_x += self.margin_left
-        p2_y += self.margin_top
+        self.player_1_pos = p1_pos
+        self.player_2_pos = p2_pos
 
-        self.player_1_pos = p1_x, p1_y
-        self.player_2_pos = p2_x, p2_y
+        print(str(self.player_1_pos))
+
+    def calc_object_pos(self, pos_pixel):
+        """adjust pixels to scaled tile map"""
+        x, y = pos_pixel
+        x //= self.tm.tilewidth
+        y //= self.tm.tileheight
+        x *= self.tile_width
+        y *= self.tile_height
+
+        return x, y
 
     def render(self):
         """Create the level. Iterates through the layers in the TMX (see game_physics WorldObjects).

@@ -47,7 +47,8 @@ class Player(pygame.sprite.DirtySprite):
         self.killed = False
         self.killed_frame = 0
         self.digging_frame = 0
-        self.stop_at = None
+        self.stop_at_x = 0
+        self.stop_at_y = 0
 
         if not bot:
             self.digging_frames_l = []
@@ -205,13 +206,11 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.stop_on_ground:
             if self.change_x is not 0:
-                print(str(self.stop_at))
-                self.set_stop_point(self.change_x)
-                stop_x, stop_y = self.stop_at
+                print("x: ", str(self.stop_at_x))
                 if self.reached_next_tile(self.change_x):
-                    self.rect.x = stop_x
+                    self.rect.x = self.stop_at_x
                     self.change_x = 0
-                    self.stop_at = None
+                    self.stop_at_x = 0
                 else:
                     if self.change_x > 0:
                         self.go_right()
@@ -219,13 +218,12 @@ class Player(pygame.sprite.DirtySprite):
                         self.go_left()
 
             if self.change_y is not 0:
-                self.set_stop_point(self.change_y)
-                stop_x, stop_y = self.stop_at
+                print("y: ", str(self.stop_at_y))
                 if self.change_y <= self.speed:
                     if self.reached_next_tile(self.change_y):
-                        self.rect.y = stop_y
+                        self.rect.y = self.stop_at_y
                         self.change_y = 0
-                        self.stop_at = None
+                        self.stop_at_y = 0
                     else:
                         # print(str(self.stop_at), " ", str(self.rect.topleft))
                         if self.change_y < 0:
@@ -235,28 +233,28 @@ class Player(pygame.sprite.DirtySprite):
 
             if self.change_x is 0 and self.change_y is 0:
                 self.stop_on_ground = False
-                self.stop_at = None
 
     def set_stop_point(self, speed):
         """set the coordinates where the player should stop"""
-        if self.stop_at is None:
-            x, y = self.rect.topleft
+        x, y = self.rect.topleft
 
-            if speed is self.change_x:
-                diff = self.size - (x % self.size)
-                x += diff if speed > 0 else -diff
-            else:
-                diff = self.size - (y % self.size)
-                y += diff if speed > 0 else -diff
-
-            self.stop_at = x, y
+        if speed is self.change_x and self.stop_at_x is 0:
+            diff = self.size - (x % self.size)
+            x += diff if speed > 0 else -diff
+            self.stop_at_x = x
+        elif speed is self.change_y and self.stop_at_y is 0:
+            diff = self.size - (y % self.size)
+            y += diff if speed > 0 else -diff
+            self.stop_at_y = y
 
     def reached_next_tile(self, speed):
         """stop the player in a certain direction"""
         stopped = False
         pos_x, pos_y = self.rect.topleft
 
-        x, y = self.stop_at
+        self.set_stop_point(speed)
+
+        x, y = self.stop_at_x, self.stop_at_y
 
         if speed is self.change_x and speed > 0 and pos_x >= x:
             stopped = True
