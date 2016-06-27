@@ -206,7 +206,6 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.stop_on_ground:
             if self.change_x is not 0:
-                print("x: ", str(self.stop_at_x))
                 if self.reached_next_tile(self.change_x):
                     self.rect.x = self.stop_at_x
                     self.change_x = 0
@@ -218,7 +217,6 @@ class Player(pygame.sprite.DirtySprite):
                         self.go_left()
 
             if self.change_y is not 0:
-                print("y: ", str(self.stop_at_y))
                 if self.change_y <= self.speed:
                     if self.reached_next_tile(self.change_y):
                         self.rect.y = self.stop_at_y
@@ -242,9 +240,11 @@ class Player(pygame.sprite.DirtySprite):
             diff = self.size - (x % self.size)
             x += diff if speed > 0 else -diff
             self.stop_at_x = x
+            self.stop_at_y = 0
         elif speed is self.change_y and self.stop_at_y is 0:
             diff = self.size - (y % self.size)
             y += diff if speed > 0 else -diff
+            self.stop_at_x = 0
             self.stop_at_y = y
 
     def reached_next_tile(self, speed):
