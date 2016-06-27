@@ -19,20 +19,21 @@ class Player(pygame.sprite.DirtySprite):
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
 
-    def __init__(self, pos, sheet, bot=False, tile_size=32, fps=25):
+    def __init__(self, pos, sheet, tile_size=32, pixel_diff=0, bot=False, fps=25):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.tile_size = tile_size
+        self.size = self.tile_size + pixel_diff
         self.fps = fps
         # positional attributes
         self.x, self.y = pos
         self.on_ground = False
         self.on_ladder = False
         self.on_rope = False
-        self.stop_on_ground = False
+        self._stop_on_ground = False
         # movement related
         self.change_x = 0
         self.change_y = 0
-        self.speed = 4
+        self.speed = self.size // 10 * 2
         # score related
         self.gold_count = 0
         # lists holding the image for movement. Up and down movement uses the same sprites.
@@ -46,33 +47,33 @@ class Player(pygame.sprite.DirtySprite):
         self.killed = False
         self.killed_frame = 0
         self.digging_frame = 0
+        self.stop_at_x = 0
+        self.stop_at_y = 0
 
         if not bot:
             self.digging_frames_l = []
             self.digging_frames_r = []
 
             # Load all the left facing images into a list (x, y, height, width)
-            self.walking_frames_l = self.sprite_sheet.add_animation(0, 0, 4)
+            self.walking_frames_l = self.sprite_sheet.add_animation(0, 0, 4, pixel_diff)
             # Load all the left facing images into a list and flip them to make them face right
             self.walking_frames_r = self.sprite_sheet.flip_list(self.walking_frames_l)
             # Load all the up / down facing images into a list
-            self.walking_frames_ud = self.sprite_sheet.add_animation(0, 1, 4)
+            self.walking_frames_ud = self.sprite_sheet.add_animation(0, 1, 4, pixel_diff)
             # Load all the digging left images
-            self.digging_frames_l = self.sprite_sheet.add_animation(0, 2, 3)
+            self.digging_frames_l = self.sprite_sheet.add_animation(0, 2, 3, pixel_diff)
             # Load all the digging left images and flip them do digging right
             self.digging_frames_r = self.sprite_sheet.flip_list(self.digging_frames_l)
             # Load the left hanging images into a list
-            self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4)
+            self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4, pixel_diff)
             # Load the left hanging images into a list and flip them to face right
             self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
             # death animation
-            self.death_frames = self.sprite_sheet.add_animation(5, 2, 8)
-
+            self.death_frames = self.sprite_sheet.add_animation(5, 2, 8, pixel_diff)
             # Stop Frame: Sprite when player is not moving on ground
-            self.stop_frame = self.sprite_sheet.add_animation(5, 0)
+            self.stop_frame = self.sprite_sheet.add_animation(5, 0, 1, pixel_diff)
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
-
         # Set the image the player starts with
         self.image = self.stop_frame
         # Set a reference to the image rect.
@@ -118,23 +119,34 @@ class Player(pygame.sprite.DirtySprite):
             self.change_y = self.speed
             self.on_rope = False
 
-    def schedule_stop(self):
+    @property
+    def stop_on_ground(self):
+        """get if the player is scheduled to stop on the next tile"""
+        return self._stop_on_ground
+
+    @stop_on_ground.setter
+    def stop_on_ground(self, value):
         """stop player movements"""
-        if self.change_y <= self.speed:
-            '''make sure the player is not falling down'''
-            self.stop_on_ground = True
+        if value:
+            if self.change_y <= self.speed:
+                '''make sure the player is not falling down'''
+                self._stop_on_ground = value
+        else:
+            self._stop_on_ground = value
+            self.stop_at_x = 0
+            self.stop_at_y = 0
 
     def dig_right(self):
         """dig to the right"""
         if self.on_ground:
-            self.schedule_stop()
+            self.stop_on_ground = True
             self.direction = "DR"
             # self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
         if self.on_ground:
-            self.schedule_stop()
+            self.stop_on_ground = True
             self.direction = "DL"
             # self.player_collide()
 
@@ -205,27 +217,63 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.stop_on_ground:
             if self.change_x is not 0:
-                if self.rect.x % self.tile_size is not 0:
+                if self.reached_next_tile(self.change_x):
+                    self.rect.x = self.stop_at_x
+                    self.change_x = 0
+                else:
                     if self.change_x > 0:
                         self.go_right()
                     else:
                         self.go_left()
-                else:
-                    self.change_x = 0
 
             if self.change_y is not 0:
                 if self.change_y <= self.speed:
-                    # the player is lowered by one for a constant ground collision
-                    if (self.rect.y - 1) % self.tile_size is not 0:
+                    if self.reached_next_tile(self.change_y):
+                        self.rect.y = self.stop_at_y
+                        self.change_y = 0
+                    else:
                         if self.change_y < 0:
                             self.go_up()
                         else:
                             self.go_down()
-                    else:
-                        self.change_y = 0
 
             if self.change_x is 0 and self.change_y is 0:
                 self.stop_on_ground = False
+
+    def set_stop_point(self, speed):
+        """set the coordinates where the player should stop"""
+        x, y = self.rect.topleft
+
+        if speed is self.change_x and self.stop_at_x is 0:
+            diff = self.size - (x % self.size)
+            x += diff if speed > 0 else -diff
+            self.stop_at_x = x
+            self.stop_at_y = 0
+        elif speed is self.change_y and self.stop_at_y is 0:
+            diff = self.size - (y % self.size)
+            y += diff if speed > 0 else -diff
+            self.stop_at_x = 0
+            self.stop_at_y = y
+
+    def reached_next_tile(self, speed):
+        """stop the player in a certain direction"""
+        stopped = False
+        pos_x, pos_y = self.rect.topleft
+
+        self.set_stop_point(speed)
+
+        x, y = self.stop_at_x, self.stop_at_y
+
+        if speed is self.change_x and speed > 0 and pos_x >= x:
+            stopped = True
+        elif speed is self.change_x and speed < 0 and pos_x <= x:
+            stopped = True
+        elif speed is self.change_y and speed > 0 and pos_y >= y:
+            stopped = True
+        elif speed is self.change_y and speed < 0 and pos_y <= y:
+            stopped = True
+
+        return stopped
 
     def kill(self):
         """kill animation"""

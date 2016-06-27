@@ -50,6 +50,8 @@ class Controller(object):
                 print("Player 1 taunts")
             elif key == self.config.p1_jump:
                 pass
+            if key in self.player_1_movements:
+                self.player_1.stop_on_ground = False
         if self.player_2:
             # TODO the same for player 2
             if key == self.config.p2_left:
@@ -70,12 +72,14 @@ class Controller(object):
                 print("Player 2 taunts")
             elif key == self.config.p2_jump:
                 pass
+            if key in self.player_2_movements:
+                self.player_2.stop_on_ground = False
         # TODO: get your crap done
         # self.network_connector.client.send_key(self.current_action)
 
     def release_key(self, key):
         """stop walking"""
         if self.player_1 and key in self.player_1_movements:
-            self.player_1.schedule_stop()
+            self.player_1.stop_on_ground = True
         if self.player_2 and key in self.player_2_movements:
-            self.player_2.schedule_stop()
+            self.player_2.stop_on_ground = True

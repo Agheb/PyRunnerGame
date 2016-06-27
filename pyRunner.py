@@ -61,7 +61,7 @@ class PyRunner(object):
     def load_level(self, levelnumber):
         """load another level"""
         self.level = Level(self.bg_surface, levelnumber)
-        self.physics = Physics(self.render_thread.screen, self.level)
+        self.physics = Physics(self.render_thread, self.level)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
