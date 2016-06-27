@@ -16,8 +16,8 @@ class Physics(object):
         self.gravity = GRAVITY
         self.surface = surface
         self.level = level
-        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png")
-        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png")
+        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
+        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 32, self.level.pixel_diff)
 
         return
 
@@ -50,8 +50,8 @@ class Physics(object):
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
         width, height = self.surface.get_size()
-        width -= TILE_WIDTH
-        height -= TILE_HEIGHT
+        width -= player.rect.width
+        height -= player.rect.height
 
         if player.rect.y > height:
             player.rect.y = height

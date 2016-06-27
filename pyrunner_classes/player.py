@@ -19,7 +19,7 @@ class Player(pygame.sprite.DirtySprite):
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
 
-    def __init__(self, pos, sheet, bot=False, tile_size=32, fps=25):
+    def __init__(self, pos, sheet, tile_size=32, pixel_diff=0, bot=False, fps=25):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.tile_size = tile_size
         self.fps = fps
@@ -52,27 +52,25 @@ class Player(pygame.sprite.DirtySprite):
             self.digging_frames_r = []
 
             # Load all the left facing images into a list (x, y, height, width)
-            self.walking_frames_l = self.sprite_sheet.add_animation(0, 0, 4)
+            self.walking_frames_l = self.sprite_sheet.add_animation(0, 0, 4, pixel_diff)
             # Load all the left facing images into a list and flip them to make them face right
             self.walking_frames_r = self.sprite_sheet.flip_list(self.walking_frames_l)
             # Load all the up / down facing images into a list
-            self.walking_frames_ud = self.sprite_sheet.add_animation(0, 1, 4)
+            self.walking_frames_ud = self.sprite_sheet.add_animation(0, 1, 4, pixel_diff)
             # Load all the digging left images
-            self.digging_frames_l = self.sprite_sheet.add_animation(0, 2, 3)
+            self.digging_frames_l = self.sprite_sheet.add_animation(0, 2, 3, pixel_diff)
             # Load all the digging left images and flip them do digging right
             self.digging_frames_r = self.sprite_sheet.flip_list(self.digging_frames_l)
             # Load the left hanging images into a list
-            self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4)
+            self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4, pixel_diff)
             # Load the left hanging images into a list and flip them to face right
             self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
             # death animation
-            self.death_frames = self.sprite_sheet.add_animation(5, 2, 8)
-
+            self.death_frames = self.sprite_sheet.add_animation(5, 2, 8, pixel_diff)
             # Stop Frame: Sprite when player is not moving on ground
-            self.stop_frame = self.sprite_sheet.add_animation(5, 0)
+            self.stop_frame = self.sprite_sheet.add_animation(5, 0, 1, pixel_diff)
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
-
         # Set the image the player starts with
         self.image = self.stop_frame
         # Set a reference to the image rect.

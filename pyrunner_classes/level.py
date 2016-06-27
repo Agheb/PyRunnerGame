@@ -8,9 +8,6 @@ import pytmx
 from pytmx.util_pygame import load_pygame
 from pygame.locals import *
 
-MULTIPLICATOR = 1
-TILE_WIDTH = 32
-TILE_HEIGHT = 32
 LEVEL_LIST = ["./resources/levels/scifi.tmx", "./resources/levels/level2.tmx",
                            "./resources/levels/level3.tmx"]
 
@@ -36,14 +33,15 @@ class Level(object):
     3. draw layer by layer
     """
 
-    def __init__(self, surface, level_number=0):
+    def __init__(self, surface, level_number=0, pixel_diff=2):
         self.level_id = level_number
         tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
-        self.size = tm.width * tm.tilewidth, tm.height * tm.tileheight
+        self.pixel_diff = pixel_diff
         self.tm = tm
         self.surface = surface
         self.background = surface.copy()
         self.render(self.surface)
+
         try:
             p1_pos = self.tm.get_object_by_name("Player_1")
             p1_x, p1_y = p1_pos.x, p1_pos.y
@@ -85,16 +83,28 @@ class Level(object):
 
                 '''create the sprites'''
                 for a in layer.tiles():
+                    width, height = self.tm.tilewidth, self.tm.tileheight
+
+                    if self.pixel_diff is not 0:
+                        pos_x, pos_y, image = a
+                        pos_x += self.pixel_diff
+                        pos_y += self.pixel_diff
+                        size = width + self.pixel_diff, height + self.pixel_diff
+                        image = pygame.transform.scale(image, size)
+                        a = pos_x, pos_y, image
+                    else:
+                        size = width, height
+
                     if ladder:
-                        Ladder(a, solid)
+                        Ladder(a, size, solid)
                     elif rope:
-                        Rope(a)
+                        Rope(a, size)
                     elif gold:
-                        Collectible(a)
+                        Collectible(a, size)
                     elif removable:
-                        WorldObject(a, solid, removable)
+                        WorldObject(a, size, solid, removable)
                     elif solid:
-                        WorldObject(a, solid)
+                        WorldObject(a, size, solid)
 
                 try:
                     if layer.name == "Background":
@@ -116,11 +126,15 @@ class Level(object):
         tw = self.tm.tilewidth
         th = self.tm.tileheight
 
+        if self.pixel_diff is not 0:
+            tw += self.pixel_diff
+            th += self.pixel_diff
+
         # iterate over the tiles in the layer
         for x, y, image in layer.tiles():
+            if self.pixel_diff is not 0:
+                image = pygame.transform.scale(image, (tw, th))
             surface.blit(image, (x * tw, y * th))
-            # TODO iterate over object layer
-            # TODO iterate over imageLayer
 
     def clean_sprite(self, sprite):
         """overdraw an old sprite with a clean background"""
@@ -136,14 +150,16 @@ class WorldObject(pygame.sprite.DirtySprite):
     group = pygame.sprite.LayeredDirty(default_layer=-1)
     removed = pygame.sprite.LayeredDirty(default_layer=0)
 
-    def __init__(self, tile, solid=True, removable=False, restoring=False):
+    def __init__(self, tile, size, solid=True, removable=False, restoring=False):
         """world object item"""
         pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
         self.tile = tile
+        self.size = size
+        self.width, self.height = self.size
         self.pos_x, self.pos_y, self.image_backup = self.tile
         self.rect = self.image_backup.get_rect()
-        self.rect.x = self.pos_x * TILE_WIDTH
-        self.rect.y = self.pos_y * TILE_HEIGHT
+        self.rect.x = self.pos_x * self.width
+        self.rect.y = self.pos_y * self.height
         self.solid = solid
         self.removable = removable
         self.climbable = False
@@ -153,8 +169,8 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.restoring = restoring
 
         if restoring:
-            self.image = pygame.Surface((TILE_WIDTH, TILE_HEIGHT), SRCALPHA)
-            self.rect.y += TILE_HEIGHT
+            self.image = pygame.Surface((self.width, self.height), SRCALPHA)
+            self.rect.y += self.height
             self.rect.height = 0
         else:
             self.image = self.image_backup
@@ -176,15 +192,15 @@ class WorldObject(pygame.sprite.DirtySprite):
                 w -= 8
                 h -= 8
 
-            rect = pygame.Rect(x, y, w, h)
-            self.image = pygame.transform.scale(self.image_backup, (w, h)).convert_alpha()
-            self.rect = rect
-
-            if h is 0 and self.killed:
+            if h <= 0 and self.killed:
                 self.super_kill()
-            elif h is TILE_HEIGHT and self.restoring:
+            elif h is self.height and self.restoring:
                 self.image = self.image_backup
                 self.restoring = False
+            else:
+                rect = pygame.Rect(x, y, w, h)
+                self.image = pygame.transform.scale(self.image_backup, (w, h)).convert_alpha()
+                self.rect = rect
 
             self.dirty = 1
 
@@ -206,22 +222,22 @@ class WorldObject(pygame.sprite.DirtySprite):
 class Ladder(WorldObject):
     """climbable ladder"""
 
-    def __init__(self, tile, solid=False):
-        WorldObject.__init__(self, tile, solid)
+    def __init__(self, tile, size, solid=False):
+        WorldObject.__init__(self, tile, size, solid)
         self.climbable = True
 
 
 class Rope(WorldObject):
     """hangable rope"""
-    def __init__(self, tile):
-        WorldObject.__init__(self, tile)
+    def __init__(self, tile, size):
+        WorldObject.__init__(self, tile, size)
         self.climbable_horizontal = True
 
 
 class Collectible(WorldObject):
     """collectible gold"""
-    def __init__(self, tile):
-        WorldObject.__init__(self, tile)
+    def __init__(self, tile, size):
+        WorldObject.__init__(self, tile, size)
         self.collectible = True
 
 
@@ -230,11 +246,13 @@ class RemovedBlock(pygame.sprite.DirtySprite):
     def __init__(self, tile, size, time_out, fps=25):
         pygame.sprite.DirtySprite.__init__(self, WorldObject.removed)
         self.tile = tile
+        self.size = size
+        self.width, self.height = self.size
         self.pos_x, self.pos_y, self.restore_image = self.tile
         self.image = pygame.Surface(size, SRCALPHA)
         self.rect = self.image.get_rect()
-        self.rect.x = self.pos_x * TILE_WIDTH
-        self.rect.y = self.pos_y * TILE_HEIGHT
+        self.rect.x = self.pos_x * self.height
+        self.rect.y = self.pos_y * self.width
         self.time_out = time_out
         self.fps = fps
         self.counter = 0
@@ -249,4 +267,4 @@ class RemovedBlock(pygame.sprite.DirtySprite):
 
     def restore(self):
         """recreate a sprite with the same values"""
-        return WorldObject(self.tile, True, True, True)
+        return WorldObject(self.tile, self.size, True, True, True)

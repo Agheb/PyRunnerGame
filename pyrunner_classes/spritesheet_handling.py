@@ -15,7 +15,7 @@ class SpriteSheet(object):
         self.tile_size = tilesize
         self.fps = fps
 
-    def get_image(self, x, y, width, height):
+    def get_image(self, x, y, width, height, pixel_diff=0):
         """ Grab a single image out of a larger spritesheet
             Pass in the x, y location of the sprite
             and the width and height of the sprite. """
@@ -29,10 +29,15 @@ class SpriteSheet(object):
         # Assuming black works as the transparent color
         image.set_colorkey(BLACK)
 
+        if pixel_diff is not 0:
+            width += pixel_diff
+            height += pixel_diff
+            pygame.transform.scale(image, (width, height))
+
         # Return the image
         return image
 
-    def add_animation(self, pos_x, pos_y, frames=1):
+    def add_animation(self, pos_x, pos_y, frames=1, pixel_diff=0):
         """define which images on a sprite sheet to use for an animation"""
         ts = self.tile_size
         pos_y *= ts
@@ -41,13 +46,13 @@ class SpriteSheet(object):
         if frames is not 1:
             frame_list = []
             for i in range(frames):
-                image = self.get_image(pos_x, pos_y, ts, ts)
+                image = self.get_image(pos_x, pos_y, ts, ts, pixel_diff)
                 frame_list.append(image)
                 pos_x += ts
 
             return frame_list
         else:
-            return self.get_image(pos_x, pos_y, ts, ts)
+            return self.get_image(pos_x, pos_y, ts, ts, pixel_diff)
 
     @staticmethod
     def flip_list(frames):
