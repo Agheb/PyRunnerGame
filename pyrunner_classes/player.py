@@ -19,20 +19,21 @@ class Player(pygame.sprite.DirtySprite):
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
 
-    def __init__(self, pos, sheet, bot=False, tile_size=32, fps=25):
+    def __init__(self, pos, sheet, tile_size=32, pixel_diff=0, bot=False, fps=25):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.tile_size = tile_size
+        self.size = self.tile_size + pixel_diff
         self.fps = fps
         # positional attributes
         self.x, self.y = pos
         self.on_ground = False
         self.on_ladder = False
         self.on_rope = False
-        self.stop_on_ground = False
+        self._stop_on_ground = False
         # movement related
         self.change_x = 0
         self.change_y = 0
-        self.speed = 4
+        self.speed = self.size // 10 * 2
         # score related
         self.gold_count = 0
         # lists holding the image for movement. Up and down movement uses the same sprites.
@@ -41,32 +42,38 @@ class Player(pygame.sprite.DirtySprite):
         self.walking_frames_ud = []
         self.hanging_frames_l = []
         self.hanging_frames_r = []
+        self.death_frames = []
         self.sprite_sheet = SpriteSheet(SPRITE_SHEET_PATH + sheet, self.tile_size, self.fps)
+        self.killed = False
+        self.killed_frame = 0
+        self.digging_frame = 0
+        self.stop_at_x = 0
+        self.stop_at_y = 0
 
         if not bot:
             self.digging_frames_l = []
             self.digging_frames_r = []
 
             # Load all the left facing images into a list (x, y, height, width)
-            self.walking_frames_l = self.sprite_sheet.add_animation(0, 0, 4)
+            self.walking_frames_l = self.sprite_sheet.add_animation(0, 0, 4, pixel_diff)
             # Load all the left facing images into a list and flip them to make them face right
             self.walking_frames_r = self.sprite_sheet.flip_list(self.walking_frames_l)
             # Load all the up / down facing images into a list
-            self.walking_frames_ud = self.sprite_sheet.add_animation(0, 1, 4)
+            self.walking_frames_ud = self.sprite_sheet.add_animation(0, 1, 4, pixel_diff)
             # Load all the digging left images
-            self.digging_frames_l = self.sprite_sheet.add_animation(0, 2, 3)
+            self.digging_frames_l = self.sprite_sheet.add_animation(0, 2, 3, pixel_diff)
             # Load all the digging left images and flip them do digging right
             self.digging_frames_r = self.sprite_sheet.flip_list(self.digging_frames_l)
             # Load the left hanging images into a list
-            self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4)
+            self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4, pixel_diff)
             # Load the left hanging images into a list and flip them to face right
             self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
-
+            # death animation
+            self.death_frames = self.sprite_sheet.add_animation(5, 2, 8, pixel_diff)
             # Stop Frame: Sprite when player is not moving on ground
-            self.stop_frame = self.sprite_sheet.add_animation(5, 0)
+            self.stop_frame = self.sprite_sheet.add_animation(5, 0, 1, pixel_diff)
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
-
         # Set the image the player starts with
         self.image = self.stop_frame
         # Set a reference to the image rect.
@@ -81,7 +88,7 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.on_rope:
             self.direction = "RL"
-        elif not self.on_ground and self.on_ladder:
+        elif self.on_ladder and not self.on_ground:
             self.direction = "UD"
         else:
             self.direction = "L"
@@ -105,76 +112,99 @@ class Player(pygame.sprite.DirtySprite):
 
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
-        if self.on_ladder or self.on_rope:
+        self.direction = "UD"
+        if self.change_y < self.speed:
+            '''don't let the player slow down while falling by pressing the down key again'''
+            self.rect.y += self.speed
             self.change_y = self.speed
-            self.direction = "UD"
             self.on_rope = False
 
-    def schedule_stop(self):
+    @property
+    def stop_on_ground(self):
+        """get if the player is scheduled to stop on the next tile"""
+        return self._stop_on_ground
+
+    @stop_on_ground.setter
+    def stop_on_ground(self, value):
         """stop player movements"""
-        self.stop_on_ground = True
+        if value:
+            if self.change_y <= self.speed:
+                '''make sure the player is not falling down'''
+                self._stop_on_ground = value
+        else:
+            self._stop_on_ground = value
+            self.stop_at_x = 0
+            self.stop_at_y = 0
 
     def dig_right(self):
         """dig to the right"""
-        if self.on_ladder or self.on_rope:
-            pass
-        else:
+        if self.on_ground:
+            self.stop_on_ground = True
             self.direction = "DR"
-            print("digging right")
             # self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
-        if self.on_ladder or self.on_rope:
-            pass
-        else:
+        if self.on_ground:
+            self.stop_on_ground = True
             self.direction = "DL"
-            print("digging left")
             # self.player_collide()
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
         self.dirty = 1
 
-        # Move left/right
-        self.rect.x += self.change_x
-        self.rect.y += self.change_y
-        self.x, self.y = self.rect.topleft
+        if not self.killed:
+            # Move left/right
+            self.rect.x += self.change_x
+            self.rect.y += self.change_y
+            self.x, self.y = self.rect.topleft
 
-        '''keep the correct movement animation according to the direction on screen'''
-        if self.change_x < 0:
-            self.direction = "RL" if self.on_rope else "L"
-        elif self.change_x > 0:
-            self.direction = "RR" if self.on_rope else "R"
-        elif not self.on_ground and not self.on_rope:
-            self.direction = "UD"
+            '''keep the correct movement animation according to the direction on screen'''
+            if self.change_x < 0:
+                self.direction = "RL" if self.on_rope else "L"
+            elif self.change_x > 0:
+                self.direction = "RR" if self.on_rope else "R"
+            elif not self.on_ground and not self.on_rope:
+                self.direction = "UD"
 
-        # Animations with Sprites
-        '''movements'''
-        if self.direction == "R":
-            self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_r)
-        elif self.direction == "L":
-            self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_l)
-        elif self.direction == "UD":
-            self.image = self.sprite_sheet.get_frame(self.y, self.walking_frames_ud)
-        elif self.direction == "RR":
-            self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_r)
-        elif self.direction == "RL":
-            self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_l)
-        # elif self.direction == "Stop":
-        #    self.image = self.stop_frame
-        elif self.direction == "DL":
-            # Dig left/right
-            self.image = self.digging_frames_l[0]
-            self.image = self.digging_frames_l[1]
-            self.image = self.digging_frames_l[2]
-        elif self.direction == "DR":
-            self.image = self.digging_frames_r[0]
-            self.image = self.digging_frames_r[1]
-            self.image = self.digging_frames_r[2]
+            # Animations with Sprites
+            '''movements'''
+            if self.direction == "R":
+                self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_r)
+            elif self.direction == "L":
+                self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_l)
+            elif self.direction == "UD":
+                self.image = self.sprite_sheet.get_frame(self.y, self.walking_frames_ud)
+            elif self.direction == "RR":
+                self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_r)
+            elif self.direction == "RL":
+                self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_l)
+            elif self.direction == "Stop":
+                pass
+            #    self.image = self.stop_frame
+            elif self.direction == "DL":
+                # Dig left/right
+                self.image = self.digging_frames_l[self.digging_frame // 4]
+                self.digging_frame += 1
+                if self.digging_frame is len(self.digging_frames_l) * 4:
+                    self.digging_frame = 0
+                    self.direction = "Stop"
+            elif self.direction == "DR":
+                self.image = self.digging_frames_r[self.digging_frame // 4]
+                self.digging_frame += 1
+                if self.digging_frame is len(self.digging_frames_l) * 4:
+                    self.digging_frame = 0
+                    self.direction = "Stop"
 
-        # Gravity
-        self.calc_gravity()
+            # Gravity
+            self.calc_gravity()
+        else:
+            self.image = self.death_frames[self.killed_frame // 2]
+            self.killed_frame += 1
+
+            if self.killed_frame is len(self.death_frames) * 2:
+                pygame.sprite.DirtySprite.kill(self)
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """
@@ -187,23 +217,64 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.stop_on_ground:
             if self.change_x is not 0:
-                if self.rect.x % self.tile_size is not 0:
+                if self.reached_next_tile(self.change_x):
+                    self.rect.x = self.stop_at_x
+                    self.change_x = 0
+                else:
                     if self.change_x > 0:
                         self.go_right()
                     else:
                         self.go_left()
-                else:
-                    self.change_x = 0
 
             if self.change_y is not 0:
-                # the player is lowered by one for a constant ground collision
-                if (self.rect.y - 1) % self.tile_size is not 0:
-                    if self.change_y < 0:
-                        self.go_up()
+                if self.change_y <= self.speed:
+                    if self.reached_next_tile(self.change_y):
+                        self.rect.y = self.stop_at_y
+                        self.change_y = 0
                     else:
-                        self.go_down()
-                else:
-                    self.change_y = 0
+                        if self.change_y < 0:
+                            self.go_up()
+                        else:
+                            self.go_down()
 
             if self.change_x is 0 and self.change_y is 0:
                 self.stop_on_ground = False
+
+    def set_stop_point(self, speed):
+        """set the coordinates where the player should stop"""
+        x, y = self.rect.topleft
+
+        if speed is self.change_x and self.stop_at_x is 0:
+            diff = self.size - (x % self.size)
+            x += diff if speed > 0 else -diff
+            self.stop_at_x = x
+            self.stop_at_y = 0
+        elif speed is self.change_y and self.stop_at_y is 0:
+            diff = self.size - (y % self.size)
+            y += diff if speed > 0 else -diff
+            self.stop_at_x = 0
+            self.stop_at_y = y
+
+    def reached_next_tile(self, speed):
+        """stop the player in a certain direction"""
+        stopped = False
+        pos_x, pos_y = self.rect.topleft
+
+        self.set_stop_point(speed)
+
+        x, y = self.stop_at_x, self.stop_at_y
+
+        if speed is self.change_x and speed > 0 and pos_x >= x:
+            stopped = True
+        elif speed is self.change_x and speed < 0 and pos_x <= x:
+            stopped = True
+        elif speed is self.change_y and speed > 0 and pos_y >= y:
+            stopped = True
+        elif speed is self.change_y and speed < 0 and pos_y <= y:
+            stopped = True
+
+        return stopped
+
+    def kill(self):
+        """kill animation"""
+        self.killed = True

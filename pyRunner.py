@@ -31,11 +31,6 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    def load_level(self, level_path):
-        """load another level"""
-        self.level = Level(level_path, self.bg_surface)
-        self.physics = Physics(self.render_thread.screen, self.level)
-
     def __init__(self):
         """initialize the game"""
         '''important settings'''
@@ -51,16 +46,22 @@ class PyRunner(object):
         self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.config.fps,
                                           self.config.fullscreen, self.config.switch_resolution)
         self.render_thread.fill_screen(BACKGROUND)
+        self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
+        self.render_thread.bg_surface = self.bg_surface
         self.render_thread.start()
         '''init the level and main game physics'''
-        self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
         self.level = None
         self.physics = None
-        self.load_level("./resources/levels/scifi.tmx")
+        self.load_level(0)
         '''init the main menu'''
         self.network_connector = NetworkConnector()
         self.menu = MainMenu(self, self.network_connector)
         self.controller = Controller(self.physics, self.config, self.network_connector)
+
+    def load_level(self, levelnumber):
+        """load another level"""
+        self.level = Level(self.bg_surface, levelnumber)
+        self.physics = Physics(self.render_thread, self.level)
 
     def quit_game(self, shutdown=True):
         """quit the game"""

@@ -41,16 +41,17 @@ class Controller(object):
             # TODO actions for both players
             elif key == self.config.p1_action_l:
                 self.player_1.dig_left()
-                print("Player 1 digs left")
             elif key == self.config.p1_action_r:
                 self.player_1.dig_right()
-                print("Player 1 digs right")
             elif key == self.config.p1_interact:
+                self.player_1.kill()
                 print("Player 1 interacts")
             elif key == self.config.p1_taunt:
                 print("Player 1 taunts")
             elif key == self.config.p1_jump:
                 pass
+            if key in self.player_1_movements:
+                self.player_1.stop_on_ground = False
         if self.player_2:
             # TODO the same for player 2
             if key == self.config.p2_left:
@@ -63,7 +64,6 @@ class Controller(object):
                 self.player_2.go_down()
             elif key == self.config.p2_action_l:
                 self.player_2.dig_left()
-                print("Player 1 digs left")
             elif key == self.config.p2_action_r:
                 self.player_2.dig_right()
             elif key == self.config.p2_interact:
@@ -72,12 +72,14 @@ class Controller(object):
                 print("Player 2 taunts")
             elif key == self.config.p2_jump:
                 pass
+            if key in self.player_2_movements:
+                self.player_2.stop_on_ground = False
         # TODO: get your crap done
         # self.network_connector.client.send_key(self.current_action)
 
     def release_key(self, key):
         """stop walking"""
         if self.player_1 and key in self.player_1_movements:
-            self.player_1.schedule_stop()
+            self.player_1.stop_on_ground = True
         if self.player_2 and key in self.player_2_movements:
-            self.player_2.schedule_stop()
+            self.player_2.stop_on_ground = True
