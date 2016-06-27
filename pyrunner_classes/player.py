@@ -124,14 +124,14 @@ class Player(pygame.sprite.DirtySprite):
 
     def dig_right(self):
         """dig to the right"""
-        if not self.on_ladder and not self.on_rope:
+        if self.on_ground:
             self.schedule_stop()
             self.direction = "DR"
             # self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
-        if not self.on_ladder and not self.on_rope:
+        if self.on_ground:
             self.schedule_stop()
             self.direction = "DL"
             # self.player_collide()
