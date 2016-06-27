@@ -33,7 +33,7 @@ class Level(object):
     3. draw layer by layer
     """
 
-    def __init__(self, surface, level_number=0, pixel_diff=2):
+    def __init__(self, surface, level_number=0, pixel_diff=-2):
         self.level_id = level_number
         tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
         self.pixel_diff = pixel_diff
@@ -72,8 +72,6 @@ class Level(object):
 
         for layer in self.tm.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
-                self.render_tile_layer(surface, layer)
-
                 '''first check all layer properties'''
                 ladder = check_property(layer, 'climbable')
                 rope = check_property(layer, 'climbable_horizontal')
@@ -87,8 +85,6 @@ class Level(object):
 
                     if self.pixel_diff is not 0:
                         pos_x, pos_y, image = a
-                        pos_x += self.pixel_diff
-                        pos_y += self.pixel_diff
                         size = width + self.pixel_diff, height + self.pixel_diff
                         image = pygame.transform.scale(image, size)
                         a = pos_x, pos_y, image
@@ -106,12 +102,10 @@ class Level(object):
                     elif solid:
                         WorldObject(a, size, solid)
 
-                try:
                     if layer.name == "Background":
                         '''create a blank copy of the background layer'''
-                        self.render_tile_layer(self.background, layer)
-                except:
-                    raise
+                        self.render_tile(self.background, a)
+                        self.render_tile(self.surface, a)
 
         for group in self.tm.objectgroups:
             for obj in group:
@@ -121,20 +115,17 @@ class Level(object):
                 except (KeyError, AttributeError, ValueError):
                     pass
 
-    def render_tile_layer(self, surface, layer):
+    def render_tile(self, surface, tile):
         """draw single tile"""
-        tw = self.tm.tilewidth
-        th = self.tm.tileheight
+        x, y, image = tile
+        tw, th = image.get_size()
 
         if self.pixel_diff is not 0:
             tw += self.pixel_diff
             th += self.pixel_diff
+            image = pygame.transform.scale(image, (tw, th))
 
-        # iterate over the tiles in the layer
-        for x, y, image in layer.tiles():
-            if self.pixel_diff is not 0:
-                image = pygame.transform.scale(image, (tw, th))
-            surface.blit(image, (x * tw, y * th))
+        surface.blit(image, (x * tw, y * th))
 
     def clean_sprite(self, sprite):
         """overdraw an old sprite with a clean background"""
@@ -192,7 +183,7 @@ class WorldObject(pygame.sprite.DirtySprite):
                 w -= 8
                 h -= 8
 
-            if h <= 0 and self.killed:
+            if (h <= 0 or w <= 0) and self.killed:
                 self.super_kill()
             elif h is self.height and self.restoring:
                 self.image = self.image_backup
