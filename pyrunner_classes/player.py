@@ -227,7 +227,7 @@ class Player(pygame.sprite.DirtySprite):
                         self.change_y = 0
                         self.stop_at = None
                     else:
-                        print(str(self.stop_at), " ", str(self.rect.topleft))
+                        # print(str(self.stop_at), " ", str(self.rect.topleft))
                         if self.change_y < 0:
                             self.go_up()
                         else:

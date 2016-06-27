@@ -36,17 +36,22 @@ class Level(object):
     def __init__(self, surface, level_number=0):
         self.level_id = level_number
         self.tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
-        self.tm_width = self.tm.width * self.tm.tilewidth
-        self.tm_height = self.tm.height * self.tm.tileheight
+        self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
+        self.tm_width = self.tm.width * self.tile_width
+        self.tm_height = self.tm.height * self.tile_height
         s_width, s_height = surface.get_size()
+
         if self.tm_height is not s_height:
             '''automatically scale the tilemap'''
             height = (s_height - self.tm_height)
             self.pixel_diff = height // self.tm.height
-            self.width = self.tm.width * (self.tm.tilewidth + self.pixel_diff)
-            self.height = self.tm.height * (self.tm.tileheight + self.pixel_diff)
+            self.tile_width += self.pixel_diff
+            self.tile_height += self.pixel_diff
+            self.width = self.tm.width * self.tile_width
+            self.height = self.tm.height * self.tile_height
             self.margin_left = (s_width - self.width) // 2
             self.margin_top = (s_height - self.height) // 2
+            print(str(self.width), " ", str(self.height), " ", str(self.margin_left), " ", str(self.margin_top))
             # rect = pygame.Rect(self.margin_left, self.margin_top, self.width, self.height)
             # print(str(rect))
             # self.surface = surface.subsurface(rect)
@@ -100,14 +105,13 @@ class Level(object):
                 gold = check_property(layer, 'collectible')
                 removable = check_property(layer, 'removable')
                 solid = check_property(layer, 'solid')
+                width, height = self.tile_width, self.tile_height
 
                 '''create the sprites'''
                 for a in layer.tiles():
-                    width, height = self.tm.tilewidth, self.tm.tileheight
-
                     if self.pixel_diff is not 0:
                         pos_x, pos_y, image = a
-                        size = width + self.pixel_diff, height + self.pixel_diff
+                        size = width, height
                         pos_x = self.margin_left + width * pos_x
                         pos_y = self.margin_top + height * pos_y
                         image = pygame.transform.scale(image, size)
