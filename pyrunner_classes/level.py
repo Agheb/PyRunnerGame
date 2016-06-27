@@ -39,26 +39,26 @@ class Level(object):
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         self.tm_width = self.tm.width * self.tile_width
         self.tm_height = self.tm.height * self.tile_height
+        self.width, self.height = self.tm_width, self.tm_height
+        self.pixel_diff = 0
+        self.margin_left = 0
+        self.margin_top = 0
         s_width, s_height = surface.get_size()
 
-        if self.tm_height is not s_height:
+        if self.tm_height is not s_height or self.tm_width is not s_width:
             '''automatically scale the tilemap'''
-            height = (s_height - self.tm_height)
-            self.pixel_diff = height // self.tm.height
+            diff_h = (s_height - self.tm_height) // self.tm.height
+            diff_w = (s_width - self.tm_width) // self.tm.width
+
+            self.pixel_diff = diff_h if diff_h < diff_w else diff_w
             self.tile_width += self.pixel_diff
             self.tile_height += self.pixel_diff
             self.width = self.tm.width * self.tile_width
             self.height = self.tm.height * self.tile_height
             self.margin_left = (s_width - self.width) // 2
             self.margin_top = (s_height - self.height) // 2
-            print(str(self.width), " ", str(self.height), " ", str(self.margin_left), " ", str(self.margin_top))
-            # rect = pygame.Rect(self.margin_left, self.margin_top, self.width, self.height)
-            # print(str(rect))
-            # self.surface = surface.subsurface(rect)
-        else:
-            self.pixel_diff = 0
-            self.margin_left = 0
-            self.margin_top = 0
+            # print(str(self.width), " ", str(self.height), " ", str(self.margin_left), " ", str(self.margin_top))
+
         self.surface = surface
         self.background = self.surface.copy()
         self.render()
@@ -77,8 +77,6 @@ class Level(object):
 
         self.player_1_pos = p1_pos
         self.player_2_pos = p2_pos
-
-        print(str(self.player_1_pos))
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -119,15 +117,14 @@ class Level(object):
 
                 '''create the sprites'''
                 for a in layer.tiles():
-                    if self.pixel_diff is not 0:
-                        pos_x, pos_y, image = a
-                        size = width, height
-                        pos_x = self.margin_left + width * pos_x
-                        pos_y = self.margin_top + height * pos_y
-                        image = pygame.transform.scale(image, size)
-                        a = pos_x, pos_y, image
-                    else:
-                        size = width, height
+                    pos_x, pos_y, image = a
+                    size = width, height
+
+                    pos_x = self.margin_left + (width * pos_x)
+                    pos_y = self.margin_top + (height * pos_y)
+                    image = pygame.transform.scale(image, size)
+
+                    a = pos_x, pos_y, image
 
                     if ladder:
                         Ladder(a, size, solid)
@@ -153,7 +150,8 @@ class Level(object):
                 except (KeyError, AttributeError, ValueError):
                     pass
 
-    def render_tile(self, surface, tile):
+    @staticmethod
+    def render_tile(surface, tile):
         """draw single tile"""
         x, y, image = tile
 
@@ -233,7 +231,6 @@ class WorldObject(pygame.sprite.DirtySprite):
         """remove this sprite"""
         if self.removable or self.collectible:
             if not self.killed and self.removable:
-                print(str(self.rect))
                 RemovedBlock(self.tile, self.rect.size, 4)
             self.killed = True
         else:

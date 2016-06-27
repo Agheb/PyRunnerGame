@@ -29,7 +29,7 @@ class Player(pygame.sprite.DirtySprite):
         self.on_ground = False
         self.on_ladder = False
         self.on_rope = False
-        self.stop_on_ground = False
+        self._stop_on_ground = False
         # movement related
         self.change_x = 0
         self.change_y = 0
@@ -119,23 +119,34 @@ class Player(pygame.sprite.DirtySprite):
             self.change_y = self.speed
             self.on_rope = False
 
-    def schedule_stop(self):
+    @property
+    def stop_on_ground(self):
+        """get if the player is scheduled to stop on the next tile"""
+        return self._stop_on_ground
+
+    @stop_on_ground.setter
+    def stop_on_ground(self, value):
         """stop player movements"""
-        if self.change_y <= self.speed:
-            '''make sure the player is not falling down'''
-            self.stop_on_ground = True
+        if value:
+            if self.change_y <= self.speed:
+                '''make sure the player is not falling down'''
+                self._stop_on_ground = value
+        else:
+            self._stop_on_ground = value
+            self.stop_at_x = 0
+            self.stop_at_y = 0
 
     def dig_right(self):
         """dig to the right"""
         if self.on_ground:
-            self.schedule_stop()
+            self.stop_on_ground = True
             self.direction = "DR"
             # self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
         if self.on_ground:
-            self.schedule_stop()
+            self.stop_on_ground = True
             self.direction = "DL"
             # self.player_collide()
 
@@ -209,7 +220,6 @@ class Player(pygame.sprite.DirtySprite):
                 if self.reached_next_tile(self.change_x):
                     self.rect.x = self.stop_at_x
                     self.change_x = 0
-                    self.stop_at_x = 0
                 else:
                     if self.change_x > 0:
                         self.go_right()
@@ -221,9 +231,7 @@ class Player(pygame.sprite.DirtySprite):
                     if self.reached_next_tile(self.change_y):
                         self.rect.y = self.stop_at_y
                         self.change_y = 0
-                        self.stop_at_y = 0
                     else:
-                        # print(str(self.stop_at), " ", str(self.rect.topleft))
                         if self.change_y < 0:
                             self.go_up()
                         else:
