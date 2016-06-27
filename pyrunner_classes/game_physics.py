@@ -110,8 +110,8 @@ class Physics(object):
 
                 if not bottom_sprite and not player.on_rope:
                     '''if there's no ground below the feet'''
-                    player.stop_on_ground = True
                     on_ground = False
+                    player.stop_on_ground = True
 
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
@@ -142,7 +142,7 @@ class Physics(object):
                     player.kill()
                 elif sprite.rect.collidepoint(player.rect.center):
                     """check which sprite contains the player"""
-                    if sprite.climbable_horizontal and player.direction is not "UD":
+                    if sprite.climbable_horizontal and player.direction is not "Falling":
                         """player is hanging on the rope"""
                         on_rope = True
                         player.rect.top = sprite.rect.top
