@@ -8,6 +8,8 @@ import pytmx
 from pytmx.util_pygame import load_pygame
 from pygame.locals import *
 
+LEVEL_PATH = "./resources/levels/"
+LEVEL_EXT = ".tmx"
 LEVEL_LIST = ["./resources/levels/scifi.tmx", "./resources/levels/level2.tmx",
                            "./resources/levels/level3.tmx"]
 
@@ -74,6 +76,11 @@ class Level(object):
         except ValueError:
             x, y = p1_pos
             p2_pos = x + 32, y
+        try:
+            next_level = self.tm.get_object_by_name("Exit_Gate").type
+            self.next_level = LEVEL_PATH + next_level + LEVEL_EXT
+        except ValueError:
+            pass
 
         self.player_1_pos = p1_pos
         self.player_2_pos = p2_pos
@@ -141,14 +148,6 @@ class Level(object):
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
-
-        for group in self.tm.objectgroups:
-            for obj in group:
-                try:
-                    if obj.name == "Player_1":
-                        self.player_1_pos = obj.x, obj.y
-                except (KeyError, AttributeError, ValueError):
-                    pass
 
     @staticmethod
     def render_tile(surface, tile):
