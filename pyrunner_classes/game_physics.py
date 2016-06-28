@@ -38,11 +38,13 @@ class Physics(object):
         WorldObject.scores.update()
         Player.group.update()
 
+        '''check if all gold got collected and spawn a exit gate if there's none left'''
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
             self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
             self.level_exit = True
-        elif not any(player.is_human for player in Player.group):
-            if self.level.next_level is None:
+        '''check if all players are still alive'''
+        if not any(player.is_human for player in Player.group):
+            if self.level.next_level is None or not self.level_exit:
                 '''show the game over menu with player gold scores'''
                 self.game_over = True
             else:
