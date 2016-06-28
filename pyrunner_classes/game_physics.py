@@ -4,6 +4,7 @@
 from __future__ import division
 from .player import *
 import pygame
+import pdb
 
 GRAVITY = 1
 MULTIPLICATOR = 1
@@ -16,19 +17,22 @@ playerGroup = pygame.sprite.LayeredDirty()
 
 class Physics(object):
     """physics"""
-
+    players = []
     def __init__(self, surface, background):
         self.gravity = GRAVITY
         self.surface = surface
         self.background = background
         #TODO: set level id on level id, via level.py or WorldObjects 
         self.level_id = 0
-        self.players = []
         return
-    def add_player(self):
+    
+    def add_player(self, center = 'dont_set'):
         newPlayer = Player()
-        self.players.append(newPlayer)
+        if center != 'dont_set':
+            newPlayer.rect.center = center
+        Physics.players.append(newPlayer)
         playerGroup.add(newPlayer)
+
     def update(self):
         """updates all physics components"""
         # TODO: pass sprites to render thread
@@ -126,7 +130,7 @@ class Physics(object):
         #data = {'players':self.players, 'level_id':self.level_id}
         #this is just a placeholder:
         a = []
-        for d in self.players: a.append(self.players.rect)
+        for d in Physics.players: a.append(d.rect.center)
         data = {'players' : a}
         return data
 

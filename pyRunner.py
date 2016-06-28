@@ -60,7 +60,7 @@ class PyRunner(object):
         '''init the main menu'''
         self.network_connector = NetworkConnector(self.physics)
         self.menu = MainMenu(self, self.network_connector)
-        self.controller = Controller(self.physics.players, self.config, self.network_connector)
+        self.controller = Controller(self.config, self.network_connector)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -113,6 +113,7 @@ class PyRunner(object):
             if not self.menu.in_menu:
                 self.render_thread.add_rect_to_update(self.physics.update())
             clock.tick(self.config.fps)
+            self.network_connector.update()
 
 
 if __name__ == "__main__":

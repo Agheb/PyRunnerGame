@@ -3,7 +3,8 @@
 """main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
-
+import pdb
+from .game_physics import Physics 
 class Action():
     LEFT = "go_left"
     RIGHT = "go_right"
@@ -12,12 +13,10 @@ class Action():
     DIG_LEFT = "dig_left"
     DIG_RIGHT = "dig_right"
 
-class Controller(object):
+class Controller():
 
     """player controls manager"""
-
-    def __init__(self, players, config, network_connector):
-        self.players = players
+    def __init__(self, config, network_connector):
         self.network_connector = network_connector
         # self.player2 = player2
         self.config = config
@@ -66,19 +65,21 @@ class Controller(object):
             print("Player 2 taunts")
         
         self.network_connector.client.send_key(self.current_action)
-        command, playerNum = self.network_connector.client.get_last_command()
-        self.do_action(command, playerNum)
+        #command, playerNum = self.network_connector.client.get_last_command()
+        #self.do_action(command, playerNum)
 
     def release_key(self, key):
         """stop walking"""
-        for p in self.players:
+        for p in Physics.players:
             p.schedule_stop()
 
-    def do_action(self, action, playerNum):
+    @staticmethod
+    def do_action(action, playerNum):
         playerNum = int(playerNum)
+        pdb.set_trace()
         if action == Action.LEFT:
-            self.players[playerNum].go_left()
+            Physics.players[playerNum].go_left()
         elif action == Action.RIGHT:
-            self.players[playerNum].go_right()
+            Physics.players[playerNum].go_right()
         elif action == Action.UP:
-            self.players[playerNum].go_up()
+            Physics.players[playerNum].go_up()
