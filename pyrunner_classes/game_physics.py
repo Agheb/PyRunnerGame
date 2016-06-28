@@ -23,6 +23,7 @@ class Physics(object):
         margin = self.level.margin_left
         self.player_1_gold = GoldScore(self.player_1, (0 + margin, gold_y))
         self.player_2_gold = GoldScore(self.player_2, (self.level.width - self.level.tile_width + margin, gold_y))
+        print(str(self.player_1_gold), self.player_1_gold.gold_rotation[0].get_colorkey())
         self.level_exit = False
         self.game_over = False
         return
