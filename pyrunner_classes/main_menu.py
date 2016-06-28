@@ -131,7 +131,7 @@ class MainMenu(object):
         menu_main.add_item(MenuItem("Settings", self.set_current_menu, vars=menu_settings))
         menu_main.add_item(MenuItem("Exit", self.main.quit_game))
         '''game over menu'''
-        menu_game_over = Menu(self, "Game Over", surface, menu_main, h2_size, item_size)
+        menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, item_size)
         menu_game_over.add_item(MenuItem("Collected Gold"))
         '''save the main menu'''
         self.game_over = menu_game_over
