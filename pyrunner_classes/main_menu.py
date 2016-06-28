@@ -24,6 +24,8 @@ class MainMenu(object):
         self.menu_pos = 1
         self.in_menu = True
         self.current_menu = None
+        self.main_menu = None
+        self.game_over = None
         self.init_menu()
 
     def key_actions(self, key):
@@ -128,9 +130,13 @@ class MainMenu(object):
         menu_main.add_item(MenuItem("Start Game", self.set_current_menu, vars=menu_new_game))
         menu_main.add_item(MenuItem("Settings", self.set_current_menu, vars=menu_settings))
         menu_main.add_item(MenuItem("Exit", self.main.quit_game))
-
+        '''game over menu'''
+        menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, item_size)
+        menu_game_over.add_item(MenuItem("Collected Gold"))
         '''save the main menu'''
-        self.set_current_menu(menu_main)
+        self.game_over = menu_game_over
+        self.main_menu = menu_main
+        self.set_current_menu(self.main_menu)
 
     def set_current_menu(self, new_menu):
         """switch menu level
