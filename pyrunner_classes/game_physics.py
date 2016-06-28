@@ -148,7 +148,11 @@ class Physics(object):
                     # and remove it
                     sprite.kill()
                 elif sprite.exit:
-                    print("Next Level: ", str(self.level.next_level))
+                    if sprite.rect.left < player.rect.centerx < sprite.rect.right:
+                        if not player.killed:
+                            player.rect.center = sprite.rect.center
+                            player.kill()
+                            print("Next Level: ", str(self.level.next_level))
                 elif sprite.restoring:
                     player.kill()
                 elif sprite.rect.collidepoint(player.rect.center):
