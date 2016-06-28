@@ -150,7 +150,7 @@ class Physics(object):
                         """player is climbing a ladder"""
                         on_ladder = True
                         if player.change_y is 0:
-                            player.rect.y = sprite.rect.y + 1
+                            player.rect.y = sprite.rect.y
                 elif sprite.rect.collidepoint(player.rect.midbottom):
                     """if the player hits a solid sprite at his feet"""
                     if sprite.solid and not sprite.climbable_horizontal and not go_down:

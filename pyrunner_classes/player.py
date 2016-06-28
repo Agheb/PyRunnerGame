@@ -124,9 +124,12 @@ class Player(pygame.sprite.DirtySprite):
         if self.change_y < self.speed:
             '''don't let the player slow down while falling by pressing the down key again'''
             self.direction = "UD"
-            self.rect.y += self.speed
             self.change_y = self.speed
-            self.on_rope = False
+            if self.on_rope:
+                self.rect.y += self.speed
+                self.on_rope = False
+                self.on_ladder = False
+                self.on_ground = False
 
     @property
     def stop_on_ground(self):
@@ -192,7 +195,7 @@ class Player(pygame.sprite.DirtySprite):
             elif self.direction == "UD":
                 self.image = self.sprite_sheet.get_frame(self.y, self.walking_frames_ud)
             elif self.direction == "Falling":
-                self.image = self.sprite_sheet.get_frame(self.y, self.falling_frames)
+                self.image = self.sprite_sheet.get_frame(self.y, self.falling_frames, 2)
             elif self.direction == "RR":
                 self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_r)
             elif self.direction == "RL":
@@ -231,7 +234,7 @@ class Player(pygame.sprite.DirtySprite):
         """ Calculate effect of gravity. """
         # See if we are on the ground and not on a ladder or rope
         if not self.on_ground and not self.on_ladder and not self.on_rope:
-            if self.change_y > self.speed:
+            if self.speed <= self.change_y <= self.speed * 2.5:
                 self.change_y += .35
             else:
                 self.direction = "Falling"
@@ -240,7 +243,10 @@ class Player(pygame.sprite.DirtySprite):
         if self.stop_on_ground:
             if self.change_x is not 0:
                 if self.reached_next_tile(self.change_x):
-                    self.rect.x = self.stop_at_x
+                    if self.rect.x - self.size <= self.stop_at_x <= self.rect.x + self.size:
+                        '''make sure the player won't get set to a too far away location'''
+                        self.rect.x = self.stop_at_x
+                    self.stop_at_x = 0
                     if not self.on_rope:
                         if self.change_x > 0:
                             self.direction = "SR"
@@ -254,9 +260,12 @@ class Player(pygame.sprite.DirtySprite):
                         self.go_left()
 
             if self.change_y is not 0:
-                if self.change_y <= self.speed:
+                if self.change_y <= self.speed and self.direction is not "Falling":
                     if self.reached_next_tile(self.change_y):
-                        self.rect.y = self.stop_at_y
+                        if self.rect.y - self.size <= self.stop_at_y <= self.rect.y + self.size:
+                            '''make sure the player won't get set to a too far away location'''
+                            self.rect.y = self.stop_at_y
+                        self.stop_at_y = 0
                         self.change_y = 0
                     else:
                         if self.change_y < 0:

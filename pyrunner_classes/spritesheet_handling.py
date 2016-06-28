@@ -66,7 +66,7 @@ class SpriteSheet(object):
 
         return flipped_list
 
-    def get_frame(self, position, frame_list):
+    def get_frame(self, position, frame_list, speed=1):
         """returns the next frame in order"""
-        position = (position // self.fps) % len(frame_list)
+        position = ((position // self.fps) * speed) % len(frame_list)
         return frame_list[position]
