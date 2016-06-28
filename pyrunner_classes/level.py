@@ -348,14 +348,24 @@ class GoldScore(pygame.sprite.DirtySprite):
         self.rect.x += 3
         self.rect.y += 3
         self.frame_counter = 0
+        self.fps = self.player.fps
+        self.fps_counter = 0
 
     def update(self):
         """show rotating """
         if self.frame_counter < len(self.gold_rotation):
-            if self.player.fps & 1:
+            # count the frames
+            if self.fps_counter is self.fps:
+                self.fps_counter = 0
+            else:
+                self.fps_counter += 1
+
+            # only change animation every second frame
+            if self.fps_counter & 1:
                 self.image = self.gold_rotation[self.frame_counter]
-                self.dirty = 1
                 self.frame_counter += 1
         else:
             self.frame_counter = 0
 
+        # this frame should be rendered permanently
+        self.dirty = 1
