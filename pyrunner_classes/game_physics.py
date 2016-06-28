@@ -68,7 +68,7 @@ class Physics(object):
         Player.group.clear(self.surface, self.level.surface)
         WorldObject.group.clear(self.surface, self.level.background)
         # WorldObject.removed.clear(self.surface, self.level.background)
-        WorldObject.scores.clear(self.surface, self.level.background)
+        WorldObject.scores.clear(self.surface, self.level.surface)
         # return the changed items
         return rects
 

@@ -340,11 +340,13 @@ class GoldScore(pygame.sprite.DirtySprite):
         pygame.sprite.DirtySprite.__init__(self, WorldObject.scores)
         self.player = player
         self.gold = self.player.gold_count
-        self.sprite_sheet = SpriteSheet("gold2.png", 32, self.player.pixel_diff, self.player.fps)
+        self.sprite_sheet = SpriteSheet("gold.png", 32, self.player.pixel_diff - 6, self.player.fps, False)
         self.gold_rotation = self.sprite_sheet.add_animation(0, 0, 8)
         self.image = self.gold_rotation[0]
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
+        self.rect.x += 3
+        self.rect.y += 3
         self.frame_counter = 0
 
     def update(self):
