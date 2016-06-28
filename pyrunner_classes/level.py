@@ -336,23 +336,28 @@ class ExitGate(WorldObject):
 
 class GoldScore(pygame.sprite.DirtySprite):
     """store and show the gold of each player"""
-    def __init__(self, player, pos):
+    def __init__(self, player, pos, left=True):
         pygame.sprite.DirtySprite.__init__(self, WorldObject.scores)
         self.player = player
-        self.gold = self.player.gold_count
-        self.sprite_sheet = SpriteSheet("gold.png", 32, self.player.pixel_diff - 6, self.player.fps, False)
+        self.pixel_diff = self.player.pixel_diff
+        self.fps = self.player.fps
+        self.pos = pos
+        self.gold = 1009010  # self.player.gold_count
+        self.sprite_sheet = SpriteSheet("gold.png", 32, self.pixel_diff - 6, self.fps, False)
         self.gold_rotation = self.sprite_sheet.add_animation(0, 0, 8)
         self.image = self.gold_rotation[0]
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
         self.rect.x += 3
         self.rect.y += 3
+        self.left = left
         self.frame_counter = 0
         self.fps = self.player.fps
         self.fps_counter = 0
+        self.children = []
 
     def update(self):
-        """show rotating """
+        """show rotating gold coin"""
         if self.frame_counter < len(self.gold_rotation):
             # count the frames
             if self.fps_counter is self.fps:
@@ -365,7 +370,73 @@ class GoldScore(pygame.sprite.DirtySprite):
                 self.image = self.gold_rotation[self.frame_counter]
                 self.frame_counter += 1
         else:
+            '''update gold counter only once per second'''
+            if self.player.gold_count is not self.gold:
+                self.gold = self.player.gold_count
             self.frame_counter = 0
+
+            '''convert the number to single numbers in a list'''
+            num = [int(i) for i in str(self.gold)]
+            length = len(num)
+            children = len(self.children)
+
+            if children < length:
+                '''if the number is greater then our current sprites we need to add another one'''
+                self.children.append(ScoreNumber(self, 0, children + 1))
+            elif children > length:
+                '''if there's more numbers then we need we can remove the last one (at a time)'''
+                self.children.pop().kill()
+
+            for i, child in enumerate(self.children):
+                '''the number on the right side are in reverse order'''
+                pos = i if self.left else length - i - 1
+                child.set_number(num[pos])
 
         # this frame should be rendered permanently
         self.dirty = 1
+
+
+class ScoreNumber(pygame.sprite.DirtySprite):
+    """show the current amount of gold a player has collected"""
+
+    def __init__(self, gold_score, number=0, child_num=1):
+        pygame.sprite.DirtySprite.__init__(self, WorldObject.scores)
+        self.gs = gold_score
+        self.pixel_diff = self.gs.pixel_diff
+        self.fps = self.gs.fps
+        self.pos = self.gs.pos
+        self.sprite_sheet = SpriteSheet("numbers_gold_320x32.png", 32, self.pixel_diff, self.fps, False)
+        self.number = number
+        self.numbers = self.sprite_sheet.add_animation(0, 0, 10)
+        self.changed = True
+        self.image = self.numbers[self.number]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.gs.pos
+        self.left = self.gs.left
+        self.child_num = child_num
+
+        width = self.image.get_width()
+        width *= self.child_num
+
+        if self.left:
+            self.rect.x += width
+        else:
+            self.rect.x -= width
+
+    def set_number(self, number):
+        """set the number to a certain value"""
+        if number is not self.number:
+            self.number = number
+            self.changed = True
+
+    def update(self):
+        """show number"""
+        if self.changed:
+            if self.number < 10:
+                self.image = self.numbers[self.number]
+
+            self.changed = False
+
+        # this frame should be rendered permanently
+        self.dirty = 1
+
