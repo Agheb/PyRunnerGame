@@ -110,6 +110,9 @@ class PyRunner(object):
             # save cpu resources
             if not self.menu.in_menu:
                 self.render_thread.add_rect_to_update(self.physics.update())
+
+                if self.physics.game_over:
+                    self.menu.set_current_menu(self.menu.game_over)
             clock.tick(self.config.fps)
 
 

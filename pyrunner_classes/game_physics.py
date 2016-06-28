@@ -19,7 +19,8 @@ class Physics(object):
         self.level = level
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
         self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 32, self.level.pixel_diff)
-        self.exit = False
+        self.level_exit = False
+        self.game_over = False
         return
 
     def update(self):
@@ -31,9 +32,12 @@ class Physics(object):
         WorldObject.removed.update()
         Player.group.update()
 
-        if not self.exit and not any(sprite.collectible for sprite in WorldObject.group):
-            self.exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
-            self.exit = True
+        if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
+            self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
+            self.level_exit = True
+        else:
+            if not any(player.is_human for player in Player.group):
+                self.game_over = True
 
         # check for collisions
         self.collide_rect()
@@ -164,6 +168,8 @@ class Physics(object):
                     elif sprite.climbable:
                         """player is climbing a ladder"""
                         on_ladder = True
+                        if player.change_x is 0:
+                            player.rect.centerx = sprite.rect.centerx
                         if player.change_y is 0:
                             player.rect.y = sprite.rect.y
                 elif sprite.rect.collidepoint(player.rect.midbottom) and not go_down:

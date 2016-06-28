@@ -51,6 +51,7 @@ class Player(pygame.sprite.DirtySprite):
         self.digging_frame = 0
         self.stop_at_x = 0
         self.stop_at_y = 0
+        self.is_human = False if bot else True
 
         if not bot:
             self.digging_frames_l = []
