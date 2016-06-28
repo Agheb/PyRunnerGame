@@ -35,9 +35,17 @@ class Physics(object):
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
             self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
             self.level_exit = True
-        else:
-            if not any(player.is_human for player in Player.group):
+        elif not any(player.is_human for player in Player.group):
+            if self.level.next_level is None:
+                '''show the game over menu with player gold scores'''
                 self.game_over = True
+            else:
+                '''load the next level, recreate the players and bots etc.'''
+                # next level full path = self.level.next_level
+                # TODO load next level, restore players gold if they made it to the exit
+                # TODO respawn second player if he didn't make it with 0 gold
+                # TODO switch music according to level atmosphere/setting
+                pass
 
         # check for collisions
         self.collide_rect()
