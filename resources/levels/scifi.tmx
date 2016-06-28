@@ -69,6 +69,6 @@
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="25" name="Exit_Gate" type="jungle" x="974" y="240"/>
+  <object id="25" name="Exit_Gate" type="jungle" x="975" y="220"/>
  </objectgroup>
 </map>

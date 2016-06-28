@@ -7,6 +7,7 @@ import pygame
 import pytmx
 from pytmx.util_pygame import load_pygame
 from pygame.locals import *
+from .spritesheet_handling import *
 
 LEVEL_PATH = "./resources/levels/"
 LEVEL_EXT = ".tmx"
@@ -77,8 +78,9 @@ class Level(object):
             x, y = p1_pos
             p2_pos = x + 32, y
         try:
-            next_level = self.tm.get_object_by_name("Exit_Gate").type
-            self.next_level = LEVEL_PATH + next_level + LEVEL_EXT
+            next_level = self.tm.get_object_by_name("Exit_Gate")
+            self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
+            self.next_level = LEVEL_PATH + next_level.type + LEVEL_EXT
         except ValueError:
             pass
 
@@ -187,6 +189,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.collectible = False
         self.killed = False
         self.restoring = restoring
+        self.exit = False
 
         if restoring:
             self.image = pygame.Surface((self.width, self.height), SRCALPHA)
@@ -290,3 +293,34 @@ class RemovedBlock(pygame.sprite.DirtySprite):
     def restore(self):
         """recreate a sprite with the same values"""
         return WorldObject(self.tile, self.size, True, True, True)
+
+
+class ExitGate(WorldObject):
+    """let's the player return to the next level"""
+    def __init__(self, pos, sheet, size, pixel_diff=0, fps=25):
+        self.exit = True
+        self.sprite_sheet = SpriteSheet(sheet, size, pixel_diff * 2 + size, fps)
+        self.animation = self.sprite_sheet.add_animation(8, 4, 4)
+        self.counter = 0
+        self.backwards = False
+        self.fps = fps
+        self.image = self.sprite_sheet.get_frame(0, self.animation)
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = pos
+        tile = self.rect.x, self.rect.y, self.image
+        WorldObject.__init__(self, tile, (size, size), True)
+        self.spawned = False
+        self.killed = False
+
+    def update(self):
+        """play glowing animation"""
+        lenght = len(self.animation) - 1
+
+        if not self.spawned:
+            self.image = self.animation[self.counter // 5]
+
+            if self.counter is lenght * 5:
+                self.spawned = True
+
+            self.counter += 1
+            self.dirty = 1

@@ -5,13 +5,16 @@ import pygame
 from .constants import *
 
 
+SPRITE_SHEET_PATH = "./resources/sprites/"
+
+
 class SpriteSheet(object):
     """ Class used to grab images out of a sprite sheet. """
 
     def __init__(self, file_name, tilesize, pixel_diff=0, fps=25):
         """ Constructor. Pass in the file name of the sprite sheet. """
         # Load the sprite sheet.
-        self.sprite_sheet = pygame.image.load(file_name).convert()
+        self.sprite_sheet = pygame.image.load(SPRITE_SHEET_PATH + file_name).convert()
         self.tile_size = tilesize
         self.pixel_diff = pixel_diff
         self.fps = fps

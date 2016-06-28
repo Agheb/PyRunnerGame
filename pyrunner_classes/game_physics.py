@@ -19,7 +19,7 @@ class Physics(object):
         self.level = level
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
         self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 32, self.level.pixel_diff)
-
+        self.exit = False
         return
 
     def update(self):
@@ -30,6 +30,10 @@ class Physics(object):
         WorldObject.group.update()
         WorldObject.removed.update()
         Player.group.update()
+
+        if not self.exit and not any(sprite.collectible for sprite in WorldObject.group):
+            self.exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
+            self.exit = True
 
         # check for collisions
         self.collide_rect()
@@ -143,6 +147,8 @@ class Physics(object):
                     # self.level.clean_sprite(sprite)
                     # and remove it
                     sprite.kill()
+                elif sprite.exit:
+                    print("Next Level: ", str(self.level.next_level))
                 elif sprite.restoring:
                     player.kill()
                 elif sprite.rect.collidepoint(player.rect.center):
