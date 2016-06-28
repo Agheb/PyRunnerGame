@@ -5,14 +5,18 @@ import pygame
 from .constants import *
 
 
+SPRITE_SHEET_PATH = "./resources/sprites/"
+
+
 class SpriteSheet(object):
     """ Class used to grab images out of a sprite sheet. """
 
-    def __init__(self, file_name, tilesize, fps=25):
+    def __init__(self, file_name, tilesize, pixel_diff=0, fps=25):
         """ Constructor. Pass in the file name of the sprite sheet. """
         # Load the sprite sheet.
-        self.sprite_sheet = pygame.image.load(file_name).convert()
+        self.sprite_sheet = pygame.image.load(SPRITE_SHEET_PATH + file_name).convert()
         self.tile_size = tilesize
+        self.pixel_diff = pixel_diff
         self.fps = fps
 
     def get_image(self, x, y, width, height):
@@ -29,10 +33,15 @@ class SpriteSheet(object):
         # Assuming black works as the transparent color
         image.set_colorkey(BLACK)
 
+        if self.pixel_diff is not 0:
+            width += self.pixel_diff
+            height += self.pixel_diff
+            image = pygame.transform.scale(image, (width, height))
+
         # Return the image
         return image
 
-    def add_animation(self, pos_x, pos_y, frames=1):
+    def add_animation(self, pos_x, pos_y, frames=1,):
         """define which images on a sprite sheet to use for an animation"""
         ts = self.tile_size
         pos_y *= ts
@@ -60,7 +69,7 @@ class SpriteSheet(object):
 
         return flipped_list
 
-    def get_frame(self, position, frame_list):
+    def get_frame(self, position, frame_list, speed=1):
         """returns the next frame in order"""
-        position = (position // self.fps) % len(frame_list)
+        position = ((position // self.fps) * speed) % len(frame_list)
         return frame_list[position]
