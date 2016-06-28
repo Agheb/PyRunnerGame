@@ -19,6 +19,10 @@ class Physics(object):
         self.level = level
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
         self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 32, self.level.pixel_diff)
+        gold_y = self.level.height - self.level.tile_height + self.level.margin_top
+        margin = self.level.margin_left
+        self.player_1_gold = GoldScore(self.player_1, (0 + margin, gold_y))
+        self.player_2_gold = GoldScore(self.player_2, (self.level.width - self.level.tile_width + margin, gold_y))
         self.level_exit = False
         self.game_over = False
         return
@@ -30,6 +34,7 @@ class Physics(object):
 
         WorldObject.group.update()
         WorldObject.removed.update()
+        WorldObject.scores.update()
         Player.group.update()
 
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
@@ -53,6 +58,7 @@ class Physics(object):
         '''draw the level'''
         rects.append(WorldObject.group.draw(self.level.surface))
         self.render_thread.blit(self.level.surface, None, True)
+        rects.append(WorldObject.scores.draw(self.surface))
         '''draw the player'''
         rects.append(Player.group.draw(self.surface))
         # rects.append(WorldObject.removed.draw(self.level.surface))
@@ -61,6 +67,7 @@ class Physics(object):
         Player.group.clear(self.surface, self.level.surface)
         WorldObject.group.clear(self.surface, self.level.background)
         # WorldObject.removed.clear(self.surface, self.level.background)
+        WorldObject.scores.clear(self.surface, self.level.background)
         # return the changed items
         return rects
 

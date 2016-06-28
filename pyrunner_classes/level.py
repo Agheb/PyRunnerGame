@@ -169,8 +169,9 @@ class Level(object):
 class WorldObject(pygame.sprite.DirtySprite):
     """hello world"""
 
-    group = pygame.sprite.LayeredDirty(default_layer=-1)
+    group = pygame.sprite.LayeredDirty(default_layer=0)
     removed = pygame.sprite.LayeredDirty(default_layer=0)
+    scores = pygame.sprite.LayeredDirty(default_layer=1)
 
     def __init__(self, tile, size, solid=True, removable=False, restoring=False):
         """world object item"""
@@ -331,3 +332,28 @@ class ExitGate(WorldObject):
                 self.counter = length - 1 if self.counter is length else length
                 self.image = self.animation[self.counter]
                 self.dirty = 1
+
+
+class GoldScore(pygame.sprite.DirtySprite):
+    """store and show the gold of each player"""
+    def __init__(self, player, pos):
+        pygame.sprite.DirtySprite.__init__(self, WorldObject.scores)
+        self.player = player
+        self.gold = self.player.gold_count
+        self.sprite_sheet = SpriteSheet("gold2.png", 32, self.player.pixel_diff, self.player.fps)
+        self.gold_rotation = self.sprite_sheet.add_animation(0, 0, 8)
+        self.image = self.gold_rotation[0]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+        self.frame_counter = 0
+
+    def update(self):
+        """show rotating """
+        if self.frame_counter < len(self.gold_rotation):
+            if self.player.fps & 1:
+                self.image = self.gold_rotation[self.frame_counter]
+                self.dirty = 1
+                self.frame_counter += 1
+        else:
+            self.frame_counter = 0
+

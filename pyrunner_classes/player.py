@@ -20,6 +20,7 @@ class Player(pygame.sprite.DirtySprite):
     def __init__(self, pos, sheet, tile_size=32, pixel_diff=0, bot=False, fps=25):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.tile_size = tile_size
+        self.pixel_diff = pixel_diff
         self.size = self.tile_size + pixel_diff
         self.fps = fps
         # positional attributes
