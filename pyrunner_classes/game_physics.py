@@ -126,7 +126,7 @@ class Physics(object):
                 bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + 1)
 
                 if bottom_sprite and bottom_sprite.climbable and player.change_y > 0:
-                    bottom_sprite.dirty = 1
+                    # bottom_sprite.dirty = 1
                     player.rect.y += 4
                     on_ladder = True
                     go_down = True
@@ -159,11 +159,10 @@ class Physics(object):
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
             for sprite in collisions:
-                sprite.dirty = 1
+                # sprite.dirty = 1
                 # collect gold and remove the sprite
                 if sprite.collectible and not sprite.killed:
                     player.gold_count += 1
-                    print(player.gold_count)
                     # clear the item
                     # self.level.clean_sprite(sprite)
                     # and remove it
