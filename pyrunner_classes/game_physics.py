@@ -102,7 +102,8 @@ class Physics(object):
 
                 if bottom_sprite and bottom_sprite.climbable and player.change_y > 0:
                     bottom_sprite.dirty = 1
-                    player.on_ladder = True
+                    player.rect.y += 4
+                    on_ladder = True
                     go_down = True
             else:
                 '''make sure there's ground below the player'''
@@ -111,17 +112,21 @@ class Physics(object):
                 if not bottom_sprite and not player.on_rope:
                     '''if there's no ground below the feet'''
                     on_ground = False
+                    on_ladder = False
                     player.stop_on_ground = True
 
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
             if removed_collision:
-                player.direction = "Stop"
+                if not removed_collision.trapped:
+                    removed_collision.trapped = True
+                    player.direction = "Trapped"
+                    player.rect.center = removed_collision.rect.center
                 on_ground = True
                 self.hit_inner_bottom(player, removed_collision)
 
             '''if a removed block contains another player we can walk over it'''
-            top_collision = self.find_collision(player.rect.centerx, player.rect.bottom + 1, Player.group)
+            top_collision = self.find_collision(player.rect.centerx, player.rect.bottom, Player.group)
             if top_collision:
                 on_ground = True
                 self.hit_top(player, top_collision)
@@ -151,12 +156,12 @@ class Physics(object):
                         on_ladder = True
                         if player.change_y is 0:
                             player.rect.y = sprite.rect.y
-                elif sprite.rect.collidepoint(player.rect.midbottom):
+                elif sprite.rect.collidepoint(player.rect.midbottom) and not go_down:
                     """if the player hits a solid sprite at his feet"""
-                    if sprite.solid and not sprite.climbable_horizontal and not go_down:
+                    if sprite.solid and not sprite.climbable_horizontal:
                         on_ground = True
                         self.hit_top(player, sprite)
-                else:
+                elif not go_down:
                     self.fix_pos(player, sprite)
 
                 # update the player variables

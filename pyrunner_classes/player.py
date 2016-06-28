@@ -81,6 +81,7 @@ class Player(pygame.sprite.DirtySprite):
             # Stop Frame: Sprite when player is not moving on ground
             self.stand_left = self.sprite_sheet.add_animation(2, 2)
             self.stand_right = self.sprite_sheet.add_animation(3, 2)
+            self.trapped = self.sprite_sheet.add_animation(5, 0)
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
         # Set the image the player starts with
@@ -93,25 +94,27 @@ class Player(pygame.sprite.DirtySprite):
     # Player-controlled movement:
     def go_left(self):
         """" Called when the user hits the left arrow. Checks if player is on Rope to change animation """
-        self.change_x = -self.speed if self.change_y <= self.speed else 0
+        if self.direction is not "Trapped":
+            self.change_x = -self.speed if self.change_y <= self.speed else 0
 
-        if self.on_rope:
-            self.direction = "RL"
-        elif self.on_ladder and not self.on_ground:
-            self.direction = "UD"
-        else:
-            self.direction = "L"
+            if self.on_rope:
+                self.direction = "RL"
+            elif self.on_ladder and not self.on_ground:
+                self.direction = "UD"
+            else:
+                self.direction = "L"
 
     def go_right(self):
         """ Called when the user hits the right arrow. Checks if player is on Rope to change animation """
-        self.change_x = self.speed if self.change_y <= self.speed else 0
+        if self.direction is not "Trapped":
+            self.change_x = self.speed if self.change_y <= self.speed else 0
 
-        if self.on_rope:
-            self.direction = "RR"
-        elif not self.on_ground and self.on_ladder:
-            self.direction = "UD"
-        else:
-            self.direction = "R"
+            if self.on_rope:
+                self.direction = "RR"
+            elif not self.on_ground and self.on_ladder:
+                self.direction = "UD"
+            else:
+                self.direction = "R"
 
     def go_up(self):
         """ Called when the user hits the up arrow. Only Possible when Player is on a ladder"""
@@ -121,15 +124,16 @@ class Player(pygame.sprite.DirtySprite):
 
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
-        if self.change_y < self.speed:
-            '''don't let the player slow down while falling by pressing the down key again'''
-            self.direction = "UD"
-            self.change_y = self.speed
-            if self.on_rope:
-                self.rect.y += self.speed
-                self.on_rope = False
-                self.on_ladder = False
-                self.on_ground = False
+        if self.direction is not "Trapped":
+            if self.change_y < self.speed:
+                '''don't let the player slow down while falling by pressing the down key again'''
+                self.direction = "UD"
+                self.change_y = self.speed
+                if self.on_rope:
+                    self.rect.y += self.speed * 2
+                    self.on_rope = False
+                    self.on_ladder = False
+                    self.on_ground = False
 
     @property
     def stop_on_ground(self):
@@ -150,14 +154,14 @@ class Player(pygame.sprite.DirtySprite):
 
     def dig_right(self):
         """dig to the right"""
-        if self.on_ground:
+        if self.on_ground and self.direction is not "Trapped":
             self.stop_on_ground = True
             self.direction = "DR"
             # self.player_collide()
 
     def dig_left(self):
         """dig to the left"""
-        if self.on_ground:
+        if self.on_ground and self.direction is not "Trapped":
             self.stop_on_ground = True
             self.direction = "DL"
             # self.player_collide()
@@ -183,7 +187,7 @@ class Player(pygame.sprite.DirtySprite):
                 self.direction = "RL" if self.on_rope else "L"
             elif self.change_x > 0:
                 self.direction = "RR" if self.on_rope else "R"
-            elif not self.on_ground and not self.on_rope and not self.on_ladder:
+            elif not self.on_ground and not self.on_rope and not self.on_ladder and self.speed < self.change_y:
                 self.direction = "Falling"
 
             # Animations with Sprites
@@ -207,6 +211,8 @@ class Player(pygame.sprite.DirtySprite):
             elif self.direction == "Stop":
                 # self.image = self.stand_right
                 pass
+            elif self.direction == "Trapped":
+                self.image = self.trapped
             elif self.direction == "DL":
                 # Dig left/right
                 self.image = self.digging_frames_l[self.digging_frame // 4]
@@ -237,7 +243,6 @@ class Player(pygame.sprite.DirtySprite):
             if self.speed <= self.change_y <= self.speed * 2.5:
                 self.change_y += .35
             else:
-                self.direction = "Falling"
                 self.change_y = self.speed
 
         if self.stop_on_ground:

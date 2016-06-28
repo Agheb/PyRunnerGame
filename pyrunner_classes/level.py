@@ -277,6 +277,7 @@ class RemovedBlock(pygame.sprite.DirtySprite):
         self.time_out = time_out
         self.fps = fps
         self.counter = 0
+        self.trapped = False
 
     def update(self):
         """countdown on each update until the object get's restored"""
