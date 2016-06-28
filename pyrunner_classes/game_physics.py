@@ -4,7 +4,10 @@
 from __future__ import division
 from .player import *
 import pygame
+import logging
 import pdb
+
+log = logging.getLogger("Physics")
 
 GRAVITY = 1
 MULTIPLICATOR = 1
@@ -32,6 +35,7 @@ class Physics(object):
             newPlayer.rect.center = center
         Physics.players.append(newPlayer)
         playerGroup.add(newPlayer)
+        log.info("Added Player. Players {}".format(Physics.players))
 
     def update(self):
         """updates all physics components"""
@@ -126,9 +130,7 @@ class Physics(object):
                     player.change_x = 0
 
     def get_level_info_json(self):
-        #TODO: finish me, players cant be send using json, maybe just send info, or create new object
-        #data = {'players':self.players, 'level_id':self.level_id}
-        #this is just a placeholder:
+        #TODO: finish me
         a = []
         for d in Physics.players: a.append(d.rect.center)
         data = {'players' : a}

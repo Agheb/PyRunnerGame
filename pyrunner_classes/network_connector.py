@@ -83,8 +83,15 @@ class Client(threading.Thread, MastermindClientTCP):
                 self.physics.add_player(pl_center)
             #add ourself
             self.physics.add_player()
+
+            #tell the server that the client is init
+            self.send_init_success()
         else:
             raise Exception('Did not get init as first Package') 
+
+    def send_init_success(self):
+        data = json.dumps({'type':'init_succ','player_id':self.player_id})
+        self.send(data, compression = NetworkConnector.COMPRESSION)
 
     def kill(self):
         self.disconnect()
@@ -99,6 +106,12 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == 'key_update':
                 clientlog.info("got key_update from server")
                 Controller.do_action(data['data'],data['player_id'])
+            if data['type'] == 'init_succ':
+                clientlog.info("got init succ")
+                try:
+                    self.physics.players[int(data['player_id'])]
+                except IndexError:
+                    self.physics.add_player()
 
     def sendKeepAlive(self):
         #send keep alive if last was x seconds ago
@@ -130,13 +143,19 @@ class Server(threading.Thread, MastermindServerTCP):
     def interpret_client_data(self, data, con_obj):
         """interprets data send from the client to the server"""
         if data['type'] == "keep_alive":
-            srvlog.info("Got keep Alive")
+            srvlog.debug("Got keep Alive")
             pass
         if data['type'] == "key_update":
-            srvlog.info("Got key Update from Client")
+            srvlog.debug("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(con_obj))
         if data['type'] == "complete_update":
-            srvlog.info("Got full update from Client")
+            srvlog.debug("Got full update from Client")
+            pass
+        if data['type'] == "init_succ":
+            player_id = data['player_id']
+            srvlog.debug("Init succ for client {}".format(player_id))
+            for client in self.known_clients:
+                self.callback_client_send(client,json.dumps(data))
             pass
 
     def callback_connect_client(self, connection_object):
@@ -144,10 +163,11 @@ class Server(threading.Thread, MastermindServerTCP):
         srvlog.info("New Client Connected %s" %str(connection_object.address))
         #adding ip to client list to generate the playerId
         if connection_object not in self.known_clients:
-            srvlog.info("Added client to known clients")
+            srvlog.debug("Added client to known clients")
             self.known_clients.append(connection_object)
-        #sending initial Data TODO:  add info about enemies
+        #sending initial Data, to all clients so everyone is on the same page. TODO:  add info about enemies
         level_info = self.physics.get_level_info_json()
+        #the clients id
         misc_info = {'player_id': str(self.known_clients.index(connection_object))}
         #concat the data
         combined = {}
@@ -155,15 +175,24 @@ class Server(threading.Thread, MastermindServerTCP):
             combined.update(d)
         
         data = json.dumps({'type': 'init','data': combined})
+
         self.callback_client_send(connection_object, data)
+
+
+        #let the others know that there is a new client
+
+        for client in self.known_clients:
+            if client != connection_object:
+                self.callback_client_send(client, data)
+        
         return super(MastermindServerTCP,self).callback_connect_client(connection_object)
 
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
         data = json.dumps({'type': 'key_update','data':str(key), 'player_id': str(player_id)})
-        connection_object = self.known_clients[player_id]
-        self.callback_client_send(connection_object, data)
+        for client in self.known_clients:
+            self.callback_client_send(client, data)
 
     def kill(self):
         self.accepting_disallow()

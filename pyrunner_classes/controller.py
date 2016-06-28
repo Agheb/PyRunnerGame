@@ -10,6 +10,7 @@ class Action():
     RIGHT = "go_right"
     UP = "go_up"
     DOWN = "go_down"
+    STOP = "stop"
     DIG_LEFT = "dig_left"
     DIG_RIGHT = "dig_right"
 
@@ -70,16 +71,18 @@ class Controller():
 
     def release_key(self, key):
         """stop walking"""
-        for p in Physics.players:
-            p.schedule_stop()
+        self.network_connector.client.send_key(Action.STOP)
+        #for p in Physics.players:
+        #    p.schedule_stop()
 
     @staticmethod
     def do_action(action, playerNum):
         playerNum = int(playerNum)
-        pdb.set_trace()
         if action == Action.LEFT:
             Physics.players[playerNum].go_left()
         elif action == Action.RIGHT:
             Physics.players[playerNum].go_right()
         elif action == Action.UP:
             Physics.players[playerNum].go_up()
+        elif action == Action.STOP:
+            Physics.players[playerNum].schedule_stop()
