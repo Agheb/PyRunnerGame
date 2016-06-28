@@ -7,7 +7,10 @@ import pygame
 import pytmx
 from pytmx.util_pygame import load_pygame
 from pygame.locals import *
+from .spritesheet_handling import *
 
+LEVEL_PATH = "./resources/levels/"
+LEVEL_EXT = ".tmx"
 LEVEL_LIST = ["./resources/levels/scifi.tmx", "./resources/levels/level2.tmx",
                            "./resources/levels/level3.tmx"]
 
@@ -74,6 +77,12 @@ class Level(object):
         except ValueError:
             x, y = p1_pos
             p2_pos = x + 32, y
+        try:
+            next_level = self.tm.get_object_by_name("Exit_Gate")
+            self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
+            self.next_level = LEVEL_PATH + next_level.type + LEVEL_EXT
+        except ValueError:
+            pass
 
         self.player_1_pos = p1_pos
         self.player_2_pos = p2_pos
@@ -142,14 +151,6 @@ class Level(object):
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
 
-        for group in self.tm.objectgroups:
-            for obj in group:
-                try:
-                    if obj.name == "Player_1":
-                        self.player_1_pos = obj.x, obj.y
-                except (KeyError, AttributeError, ValueError):
-                    pass
-
     @staticmethod
     def render_tile(surface, tile):
         """draw single tile"""
@@ -188,6 +189,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.collectible = False
         self.killed = False
         self.restoring = restoring
+        self.exit = False
 
         if restoring:
             self.image = pygame.Surface((self.width, self.height), SRCALPHA)
@@ -278,6 +280,7 @@ class RemovedBlock(pygame.sprite.DirtySprite):
         self.time_out = time_out
         self.fps = fps
         self.counter = 0
+        self.trapped = False
 
     def update(self):
         """countdown on each update until the object get's restored"""
@@ -290,3 +293,41 @@ class RemovedBlock(pygame.sprite.DirtySprite):
     def restore(self):
         """recreate a sprite with the same values"""
         return WorldObject(self.tile, self.size, True, True, True)
+
+
+class ExitGate(WorldObject):
+    """let's the player return to the next level"""
+    def __init__(self, pos, sheet, size, pixel_diff=0, fps=25):
+        self.sprite_sheet = SpriteSheet(sheet, size, pixel_diff * 2 + size, fps)
+        self.animation = self.sprite_sheet.add_animation(8, 4, 4)
+        self.counter = 0
+        self.fps = fps
+        self.image = self.sprite_sheet.get_frame(0, self.animation)
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = pos
+        tile = self.rect.x, self.rect.y, self.image
+        WorldObject.__init__(self, tile, (size, size), True)
+        self.exit = True
+        self.spawned = False
+        self.killed = False
+        self.count_fps = 0
+
+    def update(self):
+        """play glowing animation"""
+        length = len(self.animation) - 1
+
+        if not self.spawned:
+            self.image = self.animation[self.counter // 5]
+
+            if self.counter is length * 5:
+                self.spawned = True
+
+            self.counter += 1
+            self.dirty = 1
+        else:
+            self.count_fps = self.count_fps + 1 if self.count_fps < self.fps else 0
+            '''pulsate the exit gate'''
+            if (self.count_fps % self.fps) // 2 is 0 and self.count_fps is not 0:
+                self.counter = length - 1 if self.counter is length else length
+                self.image = self.animation[self.counter]
+                self.dirty = 1
