@@ -298,17 +298,16 @@ class RemovedBlock(pygame.sprite.DirtySprite):
 class ExitGate(WorldObject):
     """let's the player return to the next level"""
     def __init__(self, pos, sheet, size, pixel_diff=0, fps=25):
-        self.exit = True
         self.sprite_sheet = SpriteSheet(sheet, size, pixel_diff * 2 + size, fps)
         self.animation = self.sprite_sheet.add_animation(8, 4, 4)
         self.counter = 0
-        self.backwards = False
         self.fps = fps
         self.image = self.sprite_sheet.get_frame(0, self.animation)
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = pos
         tile = self.rect.x, self.rect.y, self.image
         WorldObject.__init__(self, tile, (size, size), True)
+        self.exit = True
         self.spawned = False
         self.killed = False
 
