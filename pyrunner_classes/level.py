@@ -310,16 +310,24 @@ class ExitGate(WorldObject):
         self.exit = True
         self.spawned = False
         self.killed = False
+        self.count_fps = 0
 
     def update(self):
         """play glowing animation"""
-        lenght = len(self.animation) - 1
+        length = len(self.animation) - 1
 
         if not self.spawned:
             self.image = self.animation[self.counter // 5]
 
-            if self.counter is lenght * 5:
+            if self.counter is length * 5:
                 self.spawned = True
 
             self.counter += 1
             self.dirty = 1
+        else:
+            self.count_fps = self.count_fps + 1 if self.count_fps < self.fps else 0
+            '''pulsate the exit gate'''
+            if (self.count_fps % self.fps) // 2 is 0 and self.count_fps is not 0:
+                self.counter = length - 1 if self.counter is length else length
+                self.image = self.animation[self.counter]
+                self.dirty = 1
