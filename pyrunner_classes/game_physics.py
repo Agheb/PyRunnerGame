@@ -4,6 +4,7 @@
 from __future__ import division
 from .level import *
 from .player import *
+from .non_player_characters import Bots
 import pygame
 
 GRAVITY = 1
@@ -18,6 +19,7 @@ class Physics(object):
         self.level = level
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png")
         self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png")
+        self.bot_1 = Bots(self.level.bot_1_pos, "LRCharacters32.png")
 
         return
 

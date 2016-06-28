@@ -54,8 +54,15 @@ class Level(object):
             p2_x, p2_y = p2_pos.x, p2_pos.y
         except ValueError:
             p2_x, p2_y = p1_x + 32, p1_y
+        try:
+            b1_pos = self.tm.get_object_by_name("Bot_1")
+            b1_x, p1_y = b1_pos.x, b1_pos.y
+        except ValueError:
+            b1_x, b1_y = 0, 0
+
         self.player_1_pos = p1_x, p1_y
         self.player_2_pos = p2_x, p2_y
+        self.bot_1_pos = b1_x, b1_y
 
     def render(self, surface):
         """Create the level. Iterates through the layers in the TMX (see game_physics WorldObjects).
