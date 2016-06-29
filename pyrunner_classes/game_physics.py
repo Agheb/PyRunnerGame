@@ -85,7 +85,7 @@ class Physics(object):
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
             if removed_collision:
-                if not removed_collision.trapped:
+                if not removed_collision.trapped and not player.is_human:
                     removed_collision.trapped = True
                     player.direction = "Trapped"
                     player.rect.center = removed_collision.rect.center
