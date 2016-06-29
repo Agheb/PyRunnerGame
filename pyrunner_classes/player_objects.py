@@ -170,13 +170,14 @@ class ScoreNumber(pygame.sprite.DirtySprite):
                 self.image = self.numbers[self.number]
 
             '''update state variables'''
-            self.updated = True
             self.changed = False
 
             if self.background_clean:
                 '''blit the score directly to the level surface so it won't have to refresh each frame'''
                 self.draw_clean_background()
                 self.background.blit(self.image, self.pos)
+                '''only update this value if we use dirty rects instead of dirty sprites'''
+                self.updated = True
 
         if not self.background_clean:
             '''
@@ -186,7 +187,7 @@ class ScoreNumber(pygame.sprite.DirtySprite):
             self.dirty = 1
 
     def get_rect(self):
-        """get the rect to update it on the screen"""
+        """get the rect to update it on the screen - only needed if dirty rects are used"""
         self.updated = False
         return self.rect
 

@@ -158,10 +158,15 @@ class PyRunner(object):
         '''draw the level'''
         rects.append(WorldObject.group.draw(self.level.surface))
         self.render_thread.blit(self.level.surface, None, True)
+        '''
+            only dirty Sprites return their rect
+            because we are using dirty rects instead we need to manually find them
+        '''
+        # the rotating coin is a dirty sprite
         rects.append(GoldScore.scores.draw(self.surface))
+        # the numbers are dirty rects
         for score in GoldScore.scores:
             if score.child_num and score.updated:
-                print("updated score")
                 rects.append(score.get_rect())
         '''draw the player'''
         rects.append(Player.group.draw(self.surface))
