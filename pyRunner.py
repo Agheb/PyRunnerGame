@@ -68,6 +68,12 @@ class PyRunner(object):
 
     def load_level(self, levelnumber):
         """load another level"""
+        '''clear all sprites from an old level if present'''
+        if self.level:
+            Player.group.empty()
+            WorldObject.group.empty()
+            WorldObject.removed.empty()
+        '''load the new level'''
         self.level = Level(self.bg_surface, levelnumber, self.fps)
         self.physics = Physics(self.level, self.surface)
 
