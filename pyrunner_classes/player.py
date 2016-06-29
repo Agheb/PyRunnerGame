@@ -10,6 +10,7 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 from __future__ import division
 import pygame
 from .spritesheet_handling import SpriteSheet
+from .player_objects import GoldScore
 
 
 class Player(pygame.sprite.DirtySprite):
@@ -34,6 +35,7 @@ class Player(pygame.sprite.DirtySprite):
         self.change_y = 0
         self.speed = self.size // 10 * 2
         # score related
+        self.gold_score = GoldScore(self, (0, 0))
         self.gold_count = 0
         # lists holding the image for movement. Up and down movement uses the same sprites.
         self.spawn_frames = []
