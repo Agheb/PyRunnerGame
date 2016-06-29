@@ -128,6 +128,7 @@ class PyRunner(object):
 
                 if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
+
             clock.tick(self.fps)
 
     def render_game(self):
@@ -151,9 +152,14 @@ class PyRunner(object):
             self.level_exit = True
         '''check if all players are still alive'''
         if not any(player.is_human for player in Player.group):
-            if self.level.next_level is None or not self.level_exit:
+            if self.level.next_level is None or  self.level_exit:   # not
                 '''show the game over menu with player gold scores'''
                 self.game_over = True
+                '''game over menu'''
+                for score in GoldScore.scores:
+                    if not score.child_num:
+                        score_str = "Player %s: %s" % (score.gid, score.gold)
+                        self.menu.game_over.add_item(MenuItem(score_str))
             else:
                 '''load the next level, recreate the players and bots etc.'''
                 # next level full path = self.level.next_level
@@ -171,10 +177,6 @@ class PyRunner(object):
         '''
         # the rotating coin is a dirty sprite
         rects.append(GoldScore.scores.draw(self.surface))
-        # the numbers are dirty rects
-        for score in GoldScore.scores:
-            if score.child_num and score.updated:
-                rects.append(score.get_rect())
         '''draw the player'''
         rects.append(Player.group.draw(self.surface))
         # rects.append(WorldObject.removed.draw(self.level.surface))

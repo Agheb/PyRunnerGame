@@ -26,6 +26,14 @@ class MainMenu(object):
         self.current_menu = None
         self.main_menu = None
         self.game_over = None
+        self.surface = None
+        # regular font sizes
+        self.h1_size = 72
+        self.h2_size = 48
+        self.item_size = 36
+        self.ratio = 1
+
+        '''initialize the menu'''
         self.init_menu()
 
     def key_actions(self, key):
@@ -33,7 +41,7 @@ class MainMenu(object):
         if key == K_ESCAPE:
             if self.current_menu.parent:
                 self.set_current_menu(self.current_menu.parent)
-            else:
+            elif not self.main.game_over:
                 self.show_menu(False)
         elif key == K_RETURN:
             self.current_menu.get_item(self.menu_pos).do_action()
@@ -66,16 +74,15 @@ class MainMenu(object):
         """
         s_width = (self.render_thread.screen.get_width() // 4) * 3
         s_height = (self.render_thread.screen.get_height() // 3) * 2
-        surface = pygame.Surface((s_width, s_height), SRCALPHA)
-        # regular font sizes
-        h1_size = 72
-        h2_size = 48
-        item_size = 36
+        self.surface = surface = pygame.Surface((s_width, s_height), SRCALPHA)
+        h1_size = self.h1_size
+        h2_size = self.h2_size
+        item_size = self.item_size
         '''calculate the ratio to adjust font sizes accordingly'''
-        ratio = Menu.calc_font_size(surface, h1_size, item_size)
-        h1_size = int(h1_size * ratio)
-        h2_size = int(h2_size * ratio)
-        item_size = int(item_size * ratio)
+        self.ratio = ratio = Menu.calc_font_size(surface, h1_size, item_size)
+        self.h1_size = h1_size = int(h1_size * ratio)
+        self.h2_size = h2_size = int(h2_size * ratio)
+        self.item_size = item_size = int(item_size * ratio)
         '''first create the root menu'''
         # noinspection PyTypeChecker
         menu_main = Menu(self, self.config.name, surface, None, h1_size, item_size)
@@ -130,12 +137,16 @@ class MainMenu(object):
         menu_main.add_item(MenuItem("Start Game", self.set_current_menu, vars=menu_new_game))
         menu_main.add_item(MenuItem("Settings", self.set_current_menu, vars=menu_settings))
         menu_main.add_item(MenuItem("Exit", self.main.quit_game))
+
         '''game over menu'''
         menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, item_size)
         menu_game_over.add_item(MenuItem("Collected Gold"))
-        '''save the main menu'''
+
+        '''save the menus'''
         self.game_over = menu_game_over
         self.main_menu = menu_main
+
+        '''show the main menu'''
         self.set_current_menu(self.main_menu)
 
     def set_current_menu(self, new_menu):
