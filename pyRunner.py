@@ -31,6 +31,8 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
+    START_LEVEL = "./resources/levels/scifi.tmx"
+
     def __init__(self):
         """initialize the game"""
         '''important settings'''
@@ -57,7 +59,7 @@ class PyRunner(object):
         self.level = None
         self.physics = None
         self.controller = None
-        self.load_level("./resources/levels/scifi.tmx")
+        self.load_level(self.START_LEVEL)
         '''init the main menu'''
         self.level_exit = False
         self.game_over = False
@@ -169,7 +171,7 @@ class PyRunner(object):
                     if player.is_human:
                         player.reached_exit = True
 
-            self.level_exit = True
+                self.level_exit = True
 
         '''check if all players are still alive'''
         if not any(player.is_human for player in Player.group):
@@ -181,8 +183,8 @@ class PyRunner(object):
                 '''load the next level, recreate the players and bots etc.'''
                 self.load_level(self.level.next_level)
 
-        if self.level_exit and self.game_over:
-            self.game_over_menu()
+        # if not self.level_exit and self.game_over:
+        #    self.game_over_menu()
 
         '''draw the level'''
         rects.append(WorldObject.group.draw(self.level.surface))

@@ -39,9 +39,12 @@ class NetworkConnector(object):
         def start_server():
             """try to start a server"""
             try:
-                self.server = Server(self.port, self.level, self.main)
-                self.master = True
-                self.server.start()
+                if not self.server:
+                    self.server = Server(self.port, self.level, self.main)
+                    self.master = True
+                    self.server.start()
+                else:
+                    self.main.load_level(self.main.START_LEVEL)
             except MastermindErrorSocket:
                 self.server.kill()
                 self.server = None
