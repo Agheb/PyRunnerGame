@@ -6,10 +6,12 @@ from __future__ import division
 import pytmx
 from pytmx.util_pygame import load_pygame
 from .level_objecs import *
+from .player import Player
+import logging
 
+log = logging.getLogger("Level")
 LEVEL_PATH = "./resources/levels/"
 LEVEL_EXT = ".tmx"
-LEVEL_LIST = []
 
 """
 Level Builder for PyRunner game
@@ -32,8 +34,12 @@ class Level(object):
     2. load all tilesheet image
     3. draw layer by layer
     """
+    PLAYER1 = "LRCharacters32.png"
+    PLAYER2 = "LRCharacters32_p2.png"
+    SM_SIZE = 32
 
     levels = []
+    players = []
 
     def __init__(self, surface, path, fps=25):
         self.surface = surface
@@ -169,3 +175,31 @@ class Level(object):
         dirty_rect = self.background.subsurface(sprite.rect)
         self.surface.blit(dirty_rect, sprite.rect)
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
+
+    def add_player(self, pid, pos=None, fps=25):
+        """add a new player"""
+        pid = int(pid)
+
+        if pid % 2 is 0:
+            pos = self.player_1_pos if not pos else pos
+            sheet = self.PLAYER1
+        else:
+            pos = self.player_2_pos if not pos else pos
+            sheet = self.PLAYER2
+
+        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+        Level.players.append(new_player)
+        log.info("Added Player. Players {}".format(Level.players))
+
+    @staticmethod
+    def get_level_info_json():
+        # TODO: finish me
+        a = []
+        for d in Level.players:
+            a.append(d.rect.topleft)
+        data = {'players': a}
+        return data
+
+    @staticmethod
+    def set_level_info_via_json(self, json):
+        pass

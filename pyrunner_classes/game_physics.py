@@ -5,6 +5,10 @@ from __future__ import division
 from .level import *
 from .player import *
 import pygame
+import logging
+import pdb
+
+log = logging.getLogger("Physics")
 
 
 class Physics(object):
@@ -13,7 +17,8 @@ class Physics(object):
     def __init__(self, level, screen):
         self.level = level
         self.surface = screen
-        return
+
+        # TODO: set level id on level id, via level.py or WorldObjects
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -198,9 +203,3 @@ class Physics(object):
                         self.hit_left(player, sprite)
                     elif player.change_x < 0:
                         self.hit_right(player, sprite)
-
-    def get_level_info_json(self):
-        pass
-
-    def set_level_info_via_json(self, json):
-        pass

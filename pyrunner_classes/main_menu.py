@@ -7,8 +7,7 @@ from __future__ import division
 import pygame
 from pygame.locals import *
 from .menu import Menu, MenuItem
-from .constants import *
-from .network_connector import NetworkConnector
+from .level import Level
 
 
 class MainMenu(object):
@@ -41,7 +40,7 @@ class MainMenu(object):
         if key == K_ESCAPE:
             if self.current_menu.parent:
                 self.set_current_menu(self.current_menu.parent)
-            elif not self.main.game_over:
+            elif not self.main.game_over and Level.players:
                 self.show_menu(False)
         elif key == K_RETURN:
             self.current_menu.get_item(self.menu_pos).do_action()
@@ -74,15 +73,16 @@ class MainMenu(object):
         """
         s_width = (self.render_thread.screen.get_width() // 4) * 3
         s_height = (self.render_thread.screen.get_height() // 3) * 2
-        self.surface = surface = pygame.Surface((s_width, s_height), SRCALPHA)
-        h1_size = self.h1_size
-        h2_size = self.h2_size
-        item_size = self.item_size
+        surface = pygame.Surface((s_width, s_height), SRCALPHA)
+        # regular font sizes
+        h1_size = 72
+        h2_size = 48
+        item_size = 36
         '''calculate the ratio to adjust font sizes accordingly'''
-        self.ratio = ratio = Menu.calc_font_size(surface, h1_size, item_size)
-        self.h1_size = h1_size = int(h1_size * ratio)
-        self.h2_size = h2_size = int(h2_size * ratio)
-        self.item_size = item_size = int(item_size * ratio)
+        ratio = Menu.calc_font_size(surface, h1_size, item_size)
+        h1_size = int(h1_size * ratio)
+        h2_size = int(h2_size * ratio)
+        item_size = int(item_size * ratio)
         '''first create the root menu'''
         # noinspection PyTypeChecker
         menu_main = Menu(self, self.config.name, surface, None, h1_size, item_size)
@@ -98,8 +98,8 @@ class MainMenu(object):
         menu_ng_multiplayer = Menu(self, "Multiplayer", surface, menu_new_game, h2_size, item_size)
         menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
         #TODO: Add nice ip input
-        menu_ng_multiplayer.add_item(MenuItem("Start Server",self.network_connector.start_server_prompt))
-        menu_ng_multiplayer.add_item(MenuItem("Network Game", None))
+        menu_ng_multiplayer.add_item(MenuItem("Start Server", self.network_connector.start_server_prompt))
+        menu_ng_multiplayer.add_item(MenuItem("Join Server", self.network_connector.join_server_prompt))
         menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
         # finish top menu with sub menus
         menu_new_game.add_item(MenuItem("Singleplayer", self.set_current_menu, vars=menu_ng_singleplayer))

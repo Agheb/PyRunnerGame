@@ -52,17 +52,15 @@ class PyRunner(object):
         self.render_thread.start()
         self.surface = self.render_thread.screen
         '''init the level and main game physics'''
+        self.network_connector = None
+        self.menu = None
         self.level = None
         self.physics = None
         self.controller = None
-        self.network_connector = NetworkConnector()
         self.load_level("./resources/levels/scifi.tmx")
         '''init the main menu'''
-        self.menu = MainMenu(self, self.network_connector)
         self.level_exit = False
         self.game_over = False
-        self.player_1 = None
-        self.player_2 = None
 
     def load_level(self, path):
         """load another level"""
@@ -72,18 +70,22 @@ class PyRunner(object):
             Player.group.empty()
             WorldObject.group.empty()
             WorldObject.removed.empty()
-            # don't remove the GoldScore.scores as they should stay for a level switch
+        # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.fps)
+
+        if not self.network_connector:
+            self.network_connector = NetworkConnector(self, self.level)
+            self.menu = MainMenu(self, self.network_connector)
+        else:
+            self.network_connector.level = self.level
+
         if self.physics:
             self.physics.level = self.level
         else:
             self.physics = Physics(self.level, self.surface)
-        '''create all players'''
-        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 1, 32, self.level, self.fps)
-        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 2, 32, self.level, self.fps)
         '''and the controller instance'''
-        self.controller = Controller(self, self.config, self.network_connector)
+        self.controller = Controller(self.config, self.network_connector)
         self.game_over = False
 
     def quit_game(self, shutdown=True):
@@ -136,6 +138,8 @@ class PyRunner(object):
 
                 if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
+
+            self.network_connector.update()
 
             clock.tick(self.fps)
 
