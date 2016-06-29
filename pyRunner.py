@@ -159,6 +159,10 @@ class PyRunner(object):
         rects.append(WorldObject.group.draw(self.level.surface))
         self.render_thread.blit(self.level.surface, None, True)
         rects.append(GoldScore.scores.draw(self.surface))
+        for score in GoldScore.scores:
+            if score.child_num and score.updated:
+                print("updated score")
+                rects.append(score.get_rect())
         '''draw the player'''
         rects.append(Player.group.draw(self.surface))
         # rects.append(WorldObject.removed.draw(self.level.surface))

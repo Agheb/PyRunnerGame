@@ -16,6 +16,7 @@ class GoldScore(pygame.sprite.DirtySprite):
         pygame.sprite.DirtySprite.__init__(self, GoldScore.scores)
         self.player = player
         self.gid = self.player.pid
+        self.child_num = False
         self.level = self.player.level
         self.pixel_diff = self.player.pixel_diff
         self.fps = self.player.fps
@@ -121,6 +122,7 @@ class ScoreNumber(pygame.sprite.DirtySprite):
         self.number = number
         self.numbers = self.sprite_sheet.add_animation(0, 0, 10)
         self.changed = True
+        self.updated = True
         self.image = self.numbers[self.number]
         self.rect = self.image.get_rect()
         self.rect.topleft = self.gs.pos
@@ -166,14 +168,15 @@ class ScoreNumber(pygame.sprite.DirtySprite):
         if self.changed:
             if self.number < 10:
                 self.image = self.numbers[self.number]
+
+            '''update state variables'''
+            self.updated = True
             self.changed = False
 
             if self.background_clean:
                 '''blit the score directly to the level surface so it won't have to refresh each frame'''
                 self.draw_clean_background()
                 self.background.blit(self.image, self.pos)
-                print(self.rect)
-                return self.rect
 
         if not self.background_clean:
             '''
@@ -181,8 +184,11 @@ class ScoreNumber(pygame.sprite.DirtySprite):
                 if it's not blitted to the background with a dirty rect
             '''
             self.dirty = 1
-        else:
-            return
+
+    def get_rect(self):
+        """get the rect to update it on the screen"""
+        self.updated = False
+        return self.rect
 
     def kill(self):
         """remove all traces"""
