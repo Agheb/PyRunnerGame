@@ -14,10 +14,12 @@ class Bots(Player):
         # TODO: Spawn the Bot on other side of map
         # TODO: have spawn points in tilemap set for the bots in each level
 
-        # POSITIONAL RELATED
-        self.destination = None
+        self.is_human = False
 
-        # STATE RELATED
+        # POSITIONAL RELATED
+        self.destination = [0, 0]
+
+        # STATEMACHINE RELATED
         # Create instances of each state
         exploring_state = Exploring(self)
         hunting_state = Hunting(self)

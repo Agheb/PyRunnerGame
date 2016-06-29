@@ -6,11 +6,13 @@ Bots are Instances of non_player_characters, inherited from player class.
 """
 import random
 import pygame
+from .player import Player
 
 
 class State(object):
     def __init__(self, name):
         self.name = name
+        self.walking_direction = None
 
     def do_actions(self):
         # Called by the think function in statemachine in each frame.
@@ -32,7 +34,54 @@ class State(object):
         pass
 
     def go_to_destination(self):
+        # check these conditions after x frames:
+        # if destination is right of bot, go_right else go_left
+        # if bot collides right or left with not climbable block, change direction
+        # if destination unter bot and on_ladder, go_down else go_up
+        collision = False
+
+        if not collision:
+            if tuple(self.bot.destination[0]) > tuple(self.bot.get_location[0]):
+                self.bot.go_right
+                self.walking_direction = "right"
+            else:
+                self.bot.go_left
+                self.walking_direction = "left"
+        else:
+            if self.walking_direction == "right":
+                self.bot.go_left
+            else:
+                self.bot.go_right
+
+        if self.bot.get_location != self.bot.destination:
+            if self.bot.destination[1] > self.bot.get_location[1] and self.bot.on_ladder:
+                self.bot.go_down
+            elif self.bot.destination[1] < self.bot.get_location[1] and self.bot.on_ladder:
+                self.bot.go_up
+        else:
+            return "arrived"
+
+    def check_closest_player(self):
+        # TODO determine if player is over or under bot and which player is closest
         pass
+        closest_player = None
+        closest_player_distance = 0
+        pos_x, pos_y = self.rect.topleft
+
+        for player in Player.group:
+            if player.is_human:
+                x, y = player.rect.topleft
+                distance_x = x - pos_x if x < pos_x else pos_x - x
+                distance_y = y - pos_y if y < pos_y else pos_y - y
+                distance = distance_x + distance_y
+
+                if not closest_player:
+                    closest_player = player
+                    closest_player_distance = distance
+                elif distance < closest_player_distance:
+                    closest_player = player
+                    closest_player_distance = distance
+        return closest_player_distance
 
 
 class Stupid(State):
@@ -58,6 +107,7 @@ class Exploring(State):
     def __init__(self, bot):
         State.__init__(self, "exploring")
         self.bot = bot  # set bot this state controlls
+        self.first_call = True
 
     def random_destination(self):
         # TODO Go to Random spot on map
@@ -72,8 +122,11 @@ class Exploring(State):
     def do_actions(self):
         # TODO go towards random destination
         print("bot starts actions")
-        # change direction every 30 calls, so every 30 Frames
-        if random.randint(0, 30) == 1:
+        # Set random destination on first call, then change direction every x calls, so every x Frames
+        if self.first_call:
+            self.random_destination()
+            self.first_call = False
+        elif random.randint(0, 20) == 1:
             self.random_destination()
         self.go_to_destination()
 
@@ -91,17 +144,6 @@ class Exploring(State):
     def exit_actions(self):
         print("bot exit actions")
         return
-
-    def go_to_destination(self):
-        # check these conditions after x frames:
-        # if destination is right of bot, go_right else go_left
-        # if bot collides right or left with not climbable block, change direction
-        # if destination unter bot and on_ladder, go_down else go_up
-        pass
-
-    def check_closest_player(self):
-        # TODO determine if player is over or under bot and which player is closest
-        pass
 
 
 class Hunting(State):
@@ -125,11 +167,4 @@ class Hunting(State):
         pass
 
     def exit_actions(self):
-        pass
-
-    def go_to_destination(self):
-        # check these conditions after x frames:
-        # if destination is right of bot, go_right else go_left
-        # if bot collides right or left with not climbable block, change direction
-        # if destination unter bot and on_ladder, go_down else go_up
         pass

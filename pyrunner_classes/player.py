@@ -24,6 +24,7 @@ class Player(pygame.sprite.DirtySprite):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.tile_size = tile_size
         self.fps = fps
+        self.is_human = True
         # positional attributes
         self.x, self.y = pos
         self.on_ground = False
@@ -250,5 +251,5 @@ class Player(pygame.sprite.DirtySprite):
         self.killed = True
 
     def get_location(self):
-        location = self.rect.topleft
-        return location
+        (x, y) = self.rect.topleft
+        return (x, y)
