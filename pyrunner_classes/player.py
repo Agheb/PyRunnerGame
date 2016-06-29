@@ -148,6 +148,7 @@ class Player(pygame.sprite.DirtySprite):
             if self.change_y < self.speed:
                 '''don't let the player slow down while falling by pressing the down key again'''
                 self.direction = "UD"
+                self.rect.y += self.speed
                 self.change_y = self.speed
         if self.on_rope:
             self.rect.y += self.speed * 2
