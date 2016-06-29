@@ -79,9 +79,6 @@ class PyRunner(object):
             self.physics.level = self.level
         else:
             self.physics = Physics(self.level, self.surface)
-        '''create all players'''
-        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 1, 32, self.level, self.fps)
-        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 2, 32, self.level, self.fps)
         '''and the controller instance'''
         self.controller = Controller(self, self.config, self.network_connector)
         self.game_over = False

@@ -10,19 +10,15 @@ import pdb
 
 log = logging.getLogger("Physics")
 
+
 class Physics(object):
     """physics"""
-    players = []
-        #TODO: set level id on level id, via level.py or WorldObjects 
-        return
-    
-    def add_player(self, center = 'dont_set'):
-        newPlayer = Player()
-        if center != 'dont_set':
-            newPlayer.rect.center = center
-        Physics.players.append(newPlayer)
-        playerGroup.add(newPlayer)
-        log.info("Added Player. Players {}".format(Physics.players))
+
+    def __init__(self, level, screen):
+        self.level = level
+        self.surface = screen
+
+        # TODO: set level id on level id, via level.py or WorldObjects
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -211,8 +207,9 @@ class Physics(object):
     def get_level_info_json(self):
         #TODO: finish me
         a = []
-        for d in Physics.players: a.append(d.rect.center)
-        data = {'players' : a}
+        for d in Level.players:
+            a.append(d.rect.topleft)
+        data = {'players': a}
         return data
 
     def set_level_info_via_json(self, json):

@@ -7,8 +7,6 @@ from __future__ import division
 import pygame
 from pygame.locals import *
 from .menu import Menu, MenuItem
-from .constants import *
-from .network_connector import NetworkConnector
 
 
 class MainMenu(object):
@@ -66,6 +64,7 @@ class MainMenu(object):
             elif name == "Sounds":
                 self.switch_audio_volume((2, 1))
 
+        """
         Cave: menus need to be saved in the reverse order (bottom to top) so that
               the top menus contain all up to date sub-menu objects
         """
