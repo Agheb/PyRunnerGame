@@ -17,8 +17,8 @@ class Physics(object):
         self.render_thread = render_thread
         self.surface = self.render_thread.screen
         self.level = level
-        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
-        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 32, self.level.pixel_diff)
+        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 1, 32, self.level)
+        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 2, 32, self.level)
         gold_y = self.level.height - self.level.tile_height + self.level.margin_top
         margin = self.level.margin_left
         # self.player_1_gold = GoldScore(self.player_1, (0 + margin, gold_y))
@@ -162,7 +162,7 @@ class Physics(object):
                 # sprite.dirty = 1
                 # collect gold and remove the sprite
                 if sprite.collectible and not sprite.killed:
-                    player.gold_count += 1
+                    player.add_gold()
                     # clear the item
                     # self.level.clean_sprite(sprite)
                     # and remove it

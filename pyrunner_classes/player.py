@@ -18,11 +18,13 @@ class Player(pygame.sprite.DirtySprite):
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
 
-    def __init__(self, pos, sheet, tile_size=32, pixel_diff=0, bot=False, fps=25):
+    def __init__(self, pos, sheet, pid=1, tile_size=32, level=None, bot=False, fps=25):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
+        self.pid = pid
         self.tile_size = tile_size
-        self.pixel_diff = pixel_diff
-        self.size = self.tile_size + pixel_diff
+        self.level = level
+        self.pixel_diff = self.level.pixel_diff if self.level else 0
+        self.size = self.tile_size + self.pixel_diff
         self.fps = fps
         # positional attributes
         self.x, self.y = pos
@@ -35,8 +37,9 @@ class Player(pygame.sprite.DirtySprite):
         self.change_y = 0
         self.speed = self.size // 10 * 2
         # score related
-        self.gold_score = GoldScore(self, (0, 0))
-        self.gold_count = 0
+        self.score_left = True if self.pid % 2 else False
+        self.score_up = True if self.pid <= 2 else False
+        self.gold_score = GoldScore(self)
         # lists holding the image for movement. Up and down movement uses the same sprites.
         self.spawn_frames = []
         self.walking_frames_l = []
@@ -46,7 +49,7 @@ class Player(pygame.sprite.DirtySprite):
         self.hanging_frames_l = []
         self.hanging_frames_r = []
         self.death_frames = []
-        self.sprite_sheet = SpriteSheet(sheet, self.tile_size, pixel_diff, self.fps)
+        self.sprite_sheet = SpriteSheet(sheet, self.tile_size, self.pixel_diff, self.fps)
         self.spawning = True
         self.spawn_frame = 0
         self.killed = False
@@ -321,3 +324,17 @@ class Player(pygame.sprite.DirtySprite):
     def kill(self):
         """kill animation"""
         self.killed = True
+
+    @property
+    def gold(self):
+        """returns the players gold"""
+        return self.gold_score.gold
+
+    @gold.setter
+    def gold(self, amount):
+        """set the gold value of this player to amount"""
+        self.gold_score.gold = amount
+
+    def add_gold(self):
+        """increase the gold count by 1"""
+        self.gold_score.gold += 1
