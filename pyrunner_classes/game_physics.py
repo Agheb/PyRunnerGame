@@ -1,16 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
 from .player import *
 import pygame
+import logging
+import pdb
+
+log = logging.getLogger("Physics")
 
 GRAVITY = 1
 MULTIPLICATOR = 1
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
-
 
 worldGroup = pygame.sprite.LayeredDirty()
 playerGroup = pygame.sprite.LayeredDirty()
@@ -18,46 +20,67 @@ playerGroup = pygame.sprite.LayeredDirty()
 
 class Physics(object):
     """physics"""
-
-    def __init__(self, render_thread):
+    players = []
+    def __init__(self, surface, background):
         self.gravity = GRAVITY
-        self.render_thread = render_thread
+        self.surface = surface
+        self.background = background
         #TODO: set level id on level id, via level.py or WorldObjects 
         self.level_id = 0
-        self.players = []
         return
-    def add_player(self):
+    
+    def add_player(self, center = 'dont_set'):
         newPlayer = Player()
-        self.players.append(newPlayer)
+        if center != 'dont_set':
+            newPlayer.rect.center = center
+        Physics.players.append(newPlayer)
         playerGroup.add(newPlayer)
+        log.info("Added Player. Players {}".format(Physics.players))
+
     def update(self):
         """updates all physics components"""
-        #TODO: pass sprites to render thread
-        screen = self.render_thread.screen
-        background = self.render_thread.bg_surface
+        # TODO: pass sprites to render thread
         rects = []
-        rects.append(playerGroup.draw(screen))
-        rects.append(worldGroup.draw(screen))
+        rects.append(playerGroup.draw(self.surface))
+        rects.append(worldGroup.draw(self.surface))
+
         playerGroup.update()
         self.collide()
-        self.render_thread.refresh_screen(rects)
-        playerGroup.clear(screen, background)
-        worldGroup.clear(screen, background)
-        return
+
+        playerGroup.clear(self.surface, self.background)
+        worldGroup.clear(self.surface, self.background)
+        return rects
+
+    def check_world_boundaries(self, player):
+        """make sure the player stays on the screen"""
+        width, height = self.surface.get_size()
+        width -= TILE_WIDTH
+        height -= TILE_HEIGHT
+
+        if player.rect.y > height:
+            player.rect.y = height
+        elif player.rect.y < 0:
+            player.rect.y = 0
+        if player.rect.x > width:
+            player.rect.x = width
+        elif player.rect.x < 0:
+            player.rect.x = 0
 
     def collide(self):
         """calculates collision for players and sprites"""
-        #TODO: add head collide
+        # TODO: add head collide
         col = pygame.sprite.groupcollide(playerGroup, worldGroup, False, False)
         if len(col) > 0:
-            #some collision
-            for playerObj in col.keys():
-                for sprite in col[playerObj]:
+            # some collision
+            for player in col.keys():
+                for sprite in col[player]:
                     if sprite.climbable:
-                        playerObj.on_ladder = True
+                        if player.change_x is not 0:
+                            self.stop_horizontal_movement(player)
+                        player.on_ladder = True
                     else:
-                        #collision at feet
-                        self.fix_pos(playerObj, sprite)
+                        # collision at feet
+                        self.fix_pos(player, sprite)
                         """
                         else:
                           print("right %s" %sprite.rect.collidepoint(playerObj.rect.bottomright))
@@ -66,21 +89,50 @@ class Physics(object):
                           print(sprite.rect.collidepoint(playerObj.rect.topleft))"""
         else:
             for player in playerGroup:
+                self.check_world_boundaries(player)
                 player.on_ground = False
                 player.on_ladder = False
+                player.on_rope = False
+
+        return col
 
     @staticmethod
-    def fix_pos(player, sprite):
-        """Used tp place the player nicely"""
-        player.on_ground = True
-        player.rect.y = sprite.rect.y - player.rect.height - 1
+    def stop_horizontal_movement(player):
+        """stop left/right movement"""
+        if player.change_x < 0:
+            player.change_x += 0.1
+        elif player.change_x > 0:
+            player.change_x -= 0.1
+
+    def fix_pos(self, player, sprite):
+        """Used to place the player nicely"""
+        # if player.rect.y > sprite.rect.y - player.rect.height:
+        #    player.rect.y = sprite.rect.y - player.rect.height
+        if sprite.solid:
+            if player.rect.left is not sprite.rect.right or player.rect.right is not sprite.rect.left:
+                    if player.change_y > 0:
+                        '''player hits the ground'''
+                        player.rect.bottom = sprite.rect.top
+                        player.change_y = 0
+                        player.on_ground = True
+                    elif player.change_y < 0:
+                        '''player hits sprite from below'''
+                        player.rect.top = sprite.rect.bottom
+                        self.stop_horizontal_movement(player)
+            elif player.rect.bottom is not sprite.rect.top:
+                if player.change_x > 0:
+                    '''player hits the left side'''
+                    player.rect.right = sprite.rect.left
+                    player.change_x = 0
+                elif player.change_x < 0:
+                    '''player hits the right side'''
+                    player.rect.left = sprite.rect.right
+                    player.change_x = 0
 
     def get_level_info_json(self):
-        #TODO: finish me, players cant be send using json, maybe just send info, or create new object
-        #data = {'players':self.players, 'level_id':self.level_id}
-        #this is just a placeholder:
+        #TODO: finish me
         a = []
-        for d in self.players: a.append(self.players.rect)
+        for d in Physics.players: a.append(d.rect.center)
         data = {'players' : a}
         return data
 
@@ -92,15 +144,17 @@ class Physics(object):
 class WorldObject(pygame.sprite.DirtySprite):
     """Base class for Generic world objects"""
 
-    def __init__(self, tile, climbable=False):
+    def __init__(self, tile, solid=True, climbable=False, climbable_horizontal=False):
         """world object item"""
         (pos_x, pos_y, self.image) = tile
         pygame.sprite.DirtySprite.__init__(self, worldGroup)
         self.rect = self.image.get_rect()
         self.rect.x = pos_x * TILE_WIDTH
         self.rect.y = pos_y * TILE_HEIGHT
+        self.solid = solid
         self.climbable = climbable
+        self.climbable_horizontal = climbable_horizontal
 
     def update(self):
         """update world objects"""
-        pass
+        self.dirty = 1

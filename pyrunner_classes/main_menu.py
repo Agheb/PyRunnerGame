@@ -20,7 +20,7 @@ class MainMenu(object):
         self.render_thread = self.main.render_thread
         self.network_connector = network_connector
         self.music_thread = self.main.music_thread
-        self.bg_image = self.main.bg_image
+        self.bg_image = self.main.bg_surface
         self.menu_pos = 1
         self.in_menu = True
         self.current_menu = None

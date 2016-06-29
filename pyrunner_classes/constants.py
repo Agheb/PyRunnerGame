@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#c!/usr/bin/python
 # -*- coding: utf-8 -*-
 """constants used in multiple classes of this game"""
 
