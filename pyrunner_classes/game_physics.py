@@ -10,9 +10,9 @@ import pygame
 class Physics(object):
     """physics"""
 
-    def __init__(self, level):
+    def __init__(self, level, screen):
         self.level = level
-        self.surface = self.level.surface
+        self.surface = screen
         return
 
     def check_world_boundaries(self, player):
