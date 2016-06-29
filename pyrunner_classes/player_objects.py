@@ -16,6 +16,7 @@ class GoldScore(pygame.sprite.DirtySprite):
         pygame.sprite.DirtySprite.__init__(self, GoldScore.scores)
         self.player = player
         self.gid = self.player.pid
+        self.child_num = False
         self.level = self.player.level
         self.pixel_diff = self.player.pixel_diff
         self.fps = self.player.fps
@@ -121,6 +122,7 @@ class ScoreNumber(pygame.sprite.DirtySprite):
         self.number = number
         self.numbers = self.sprite_sheet.add_animation(0, 0, 10)
         self.changed = True
+        self.updated = True
         self.image = self.numbers[self.number]
         self.rect = self.image.get_rect()
         self.rect.topleft = self.gs.pos
@@ -159,6 +161,7 @@ class ScoreNumber(pygame.sprite.DirtySprite):
     def draw_clean_background(self):
         """clear the background of the sprite"""
         self.background.blit(self.background_clean, self.pos)
+        return self.background_clean.get_rect()
 
     def update(self):
         """show number"""
@@ -166,19 +169,27 @@ class ScoreNumber(pygame.sprite.DirtySprite):
             if self.number < 10:
                 self.image = self.numbers[self.number]
 
+            '''update state variables'''
             self.changed = False
 
             if self.background_clean:
                 '''blit the score directly to the level surface so it won't have to refresh each frame'''
                 self.draw_clean_background()
                 self.background.blit(self.image, self.pos)
+                '''only update this value if we use dirty rects instead of dirty sprites'''
+                self.updated = True
 
-        if not self.background:
+        if not self.background_clean:
             '''
                 this frame should be rendered permanently
                 if it's not blitted to the background with a dirty rect
             '''
             self.dirty = 1
+
+    def get_rect(self):
+        """get the rect to update it on the screen - only needed if dirty rects are used"""
+        self.updated = False
+        return self.rect
 
     def kill(self):
         """remove all traces"""
