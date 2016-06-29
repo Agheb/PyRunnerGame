@@ -18,7 +18,7 @@ class Player(pygame.sprite.DirtySprite):
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
 
-    def __init__(self, pos, sheet, pid=1, tile_size=32, level=None, bot=False, fps=25):
+    def __init__(self, pos, sheet, pid=1, tile_size=32, level=None, fps=25, bot=False):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
         self.pid = pid
         self.tile_size = tile_size
@@ -36,11 +36,6 @@ class Player(pygame.sprite.DirtySprite):
         self.change_x = 0
         self.change_y = 0
         self.speed = self.size // 10 * 2
-        # score related
-        self.score_left = True if self.pid % 2 else False
-        self.score_up = True if self.pid <= 2 else False
-        self.gold_score = GoldScore(self)
-        self.reached_exit = False
         # lists holding the image for movement. Up and down movement uses the same sprites.
         self.spawn_frames = []
         self.walking_frames_l = []
@@ -62,7 +57,14 @@ class Player(pygame.sprite.DirtySprite):
         self.stop_at_y = 0
         self.is_human = False if bot else True
 
-        if not bot:
+        if True:
+            # score related
+            self.score_left = True if self.pid % 2 else False
+            self.score_up = True if self.pid <= 2 else False
+            self.gold_score = GoldScore(self)
+            self.reached_exit = False
+
+            # animations
             self.digging_frames_l = []
             self.digging_frames_r = []
 

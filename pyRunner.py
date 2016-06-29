@@ -37,13 +37,14 @@ class PyRunner(object):
         self.game_is_running = True
         # initialize the settings
         self.config = MainConfig()
+        self.fps = self.config.fps
         '''init the audio subsystem prior to anything else'''
         self.music_thread = MusicMixer(self.config.play_music, self.config.vol_music,
-                                       self.config.play_sfx, self.config.vol_sfx, self.config.fps)
+                                       self.config.play_sfx, self.config.vol_sfx, self.fps)
         self.music_thread.background_music = ('time_delay.wav', 1)
         self.music_thread.start()
         '''init the main screen'''
-        self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.config.fps,
+        self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.fps,
                                           self.config.fullscreen, self.config.switch_resolution)
         self.render_thread.fill_screen(BACKGROUND)
         self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
@@ -58,8 +59,8 @@ class PyRunner(object):
         self.network_connector = NetworkConnector()
         self.menu = MainMenu(self, self.network_connector)
         '''create all players'''
-        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 1, 32, self.level)
-        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 2, 32, self.level)
+        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 1, 32, self.level, self.fps)
+        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 2, 32, self.level, self.fps)
         '''and the controller instance'''
         self.controller = Controller(self, self.config, self.network_connector)
         self.level_exit = False
@@ -67,7 +68,7 @@ class PyRunner(object):
 
     def load_level(self, levelnumber):
         """load another level"""
-        self.level = Level(self.bg_surface, levelnumber)
+        self.level = Level(self.bg_surface, levelnumber, self.fps)
         self.physics = Physics(self.level)
 
     def quit_game(self, shutdown=True):
@@ -120,7 +121,7 @@ class PyRunner(object):
 
                 if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
-            clock.tick(self.config.fps)
+            clock.tick(self.fps)
 
     def render_game(self):
         """render all game related content"""
@@ -138,7 +139,8 @@ class PyRunner(object):
 
         '''check if all gold got collected and spawn a exit gate if there's none left'''
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
-            self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
+            self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff,
+                                       self.fps)
             self.level_exit = True
         '''check if all players are still alive'''
         if not any(player.is_human for player in Player.group):

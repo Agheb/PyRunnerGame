@@ -34,8 +34,9 @@ class Level(object):
     3. draw layer by layer
     """
 
-    def __init__(self, surface, level_number=0):
+    def __init__(self, surface, level_number=0, fps=25):
         self.level_id = level_number
+        self.fps = fps
         self.tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         self.tm_width = self.tm.width * self.tile_width
@@ -121,6 +122,7 @@ class Level(object):
                 removable = check_property(layer, 'removable')
                 solid = check_property(layer, 'solid')
                 width, height = self.tile_width, self.tile_height
+                fps = self.fps
 
                 '''create the sprites'''
                 for a in layer.tiles():
@@ -134,15 +136,15 @@ class Level(object):
                     a = pos_x, pos_y, image
 
                     if ladder:
-                        Ladder(a, size, solid)
+                        Ladder(a, size, fps, solid)
                     elif rope:
-                        Rope(a, size)
+                        Rope(a, size, fps)
                     elif gold:
-                        Collectible(a, size)
+                        Collectible(a, size, fps)
                     elif removable:
-                        WorldObject(a, size, solid, removable)
+                        WorldObject(a, size, fps, solid, removable)
                     elif solid:
-                        WorldObject(a, size, solid)
+                        WorldObject(a, size, fps, solid)
 
                     if layer.name == "Background":
                         '''create a blank copy of the background layer'''

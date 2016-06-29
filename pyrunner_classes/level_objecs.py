@@ -12,11 +12,12 @@ class WorldObject(pygame.sprite.DirtySprite):
     group = pygame.sprite.LayeredDirty(default_layer=0)
     removed = pygame.sprite.LayeredDirty(default_layer=0)
 
-    def __init__(self, tile, size, solid=True, removable=False, restoring=False):
+    def __init__(self, tile, size, fps=25, solid=True, removable=False, restoring=False):
         """world object item"""
         pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
         self.tile = tile
         self.size = size
+        self.fps = fps
         self.width, self.height = self.size
         self.pos_x, self.pos_y, self.image_backup = self.tile
         self.rect = self.image_backup.get_rect()
@@ -73,7 +74,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         """remove this sprite"""
         if self.removable or self.collectible:
             if not self.killed and self.removable:
-                RemovedBlock(self.tile, self.rect.size, 4)
+                RemovedBlock(self.tile, self.rect.size, 4, self.fps)
             self.killed = True
         else:
             self.super_kill()
@@ -86,39 +87,39 @@ class WorldObject(pygame.sprite.DirtySprite):
 class Ladder(WorldObject):
     """climbable ladder"""
 
-    def __init__(self, tile, size, solid=False):
-        WorldObject.__init__(self, tile, size, solid)
+    def __init__(self, tile, size, fps, solid=False):
+        WorldObject.__init__(self, tile, size, fps, solid)
         self.climbable = True
 
 
 class Rope(WorldObject):
     """hangable rope"""
-    def __init__(self, tile, size):
-        WorldObject.__init__(self, tile, size)
+    def __init__(self, tile, size, fps):
+        WorldObject.__init__(self, tile, size, fps)
         self.climbable_horizontal = True
 
 
 class Collectible(WorldObject):
     """collectible gold"""
-    def __init__(self, tile, size):
-        WorldObject.__init__(self, tile, size)
+    def __init__(self, tile, size, fps):
+        WorldObject.__init__(self, tile, size, fps)
         self.collectible = True
 
 
 class RemovedBlock(pygame.sprite.DirtySprite):
     """store values of removed blocks to restore them later on"""
-    def __init__(self, tile, size, time_out, fps=25):
+    def __init__(self, tile, size, fps=25, time_out=1):
         pygame.sprite.DirtySprite.__init__(self, WorldObject.removed)
         self.tile = tile
         self.size = size
+        self.fps = fps
+        self.time_out = time_out
         self.width, self.height = self.size
         self.pos_x, self.pos_y, self.restore_image = self.tile
         self.image = pygame.Surface(size, SRCALPHA)
         self.rect = self.image.get_rect()
         self.rect.x = self.pos_x
         self.rect.y = self.pos_y
-        self.time_out = time_out
-        self.fps = fps
         self.counter = 0
         self.trapped = False
 
@@ -132,7 +133,7 @@ class RemovedBlock(pygame.sprite.DirtySprite):
 
     def restore(self):
         """recreate a sprite with the same values"""
-        return WorldObject(self.tile, self.size, True, True, True)
+        return WorldObject(self.tile, self.size, self.fps, True, True, True)
 
 
 class ExitGate(WorldObject):
