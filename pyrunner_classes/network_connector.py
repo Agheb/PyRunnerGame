@@ -1,46 +1,75 @@
-import threading, os, sys, logging
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# Python 2 related fixes
+from __future__ import division
+import threading
+import logging
 from pprint import pprint
 import pdb
 from .controller import Controller
 from datetime import datetime
 import json
+from Mastermind import *
+
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,parentdir) 
-from Mastermind import *
 
 
 netlog = logging.getLogger("Network")
 srvlog = netlog.getChild("Server")
 clientlog = netlog.getChild("Client")
 
+
 class NetworkConnector():
+    """the main network class"""
+
     COMPRESSION = None
-    
+    START_PORT = 6799
+
     def __init__(self, level):
         self.ip = "localhost"
         self.level = level
-        self.port = 6799
+        self.port = self.START_PORT
         self.client = None
         self.server = None
 
     def start_server_prompt(self):
-        self.server = Server(self.port, self.level)
-        self.master = True
-        self.server.start()
+        """starting the network server"""
+
+        def start_server():
+            """try to start a server"""
+            try:
+                self.server = Server(self.port, self.level)
+                self.master = True
+                self.server.start()
+            except:
+                if self.port < self.START_PORT + 10:
+                    self.port += 1
+                    start_server()
+
+        start_server()
 
     def join_server_prompt(self):
-        self.master = False
-        #self.ip = input("Please enter an ip to connect to: ")
-        self.client = Client("localhost", self.port, self.level)
-        self.client.start()
+
+        def join_server():
+            try:
+                self.master = False
+                #self.ip = input("Please enter an ip to connect to: ")
+                self.client = Client("localhost", self.port, self.level)
+                self.client.start()
+            except:
+                raise
+
+        join_server()
 
     def update(self):
-        if self.client != None:
+        if self.client:
             self.client.update()
 
 
 class Client(threading.Thread, MastermindClientTCP):
 
+    """the network client"""
     def __init__(self, ip, port, level):
         self.port = port
         self.level = level
@@ -49,18 +78,20 @@ class Client(threading.Thread, MastermindClientTCP):
         self.daemon = True
         MastermindClientTCP.__init__(self)
         self.timer = datetime.now() #timer for the keep Alive
+        self.player_id = 0
+        self.connected = False
 
     def send_key(self, key):
         clientlog.info("Sending key Action %s to server" % key)
-        data = json.dumps({'type': 'key_update','data':str(key)})
+        data = json.dumps({'type': 'key_update', 'data': str(key)})
         self.send(data, compression = NetworkConnector.COMPRESSION)
 
     def run(self):
-        clientlog.info("Connecting to ip %s" %str(self.target_ip))
-        self.connect(self.target_ip,self.port)
+        clientlog.info("Connecting to ip %s" % str(self.target_ip))
+        self.connect(self.target_ip, self.port)
         clientlog.info("Client connecting, waiting for initData")
         self.connected = True
-        self.waitForInitData()
+        self.wait_for_init_data()
 
     def get_last_command(self):
         #for now, maybe we need non blocking later
@@ -71,41 +102,51 @@ class Client(threading.Thread, MastermindClientTCP):
             clientlog.info("got key_update from server")
             return data['data'], data['player_id']
 
-    def waitForInitData(self):
-        initData_raw = self.receive(True)
-        data = json.loads(initData_raw)
+    def wait_for_init_data(self):
+        """start the server and wait for players to connect"""
+        init_data_raw = self.receive(True)
+        data = json.loads(init_data_raw)
         if data['type'] == 'init':
             clientlog.info("Client got init Data, creating new Player") 
             contents = data['data']
             self.player_id = contents['player_id']
+
             for pl_center in contents['players']:
-                #add the others
-                self.level.add_player(contents.index(pl_center), pl_center)
-            #add ourself
+                try:
+                    pid = int(pl_center.index('player_id'))
+                except ValueError:
+                    pid = 2
+                # add the others
+                self.level.add_player(pid, pl_center)
+            # add ourself
             self.level.add_player(self.player_id)
 
-            #tell the server that the client is init
+            # tell the server that the client is init
             self.send_init_success()
         else:
             raise Exception('Did not get init as first Package') 
 
     def send_init_success(self):
-        data = json.dumps({'type':'init_succ','player_id':self.player_id})
+        """let the server know the connection succeeded"""
+        data = json.dumps({'type': 'init_succ', 'player_id': self.player_id})
         self.send(data, compression = NetworkConnector.COMPRESSION)
 
     def kill(self):
+        """stop the server"""
         self.disconnect()
         self.connected = False
 
     def update(self):
-        self.sendKeepAlive()
+        """run the server"""
+        self.send_keep_alive()
         raw_data = self.receive(False)
-        if raw_data != None:
+
+        if raw_data:
             data = json.loads(raw_data)
             clientlog.info("Got data from server: {}".format(str(data)))
             if data['type'] == 'key_update':
                 clientlog.info("got key_update from server")
-                Controller.do_action(data['data'],data['player_id'])
+                Controller.do_action(data['data'], data['player_id'])
             if data['type'] == 'init_succ':
                 clientlog.info("got init succ")
                 try:
@@ -113,19 +154,18 @@ class Client(threading.Thread, MastermindClientTCP):
                 except IndexError:
                     self.level.add_player()
 
-    def sendKeepAlive(self):
-        #send keep alive if last was x seconds ago
+    def send_keep_alive(self):
+        """send keep alive if last was x seconds ago"""
         if (datetime.now() - self.timer).seconds > 4:
             data = json.dumps({'type': 'keep_alive'})
             self.send(data, compression = NetworkConnector.COMPRESSION)
             self.timer = datetime.now()
         pass
-        
-
 
 
 class Server(threading.Thread, MastermindServerTCP):
 
+    """main network server"""
     def __init__(self, port, level):
         self.port = port
         self.level = level
@@ -185,7 +225,7 @@ class Server(threading.Thread, MastermindServerTCP):
             if client != connection_object:
                 self.callback_client_send(client, data)
         
-        return super(MastermindServerTCP,self).callback_connect_client(connection_object)
+        return super(MastermindServerTCP, self).callback_connect_client(connection_object)
 
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
@@ -200,9 +240,9 @@ class Server(threading.Thread, MastermindServerTCP):
         self.disconnect()
 
     def run(self):
-        self.connect("localhost",self.port)
+        self.connect("localhost", self.port)
         self.accepting_allow()
-        srvlog.info("server started and accepting connections")
+        srvlog.info("server started and accepting connections on port %s" % self.port)
 
     def callback_disconnect(self):
         srvlog.info("Server disconnected from network")

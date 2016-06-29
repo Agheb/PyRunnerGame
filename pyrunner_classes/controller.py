@@ -14,11 +14,13 @@ class Action():
     DIG_LEFT = "dig_left"
     DIG_RIGHT = "dig_right"
 
-class Controller():
+
+class Controller(object):
 
     """player controls manager"""
 
     def __init__(self, config, network_connector):
+        """initialize the controller class"""
         '''
         self.player_1 = level.player_1
         self.player_2 = level.player_2
@@ -27,6 +29,7 @@ class Controller():
         '''
         self.network_connector = network_connector
         self.config = config
+        self.current_action = None
         '''only stop player if movement key got released'''
         '''
         self.player_1_movements.append(self.config.p1_left)
@@ -50,15 +53,10 @@ class Controller():
             self.current_action = Action.UP
         elif key == self.config.p1_down:
             self.current_action = Action.DOWN
-        # TODO actions for both players
         elif key == self.config.p1_action_l:
-            # self.player1.dig_left()
             self.current_action = Action.DIG_LEFT
-            print("Player 1 digs left")
         elif key == self.config.p1_action_r:
-            # self.player1.dig_right()
             self.current_action = Action.DIG_RIGHT
-            print("Player 1 digs right")
         elif key == self.config.p1_interact:
             print("Player 1 interacts")
         elif key == self.config.p1_taunt:
@@ -99,13 +97,18 @@ class Controller():
         self.network_connector.client.send_key(Action.STOP)
 
     @staticmethod
-    def do_action(action, playerNum):
-        playerNum = int(playerNum)
+    def do_action(action, player_num):
+        """perform an action for each player"""
+        player_num = int(player_num)
         if action == Action.LEFT:
-            Level.players[playerNum].go_left()
+            Level.players[player_num].go_left()
         elif action == Action.RIGHT:
-            Level.players[playerNum].go_right()
+            Level.players[player_num].go_right()
         elif action == Action.UP:
-            Level.players[playerNum].go_up()
+            Level.players[player_num].go_up()
+        elif action == Action.DIG_LEFT:
+            Level.players[player_num].dig_left()
+        elif action == Action.DIG_RIGHT:
+            Level.players[player_num].dig_right()
         elif action == Action.STOP:
-            Level.players[playerNum].schedule_stop()
+            Level.players[player_num].schedule_stop()
