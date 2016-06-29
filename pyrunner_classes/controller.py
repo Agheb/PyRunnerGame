@@ -101,17 +101,19 @@ class Controller(object):
     def do_action(action, player_num):
         """perform an action for each player"""
         player_num = int(player_num)
-        if action == Action.LEFT:
-            Level.players[player_num].go_left()
-        elif action == Action.RIGHT:
-            Level.players[player_num].go_right()
-        elif action == Action.UP:
-            Level.players[player_num].go_up()
-        elif action == Action.DOWN:
-            Level.players[player_num].go_down()
-        elif action == Action.DIG_LEFT:
-            Level.players[player_num].dig_left()
-        elif action == Action.DIG_RIGHT:
-            Level.players[player_num].dig_right()
-        elif action == Action.STOP:
-            Level.players[player_num].stop_on_ground = True
+
+        if player_num < len(Level.players):
+            if action == Action.LEFT:
+                Level.players[player_num].go_left()
+            elif action == Action.RIGHT:
+                Level.players[player_num].go_right()
+            elif action == Action.UP:
+                Level.players[player_num].go_up()
+            elif action == Action.DOWN:
+                Level.players[player_num].go_down()
+            elif action == Action.DIG_LEFT:
+                Level.players[player_num].dig_left()
+            elif action == Action.DIG_RIGHT:
+                Level.players[player_num].dig_right()
+            elif action == Action.STOP:
+                Level.players[player_num].stop_on_ground = True

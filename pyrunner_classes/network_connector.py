@@ -120,7 +120,7 @@ class Client(threading.Thread, MastermindClientTCP):
         if data['type'] == 'init':
             clientlog.info("Client got init Data, creating new Player") 
             contents = data['data']
-            self.player_id = contents['player_id'] 
+            self.player_id = contents['player_id']
 
             for pl_center in contents['players']:
                 try:
@@ -141,7 +141,7 @@ class Client(threading.Thread, MastermindClientTCP):
     def send_init_success(self):
         """let the server know the connection succeeded"""
         data = json.dumps({'type': 'init_succ', 'player_id': self.player_id})
-        self.send(data, compression = NetworkConnector.COMPRESSION)
+        self.send(data, compression=NetworkConnector.COMPRESSION)
 
     def kill(self):
         """stop the server"""
