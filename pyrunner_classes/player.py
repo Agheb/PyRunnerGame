@@ -248,3 +248,7 @@ class Player(pygame.sprite.DirtySprite):
     def kill(self):
         """kill animation"""
         self.killed = True
+
+    def get_location(self):
+        location = self.rect.topleft
+        return location
