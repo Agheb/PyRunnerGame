@@ -15,6 +15,7 @@ class GoldScore(pygame.sprite.DirtySprite):
     def __init__(self, player):
         pygame.sprite.DirtySprite.__init__(self, GoldScore.scores)
         self.player = player
+        self.gid = self.player.pid
         self.level = self.player.level
         self.pixel_diff = self.player.pixel_diff
         self.fps = self.player.fps

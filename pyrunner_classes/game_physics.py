@@ -6,68 +6,14 @@ from .level import *
 from .player import *
 import pygame
 
-GRAVITY = 1
-
 
 class Physics(object):
     """physics"""
 
-    def __init__(self, render_thread, level):
-        self.gravity = GRAVITY
-        self.render_thread = render_thread
-        self.surface = self.render_thread.screen
+    def __init__(self, level):
         self.level = level
-        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 1, 32, self.level)
-        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 2, 32, self.level)
-        self.level_exit = False
-        self.game_over = False
+        self.surface = self.level.surface
         return
-
-    def update(self):
-        """updates all physics components"""
-        # pass all changed sprites to the render thread
-        rects = []
-
-        WorldObject.group.update()
-        WorldObject.removed.update()
-        GoldScore.scores.update()
-        Player.group.update()
-
-        '''check if all gold got collected and spawn a exit gate if there's none left'''
-        if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
-            self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
-            self.level_exit = True
-        '''check if all players are still alive'''
-        if not any(player.is_human for player in Player.group):
-            if self.level.next_level is None or not self.level_exit:
-                '''show the game over menu with player gold scores'''
-                self.game_over = True
-            else:
-                '''load the next level, recreate the players and bots etc.'''
-                # next level full path = self.level.next_level
-                # TODO load next level, restore players gold if they made it to the exit
-                # TODO respawn second player if he didn't make it with 0 gold
-                # TODO switch music according to level atmosphere/setting
-                pass
-
-        # check for collisions
-        self.collide_rect()
-
-        '''draw the level'''
-        rects.append(WorldObject.group.draw(self.level.surface))
-        self.render_thread.blit(self.level.surface, None, True)
-        rects.append(GoldScore.scores.draw(self.surface))
-        '''draw the player'''
-        rects.append(Player.group.draw(self.surface))
-        # rects.append(WorldObject.removed.draw(self.level.surface))
-
-        '''clean up the dirty background'''
-        Player.group.clear(self.surface, self.level.surface)
-        WorldObject.group.clear(self.surface, self.level.background)
-        # WorldObject.removed.clear(self.surface, self.level.background)
-        GoldScore.scores.clear(self.surface, self.level.surface)
-        # return the changed items
-        return rects
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -92,7 +38,7 @@ class Physics(object):
                 return sprite
         return None
 
-    def collide_rect(self):
+    def check_collisions(self):
         """calculates collision for players and sprites using the rectangles of the sprites"""
         for player in Player.group:
             # check if the player is still on the screen
