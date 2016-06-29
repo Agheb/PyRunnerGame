@@ -176,16 +176,31 @@ class Level(object):
         self.surface.blit(dirty_rect, sprite.rect)
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
 
-    def add_player(self, id, pos=None, fps=25):
+    def add_player(self, pid, pos=None, fps=25):
         """add a new player"""
-        if not pos:
-            if id % 2 is 0:
-                pos = self.player_1_pos
-                sheet = self.PLAYER1
-            else:
-                pos = self.player_2_pos
-                sheet = self.PLAYER2
+        pid = int(pid)
 
-        new_player = Player(pos, sheet, id + 1, self.SM_SIZE, self, self.fps)
+        if pid % 2 is 0:
+            pos = self.player_1_pos if not pos else pos
+
+            sheet = self.PLAYER1
+        else:
+            pos = self.player_2_pos if not pos else pos
+            sheet = self.PLAYER2
+
+        new_player = Player(pos, sheet, pid + 1, self.SM_SIZE, self, self.fps)
         Level.players.append(new_player)
         log.info("Added Player. Players {}".format(Level.players))
+
+    @staticmethod
+    def get_level_info_json():
+        # TODO: finish me
+        a = []
+        for d in Level.players:
+            a.append(d.rect.topleft)
+        data = {'players': a}
+        return data
+
+    @staticmethod
+    def set_level_info_via_json(self, json):
+        pass

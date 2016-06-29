@@ -203,14 +203,3 @@ class Physics(object):
                         self.hit_left(player, sprite)
                     elif player.change_x < 0:
                         self.hit_right(player, sprite)
-
-    def get_level_info_json(self):
-        #TODO: finish me
-        a = []
-        for d in Level.players:
-            a.append(d.rect.topleft)
-        data = {'players': a}
-        return data
-
-    def set_level_info_via_json(self, json):
-        pass

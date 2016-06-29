@@ -80,9 +80,9 @@ class Client(threading.Thread, MastermindClientTCP):
             self.player_id = contents['player_id']
             for pl_center in contents['players']:
                 #add the others
-                self.level.add_player(pl_center)
+                self.level.add_player(contents.index(pl_center), pl_center)
             #add ourself
-            self.level.add_player()
+            self.level.add_player(self.player_id)
 
             #tell the server that the client is init
             self.send_init_success()
