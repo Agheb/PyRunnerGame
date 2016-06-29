@@ -117,7 +117,6 @@ class Physics(object):
                             player.rect.center = sprite.rect.center
                             player.reached_exit = True
                             player.kill()
-                            print("Next Level: ", str(self.level.next_level))
                 elif sprite.restoring:
                     player.kill()
                 elif sprite.rect.collidepoint(player.rect.center):

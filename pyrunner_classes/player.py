@@ -69,6 +69,7 @@ class Player(pygame.sprite.DirtySprite):
                     break
             if existing_score:
                 self.gold_score = existing_score
+                self.gold_score.change_player(self)
             else:
                 self.gold_score = GoldScore(self)
             self.reached_exit = False

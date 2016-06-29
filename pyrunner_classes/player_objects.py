@@ -51,6 +51,16 @@ class GoldScore(pygame.sprite.DirtySprite):
         self.rect.x += 3 if self.left else -3
         self.rect.y += 3 if self.up else -3
 
+    def change_player(self, player):
+        """change the dirty rect on level changes"""
+        self.player = player
+
+        for child in self.children:
+            child.background = self.player.level.surface
+            child.background_clean = None
+            child.set_clean_rect()
+            child.changed = True
+
     def update(self):
         """show rotating gold coin"""
         if self.frame_counter < len(self.gold_rotation):

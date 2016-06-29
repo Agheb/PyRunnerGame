@@ -9,8 +9,7 @@ from .level_objecs import *
 
 LEVEL_PATH = "./resources/levels/"
 LEVEL_EXT = ".tmx"
-LEVEL_LIST = ["./resources/levels/scifi.tmx", "./resources/levels/level2.tmx",
-                           "./resources/levels/level3.tmx"]
+LEVEL_LIST = []
 
 """
 Level Builder for PyRunner game
@@ -34,12 +33,14 @@ class Level(object):
     3. draw layer by layer
     """
 
-    def __init__(self, surface, level_number=0, fps=25):
+    levels = []
+
+    def __init__(self, surface, path, fps=25):
         self.surface = surface
         self.background = self.surface.copy()
-        self.level_id = level_number
+        self.path = path
         self.fps = fps
-        self.tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
+        self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         self.tm_width = self.tm.width * self.tile_width
         self.tm_height = self.tm.height * self.tile_height
@@ -48,6 +49,9 @@ class Level(object):
         self.margin_left = 0
         self.margin_top = 0
         s_width, s_height = surface.get_size()
+
+        if self not in Level.levels:
+            Level.levels.append(self)
 
         if self.tm_height is not s_height or self.tm_width is not s_width:
             '''automatically scale the tilemap'''
