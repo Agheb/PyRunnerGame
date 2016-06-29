@@ -199,7 +199,6 @@ class WorldObject(pygame.sprite.DirtySprite):
         """remove this sprite"""
         if self.removable or self.collectible:
             if not self.killed and self.removable:
-                print(str(self.rect))
                 RemovedBlock(self.tile, self.rect.size, 4)
             self.killed = True
         else:
