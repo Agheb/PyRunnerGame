@@ -45,6 +45,9 @@ class NetworkConnector(object):
                 self.master = True
                 self.server.start()
             except MastermindErrorSocket:
+                self.server.kill()
+                self.server = None
+
                 if self.port < self.START_PORT + 10:
                     self.port += 1
                     self.start_server_prompt()
@@ -56,12 +59,17 @@ class NetworkConnector(object):
 
         def join_server():
             try:
-                self.master = False
                 #self.ip = input("Please enter an ip to connect to: ")
                 self.client = Client("localhost", self.port, self.level, self.main)
+                self.master = False
                 self.client.start()
-            except:
-                raise
+            except ConnectionRefusedError:
+                self.client.kill()
+                self.client = None
+
+                if self.port < self.START_PORT + 10:
+                    self.port += 1
+                    self.join_server_prompt()
 
         join_server()
 
@@ -78,8 +86,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.level = level
         self.target_ip = ip
         self.main = main
-        threading.Thread.__init__(self)
-        self.daemon = True
+        threading.Thread.__init__(self, daemon=True)
         MastermindClientTCP.__init__(self)
         self.timer = datetime.now()  # timer for the keep Alive
         self.player_id = 0
@@ -88,7 +95,7 @@ class Client(threading.Thread, MastermindClientTCP):
     def send_key(self, key):
         clientlog.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update', 'data': str(key)})
-        self.send(data, compression = NetworkConnector.COMPRESSION)
+        self.send(data, compression=NetworkConnector.COMPRESSION)
 
     def run(self):
         clientlog.info("Connecting to ip %s" % str(self.target_ip))
@@ -165,7 +172,7 @@ class Client(threading.Thread, MastermindClientTCP):
         """send keep alive if last was x seconds ago"""
         if (datetime.now() - self.timer).seconds > 4:
             data = json.dumps({'type': 'keep_alive'})
-            self.send(data, compression = NetworkConnector.COMPRESSION)
+            self.send(data, compression=NetworkConnector.COMPRESSION)
             self.timer = datetime.now()
         pass
 
@@ -178,9 +185,8 @@ class Server(threading.Thread, MastermindServerTCP):
         self.level = level
         self.main = main
         self.known_clients = []
-        threading.Thread.__init__(self) 
+        threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
-        self.daemon = True
 
     def callback_client_handle(self, connection_object, data):
         """Initial point of data arrival. Data is received and passed on"""
@@ -238,7 +244,7 @@ class Server(threading.Thread, MastermindServerTCP):
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
-        data = json.dumps({'type': 'key_update','data':str(key), 'player_id': str(player_id)})
+        data = json.dumps({'type': 'key_update', 'data': str(key), 'player_id': str(player_id)})
         for client in self.known_clients:
             self.callback_client_send(client, data)
 
@@ -254,4 +260,4 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def callback_disconnect(self):
         srvlog.info("Server disconnected from network")
-        return super(MastermindServerTCP,self).callback_disconnect()
+        return super(MastermindServerTCP, self).callback_disconnect()

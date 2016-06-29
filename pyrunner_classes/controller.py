@@ -84,7 +84,7 @@ class Controller(object):
         
         self.network_connector.client.send_key(self.current_action)
         # command, playerNum = self.network_connector.client.get_last_command()
-        # self.do_action(command, playerNum)
+        self.do_action(self.current_action, 0)
 
     def release_key(self, key):
         """stop walking"""
@@ -95,6 +95,7 @@ class Controller(object):
             self.player_2.stop_on_ground = True
         '''
         self.network_connector.client.send_key(Action.STOP)
+        self.do_action(Action.STOP, 0)
 
     @staticmethod
     def do_action(action, player_num):
@@ -106,9 +107,11 @@ class Controller(object):
             Level.players[player_num].go_right()
         elif action == Action.UP:
             Level.players[player_num].go_up()
+        elif action == Action.DOWN:
+            Level.players[player_num].go_down()
         elif action == Action.DIG_LEFT:
             Level.players[player_num].dig_left()
         elif action == Action.DIG_RIGHT:
             Level.players[player_num].dig_right()
         elif action == Action.STOP:
-            Level.players[player_num].schedule_stop()
+            Level.players[player_num].stop_on_ground = True
