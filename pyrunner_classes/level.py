@@ -1,3 +1,11 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""main pyRunner class which initializes all sub classes and threads"""
+# Python 2 related fixes
+from __future__ import division
+import pytmx
+from .game_physics import *
+from pytmx.util_pygame import load_pygame
 """
 Level Builder for PyRunner game
 PyTMX is used to load tilemap into game
@@ -6,15 +14,9 @@ TMX ( Tiled Map XML) to describe a map
 TMX- Specification:
 """
 
-#TODO TMX Specification:
-#TODO make collidable Rects from ObjectLayers
+# TODO TMX Specification:
+# TODO make collidable Rects from ObjectLayers
 
-
-import pytmx
-import pygame
-from pprint import pprint
-from .game_physics import Physics
-from pytmx.util_pygame import load_pygame
 
 class Level(object):
 
@@ -38,13 +40,15 @@ class Level(object):
             if isinstance(layer, pytmx.TiledTileLayer):
                 self.render_tile_layer(surface, layer)
                 if layer.properties['solid'] == 'true':
-                    print("solid layer found")
+                    for a in layer.tiles():
+                        WorldObject(a)
                 if layer.properties['climbable'] == 'true':
-                    print("climbalbe layer")
+                    for a in layer.tiles():
+                        WorldObject(a,True)
                 #pprint(layer.properties)
 
     def render_tile_layer(self, surface, layer):
-
+        """create the level"""
         tw = self.tm.tilewidth
         th = self.tm.tileheight
 

@@ -1,21 +1,39 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""main pyRunner class which initializes all sub classes and threads"""
+# Python 2 related fixes
+from __future__ import division
+
+class Action():
+    LEFT = "go_left"
+    RIGHT = "go_right"
+    UP = "go_up"
+    DOWN = "go_down"
+    DIG_LEFT = "dig_left"
+    DIG_RIGHT = "dig_right"
+
+
 class Controller():
-    def __init__(self, player1, config):
-        self.player1 = player1
+
+    """player controls manager"""
+
+    def __init__(self, players, config, network_connector):
+        self.players = players
+        self.network_connector = network_connector
         #self.player2 = player2
         self.config = config
-        
-        
+
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
         # TODO move both players
         if key == self.config.p1_left:
-            self.player1.go_left()
+            self.current_action = Action.LEFT
         elif key == self.config.p1_right:
-            self.player1.go_right()
+            self.current_action = Action.RIGHT
         elif key == self.config.p1_up:
-            self.player1.go_up()
+            self.current_action = Action.UP
         elif key == self.config.p1_down:
-            self.player1.go_down()
+            self.current_action = Action.DOWN
         # TODO actions for both players
         elif key == self.config.p1_action_l:
             print("Player 1 digs left")
@@ -43,3 +61,21 @@ class Controller():
             print("Player 2 interacts")
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
+        
+        self.network_connector.client.send_key(self.current_action)
+        command, playerNum = self.network_connector.client.get_last_command()
+        self.do_action(command, playerNum)
+
+    def release_key(self, key):
+        """stop walking"""
+        for p in self.players:
+            p.schedule_stop()
+
+    def do_action(self, action, playerNum):
+        playerNum = int(playerNum)
+        if action == Action.LEFT:
+            self.players[playerNum].go_left()
+        elif action == Action.RIGHT:
+            self.players[playerNum].go_right()
+        elif action == Action.UP:
+            self.players[playerNum].go_up()

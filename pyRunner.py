@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """main pyRunner class which initializes all sub classes and threads"""
@@ -8,13 +9,29 @@ import pygame
 from pygame.locals import *
 import sys
 import os
+import argparse
+import logging
 # pyRunner subclasses
 from pyrunner_classes import *
 
 
+#interpret command line ags
+parser = argparse.ArgumentParser(description='Testing')
+parser.add_argument('--log',
+                    help='pass the log level desired (info, debug,...)', type=str)
+args = parser.parse_args()
+
+# set log level
+# specify --log=DEBUG or --log=debug
+if args.log is not None:
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log)
+    logging.basicConfig(level=numeric_level)
+
 class PyRunner(object):
     """main PyRunner Class"""
-
+    
     def __init__(self):
         """initialize the game"""
         '''important settings'''
@@ -39,8 +56,9 @@ class PyRunner(object):
         self.physics = Physics(self.render_thread)
         # self.bg_image.blit(self.level, self.level.get_rect())
         self.render_thread.blit(self.bg_image, None, True)
-        self.menu = MainMenu(self)
-        self.controller = Controller(self.physics.player,self.config)
+        self.network_connector = NetworkConnector(self.physics)
+        self.menu = MainMenu(self, self.network_connector)
+        self.controller = Controller(self.physics.players, self.config, self.network_connector)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -94,6 +112,13 @@ class PyRunner(object):
                             self.menu.show_menu(True)
                         else:
                             self.controller.interpret_key(key)
+                elif event.type == KEYUP:
+                    key = event.key
+                    '''key pressing events'''
+                    if self.menu.in_menu:
+                      pass
+                    else:
+                      self.controller.release_key(key)
             # save cpu resources
             self.physics.update()
             clock.tick(self.config.fps)
@@ -103,3 +128,4 @@ if __name__ == "__main__":
     pyrunner = PyRunner()
     # start the 4 in a row game
     pyrunner.start_game()
+
