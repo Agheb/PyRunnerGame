@@ -163,14 +163,18 @@ class ScoreNumber(pygame.sprite.DirtySprite):
     def update(self):
         """show number"""
         if self.changed:
+            print("updating gold")
             if self.number < 10:
+                print("updating image")
                 self.image = self.numbers[self.number]
 
             self.changed = False
 
             if self.background_clean:
                 '''blit the score directly to the level surface so it won't have to refresh each frame'''
+                print("cleaning background")
                 self.draw_clean_background()
+                print("drawing new number")
                 self.background.blit(self.image, self.pos)
 
         if not self.background:
