@@ -68,6 +68,7 @@ class PyRunner(object):
         """load another level"""
         '''clear all sprites from an old level if present'''
         if self.level:
+            self.level_exit = False
             Player.group.empty()
             WorldObject.group.empty()
             WorldObject.removed.empty()
@@ -154,30 +155,30 @@ class PyRunner(object):
 
         '''check if all gold got collected and spawn a exit gate if there's none left'''
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
-            self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff,
-                                       self.fps)
+            try:
+                self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32,
+                                           self.level.pixel_diff, self.fps)
+            except AttributeError:
+                self.game_over = True
+
+                for player in Player.group:
+                    if player.is_human:
+                        player.reached_exit = True
+
             self.level_exit = True
+
         '''check if all players are still alive'''
         if not any(player.is_human for player in Player.group):
-            if self.level.next_level is None or not self.level_exit:
+            if not self.level_exit:
                 '''show the game over menu with player gold scores'''
                 self.game_over = True
-                '''game over menu'''
-                found_one = False
-                for score in GoldScore.scores:
-                    if not score.child_num:
-                        if not found_one:
-                            found_one = True
-                            self.menu.game_over.add_item(MenuItem("Collected Gold"))
-                        score_str = "Player %s: %s coins" % (score.gid, score.gold)
-                        self.menu.game_over.add_item(MenuItem(score_str))
+                self.game_over_menu()
             else:
                 '''load the next level, recreate the players and bots etc.'''
-                # next level full path = self.level.next_level
-                # TODO load next level, restore players gold if they made it to the exit
-                # TODO respawn second player if he didn't make it with 0 gold
-                # TODO switch music according to level atmosphere/setting
                 self.load_level(self.level.next_level)
+
+        if self.level_exit and self.game_over:
+            self.game_over_menu()
 
         '''draw the level'''
         rects.append(WorldObject.group.draw(self.level.surface))
@@ -199,6 +200,17 @@ class PyRunner(object):
         GoldScore.scores.clear(self.surface, self.level.surface)
 
         return rects
+
+    def game_over_menu(self):
+        """create the game over menu"""
+        found_one = False
+        for score in GoldScore.scores:
+            if not score.child_num:
+                if not found_one:
+                    found_one = True
+                    self.menu.game_over.add_item(MenuItem("Collected Gold"))
+                score_str = "Player %s: %s coins" % (score.gid, score.gold)
+                self.menu.game_over.add_item(MenuItem(score_str))
 
 if __name__ == "__main__":
     pyrunner = PyRunner()

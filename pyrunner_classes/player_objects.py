@@ -52,9 +52,10 @@ class GoldScore(pygame.sprite.DirtySprite):
         self.rect.y += 3 if self.up else -3
 
     def change_player(self, player):
-        """change the dirty rect on level changes"""
+        """change the player on level changes"""
         self.player = player
 
+        '''reinitialize the dirty rect background for all numbers'''
         for child in self.children:
             child.background = self.player.level.surface
             child.background_clean = None
