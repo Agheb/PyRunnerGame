@@ -20,6 +20,7 @@ class Physics(object):
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png")
         self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png")
         self.bot_1 = Bots(self.level.bot_1_pos, "LRCharacters32.png")
+        # TODO add multiple bots at different spawn points
 
         return
 

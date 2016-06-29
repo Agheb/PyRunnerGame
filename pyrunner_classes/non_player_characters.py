@@ -9,6 +9,8 @@ SPRITE_SHEET_PATH = "./resources/sprites/"
 class Bots(Player):
     def __init__(self, pos, sheet):
         Player.__init__(self, pos, sheet, bot=True, tile_size=32, fps=25)
+        # TODO: Spawn the Bot on other side of map
+        # TODO: have spawn points in tilemap set for the bots in each level
 
         # Create instances of each state
         exploring_state = Exploring(self)
@@ -20,6 +22,8 @@ class Bots(Player):
         self.brain.add_state(exploring_state)
         # state the npc starts with
         self.brain.set_state('exploring')
+
+        # TODO: Set Ninja Sprites as frames
 
     def process(self):
         self.brain.think()
@@ -116,6 +120,7 @@ class Bots(Player):
                 self.stop_on_ground = False
 
     def kill(self):
+        # TODO kill player when collision between player and bot
         """kill animation"""
         self.killed = True
 

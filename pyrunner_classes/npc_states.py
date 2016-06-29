@@ -16,6 +16,11 @@ class State(object):
 
 
 class Exploring(State):
+    # TODO when walking against something turn around
+    # TODO Go to Random spot on map
+    # TODO Detect player in a specified range
+    # TODO when a player is detected walk towards his position in this frame
+    # TODO when close to a player, speed up
     def __init__(self, bot):
         State.__init__(self, "exploring")
         self.bot = bot # set bot this state controlls
@@ -25,7 +30,7 @@ class Exploring(State):
         return
 
     def do_actions(self):
-        self.bot.go_left()
+        self.bot.go_right()
         print("bot does actions")
         return
 
