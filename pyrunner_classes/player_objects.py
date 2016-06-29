@@ -45,8 +45,6 @@ class GoldScore(pygame.sprite.DirtySprite):
             y += self.level.height - diff
             self.rect.y = y + self.min_pixels
         self.pos = x, y
-        print(str(self.pos))
-        print(str(self.rect))
 
         '''the coin is smaller than 32 pixels so we render it centered in a 32x32 tile'''
         self.rect.x += 3 if self.left else -3
@@ -138,7 +136,6 @@ class ScoreNumber(pygame.sprite.DirtySprite):
         self.pos = self.rect.topleft
         self.size = self.image.get_size()
         '''copy a clean version of the background for dirty rect animation'''
-        print(str(self.pos))
         self.set_clean_rect()
 
     def set_number(self, number):

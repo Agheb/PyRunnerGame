@@ -35,6 +35,8 @@ class Level(object):
     """
 
     def __init__(self, surface, level_number=0, fps=25):
+        self.surface = surface
+        self.background = self.surface.copy()
         self.level_id = level_number
         self.fps = fps
         self.tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
@@ -61,8 +63,7 @@ class Level(object):
             self.margin_top = (s_height - self.height) // 2
             # print(str(self.width), " ", str(self.height), " ", str(self.margin_left), " ", str(self.margin_top))
 
-        self.surface = surface
-        self.background = self.surface.copy()
+        '''draw the complete level'''
         self.render()
 
         try:
