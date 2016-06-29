@@ -23,8 +23,6 @@ class Bots(Player):
         # state the npc starts with
         self.brain.set_state('exploring')
 
-        # TODO: Set Ninja Sprites as frames
-
     def process(self):
         self.brain.think()
         print("bot denkt nach")
