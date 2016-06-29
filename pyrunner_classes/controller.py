@@ -5,7 +5,11 @@
 from __future__ import division
 import pdb
 from .level import Level
-class Action():
+from Mastermind import MastermindErrorClient
+
+
+class Action(object):
+    """store all available actions"""
     LEFT = "go_left"
     RIGHT = "go_right"
     UP = "go_up"
@@ -81,8 +85,12 @@ class Controller(object):
             print("Player 2 interacts")
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
-        
-        self.network_connector.client.send_key(self.current_action)
+
+        try:
+            self.network_connector.client.send_key(self.current_action)
+        except MastermindErrorClient:
+            for player in Level.players:
+                player.kill()
         # command, playerNum = self.network_connector.client.get_last_command()
         # self.do_action(self.current_action, 0)
 
@@ -94,7 +102,11 @@ class Controller(object):
         if self.player_2 and key in self.player_2_movements:
             self.player_2.stop_on_ground = True
         '''
-        self.network_connector.client.send_key(Action.STOP)
+        try:
+            self.network_connector.client.send_key(Action.STOP)
+        except MastermindErrorClient:
+            for player in Level.players:
+                player.kill()
         # self.do_action(Action.STOP, 0)
 
     @staticmethod
