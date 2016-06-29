@@ -172,15 +172,17 @@ class ScoreNumber(pygame.sprite.DirtySprite):
                 '''blit the score directly to the level surface so it won't have to refresh each frame'''
                 self.draw_clean_background()
                 self.background.blit(self.image, self.pos)
+                print(self.rect)
+                return self.rect
 
-        if not self.background:
+        if not self.background_clean:
             '''
                 this frame should be rendered permanently
                 if it's not blitted to the background with a dirty rect
             '''
             self.dirty = 1
         else:
-            return self.rect
+            return
 
     def kill(self):
         """remove all traces"""
