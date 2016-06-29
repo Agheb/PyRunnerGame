@@ -49,6 +49,7 @@ class PyRunner(object):
         self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
         self.render_thread.bg_surface = self.bg_surface
         self.render_thread.start()
+        self.surface = self.render_thread.screen
         '''init the level and main game physics'''
         self.level = None
         self.physics = None
@@ -56,12 +57,18 @@ class PyRunner(object):
         '''init the main menu'''
         self.network_connector = NetworkConnector()
         self.menu = MainMenu(self, self.network_connector)
-        self.controller = Controller(self.physics, self.config, self.network_connector)
+        '''create all players'''
+        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 1, 32, self.level)
+        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 2, 32, self.level)
+        '''and the controller instance'''
+        self.controller = Controller(self, self.config, self.network_connector)
+        self.level_exit = False
+        self.game_over = False
 
     def load_level(self, levelnumber):
         """load another level"""
         self.level = Level(self.bg_surface, levelnumber)
-        self.physics = Physics(self.render_thread, self.level)
+        self.physics = Physics(self.level)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -109,12 +116,58 @@ class PyRunner(object):
                         self.controller.release_key(event.key)
             # save cpu resources
             if not self.menu.in_menu:
-                self.render_thread.add_rect_to_update(self.physics.update())
+                self.render_thread.add_rect_to_update(self.render_game())
 
-                if self.physics.game_over:
+                if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
             clock.tick(self.config.fps)
 
+    def render_game(self):
+        """render all game related content"""
+        # update all sprite groups
+        WorldObject.group.update()
+        WorldObject.removed.update()
+        GoldScore.scores.update()
+        Player.group.update()
+
+        '''store all screen changes'''
+        rects = []
+
+        '''check for sprite collisions'''
+        self.physics.check_collisions()
+
+        '''check if all gold got collected and spawn a exit gate if there's none left'''
+        if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
+            self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
+            self.level_exit = True
+        '''check if all players are still alive'''
+        if not any(player.is_human for player in Player.group):
+            if self.level.next_level is None or not self.level_exit:
+                '''show the game over menu with player gold scores'''
+                self.game_over = True
+            else:
+                '''load the next level, recreate the players and bots etc.'''
+                # next level full path = self.level.next_level
+                # TODO load next level, restore players gold if they made it to the exit
+                # TODO respawn second player if he didn't make it with 0 gold
+                # TODO switch music according to level atmosphere/setting
+                pass
+
+        '''draw the level'''
+        rects.append(WorldObject.group.draw(self.level.surface))
+        self.render_thread.blit(self.level.surface, None, True)
+        rects.append(GoldScore.scores.draw(self.surface))
+        '''draw the player'''
+        rects.append(Player.group.draw(self.surface))
+        # rects.append(WorldObject.removed.draw(self.level.surface))
+
+        '''clean up the dirty background'''
+        Player.group.clear(self.surface, self.level.surface)
+        WorldObject.group.clear(self.surface, self.level.background)
+        # WorldObject.removed.clear(self.surface, self.level.background)
+        GoldScore.scores.clear(self.surface, self.level.surface)
+
+        return rects
 
 if __name__ == "__main__":
     pyrunner = PyRunner()
