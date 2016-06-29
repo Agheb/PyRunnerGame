@@ -73,6 +73,7 @@ class PyRunner(object):
             Player.group.empty()
             WorldObject.group.empty()
             WorldObject.removed.empty()
+            # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, levelnumber, self.fps)
         self.physics = Physics(self.level, self.surface)

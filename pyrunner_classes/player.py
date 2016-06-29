@@ -61,7 +61,16 @@ class Player(pygame.sprite.DirtySprite):
             # score related
             self.score_left = True if self.pid % 2 else False
             self.score_up = True if self.pid <= 2 else False
-            self.gold_score = GoldScore(self)
+            # check for existing scores
+            existing_score = None
+            for score in GoldScore.scores:
+                if not score.child_num and score.gid is self.pid:
+                    existing_score = score
+                    break
+            if existing_score:
+                self.gold_score = existing_score
+            else:
+                self.gold_score = GoldScore(self)
             self.reached_exit = False
 
             # animations
