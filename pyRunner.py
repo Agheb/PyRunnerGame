@@ -75,7 +75,7 @@ class PyRunner(object):
         self.level = Level(self.bg_surface, path, self.fps)
 
         if not self.network_connector:
-            self.network_connector = NetworkConnector(self.level)
+            self.network_connector = NetworkConnector(self, self.level)
             self.menu = MainMenu(self, self.network_connector)
         else:
             self.network_connector.level = self.level

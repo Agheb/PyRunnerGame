@@ -10,6 +10,7 @@ from .controller import Controller
 from datetime import datetime
 import json
 from Mastermind import *
+from Mastermind import MastermindErrorSocket
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,parentdir) 
@@ -20,14 +21,15 @@ srvlog = netlog.getChild("Server")
 clientlog = netlog.getChild("Client")
 
 
-class NetworkConnector():
+class NetworkConnector(object):
     """the main network class"""
 
     COMPRESSION = None
     START_PORT = 6799
 
-    def __init__(self, level):
+    def __init__(self, main, level):
         self.ip = "localhost"
+        self.main = main
         self.level = level
         self.port = self.START_PORT
         self.client = None
@@ -39,15 +41,16 @@ class NetworkConnector():
         def start_server():
             """try to start a server"""
             try:
-                self.server = Server(self.port, self.level)
+                self.server = Server(self.port, self.level, self.main)
                 self.master = True
                 self.server.start()
-            except:
+            except MastermindErrorSocket:
                 if self.port < self.START_PORT + 10:
                     self.port += 1
-                    start_server()
+                    self.start_server_prompt()
 
         start_server()
+        self.join_server_prompt()
 
     def join_server_prompt(self):
 
@@ -55,7 +58,7 @@ class NetworkConnector():
             try:
                 self.master = False
                 #self.ip = input("Please enter an ip to connect to: ")
-                self.client = Client("localhost", self.port, self.level)
+                self.client = Client("localhost", self.port, self.level, self.main)
                 self.client.start()
             except:
                 raise
@@ -70,14 +73,15 @@ class NetworkConnector():
 class Client(threading.Thread, MastermindClientTCP):
 
     """the network client"""
-    def __init__(self, ip, port, level):
+    def __init__(self, ip, port, level, main):
         self.port = port
         self.level = level
         self.target_ip = ip
+        self.main = main
         threading.Thread.__init__(self)
         self.daemon = True
         MastermindClientTCP.__init__(self)
-        self.timer = datetime.now() #timer for the keep Alive
+        self.timer = datetime.now()  # timer for the keep Alive
         self.player_id = 0
         self.connected = False
 
@@ -94,7 +98,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.wait_for_init_data()
 
     def get_last_command(self):
-        #for now, maybe we need non blocking later
+        # for now, maybe we need non blocking later
         raw_data = self.receive(True)
         data = json.loads(raw_data)
         clientlog.info("Got data from server: {}".format(str(data)))
@@ -109,7 +113,7 @@ class Client(threading.Thread, MastermindClientTCP):
         if data['type'] == 'init':
             clientlog.info("Client got init Data, creating new Player") 
             contents = data['data']
-            self.player_id = contents['player_id']
+            self.player_id = contents['player_id'] 
 
             for pl_center in contents['players']:
                 try:
@@ -123,6 +127,7 @@ class Client(threading.Thread, MastermindClientTCP):
 
             # tell the server that the client is init
             self.send_init_success()
+            self.main.menu.show_menu(False)
         else:
             raise Exception('Did not get init as first Package') 
 
@@ -152,7 +157,9 @@ class Client(threading.Thread, MastermindClientTCP):
                 try:
                     self.level.players[int(data['player_id'])]
                 except IndexError:
-                    self.level.add_player()
+                    pass
+                    # self.level.add_player()
+                self.main.menu.show_menu(False)
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
@@ -166,9 +173,10 @@ class Client(threading.Thread, MastermindClientTCP):
 class Server(threading.Thread, MastermindServerTCP):
 
     """main network server"""
-    def __init__(self, port, level):
+    def __init__(self, port, level, main):
         self.port = port
         self.level = level
+        self.main = main
         self.known_clients = []
         threading.Thread.__init__(self) 
         MastermindServerTCP.__init__(self)

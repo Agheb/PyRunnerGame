@@ -98,7 +98,7 @@ class MainMenu(object):
         menu_ng_multiplayer = Menu(self, "Multiplayer", surface, menu_new_game, h2_size, item_size)
         menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
         #TODO: Add nice ip input
-        menu_ng_multiplayer.add_item(MenuItem("Start Server",self.network_connector.start_server_prompt))
+        menu_ng_multiplayer.add_item(MenuItem("Start Server", self.network_connector.start_server_prompt))
         menu_ng_multiplayer.add_item(MenuItem("Join Server", self.network_connector.join_server_prompt))
         menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
         # finish top menu with sub menus

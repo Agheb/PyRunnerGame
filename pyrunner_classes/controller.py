@@ -83,8 +83,8 @@ class Controller(object):
             print("Player 2 taunts")
         
         self.network_connector.client.send_key(self.current_action)
-        #command, playerNum = self.network_connector.client.get_last_command()
-        #self.do_action(command, playerNum)
+        # command, playerNum = self.network_connector.client.get_last_command()
+        # self.do_action(command, playerNum)
 
     def release_key(self, key):
         """stop walking"""
