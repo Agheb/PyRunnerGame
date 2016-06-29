@@ -140,7 +140,6 @@ class MainMenu(object):
 
         '''game over menu'''
         menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, item_size)
-        menu_game_over.add_item(MenuItem("Collected Gold"))
 
         '''save the menus'''
         self.game_over = menu_game_over

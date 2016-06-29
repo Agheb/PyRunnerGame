@@ -152,13 +152,17 @@ class PyRunner(object):
             self.level_exit = True
         '''check if all players are still alive'''
         if not any(player.is_human for player in Player.group):
-            if self.level.next_level is None or  self.level_exit:   # not
+            if self.level.next_level is None or not self.level_exit:
                 '''show the game over menu with player gold scores'''
                 self.game_over = True
                 '''game over menu'''
+                found_one = False
                 for score in GoldScore.scores:
                     if not score.child_num:
-                        score_str = "Player %s: %s" % (score.gid, score.gold)
+                        if not found_one:
+                            found_one = True
+                            self.menu.game_over.add_item(MenuItem("Collected Gold"))
+                        score_str = "Player %s: %s coins" % (score.gid, score.gold)
                         self.menu.game_over.add_item(MenuItem(score_str))
             else:
                 '''load the next level, recreate the players and bots etc.'''
