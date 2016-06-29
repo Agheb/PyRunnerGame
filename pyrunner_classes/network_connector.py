@@ -13,9 +13,7 @@ from Mastermind import *
 from Mastermind import MastermindErrorSocket
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0,parentdir) 
-
-
+sys.path.insert(0, parentdir)
 netlog = logging.getLogger("Network")
 srvlog = netlog.getChild("Server")
 clientlog = netlog.getChild("Client")
