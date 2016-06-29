@@ -16,22 +16,22 @@ clientlog = netlog.getChild("Client")
 class NetworkConnector():
     COMPRESSION = None
     
-    def __init__(self, physics):
+    def __init__(self, level):
         self.ip = "localhost"
-        self.physics = physics
+        self.level = level
         self.port = 6799
         self.client = None
         self.server = None
 
     def start_server_prompt(self):
-        self.server = Server(self.port, self.physics)
+        self.server = Server(self.port, self.level)
         self.master = True
         self.server.start()
 
     def join_server_prompt(self):
         self.master = False
         #self.ip = input("Please enter an ip to connect to: ")
-        self.client = Client("localhost", self.port, self.physics)
+        self.client = Client("localhost", self.port, self.level)
         self.client.start()
 
     def update(self):
@@ -41,9 +41,9 @@ class NetworkConnector():
 
 class Client(threading.Thread, MastermindClientTCP):
 
-    def __init__(self, ip, port, physics):
+    def __init__(self, ip, port, level):
         self.port = port
-        self.physics = physics
+        self.level = level
         self.target_ip = ip
         threading.Thread.__init__(self)
         self.daemon = True
@@ -80,9 +80,9 @@ class Client(threading.Thread, MastermindClientTCP):
             self.player_id = contents['player_id']
             for pl_center in contents['players']:
                 #add the others
-                self.physics.add_player(pl_center)
+                self.level.add_player(pl_center)
             #add ourself
-            self.physics.add_player()
+            self.level.add_player()
 
             #tell the server that the client is init
             self.send_init_success()
@@ -109,9 +109,9 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == 'init_succ':
                 clientlog.info("got init succ")
                 try:
-                    self.physics.players[int(data['player_id'])]
+                    self.level.players[int(data['player_id'])]
                 except IndexError:
-                    self.physics.add_player()
+                    self.level.add_player()
 
     def sendKeepAlive(self):
         #send keep alive if last was x seconds ago
@@ -126,9 +126,9 @@ class Client(threading.Thread, MastermindClientTCP):
 
 class Server(threading.Thread, MastermindServerTCP):
 
-    def __init__(self,port, physics):
+    def __init__(self, port, level):
         self.port = port
-        self.physics = physics
+        self.level = level
         self.known_clients = []
         threading.Thread.__init__(self) 
         MastermindServerTCP.__init__(self)
@@ -166,7 +166,7 @@ class Server(threading.Thread, MastermindServerTCP):
             srvlog.debug("Added client to known clients")
             self.known_clients.append(connection_object)
         #sending initial Data, to all clients so everyone is on the same page. TODO:  add info about enemies
-        level_info = self.physics.get_level_info_json()
+        level_info = self.level.get_level_info_json()
         #the clients id
         misc_info = {'player_id': str(self.known_clients.index(connection_object))}
         #concat the data

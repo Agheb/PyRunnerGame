@@ -64,6 +64,77 @@ class MainMenu(object):
             elif name == "Sounds":
                 self.switch_audio_volume((2, 1))
 
+    def init_menu(self):
+        """initialize the whole main menu structure
+
+        Cave: menus need to be saved in the reverse order (bottom to top) so that
+              the top menus contain all up to date sub-menu objects
+        """
+        s_width = (self.render_thread.screen.get_width() // 4) * 3
+        s_height = (self.render_thread.screen.get_height() // 3) * 2
+        self.surface = surface = pygame.Surface((s_width, s_height), SRCALPHA)
+        h1_size = self.h1_size
+        h2_size = self.h2_size
+        item_size = self.item_size
+        '''calculate the ratio to adjust font sizes accordingly'''
+        self.ratio = ratio = Menu.calc_font_size(surface, h1_size, item_size)
+        self.h1_size = h1_size = int(h1_size * ratio)
+        self.h2_size = h2_size = int(h2_size * ratio)
+        self.item_size = item_size = int(item_size * ratio)
+        '''first create the root menu'''
+        # noinspection PyTypeChecker
+        menu_main = Menu(self, self.config.name, surface, None, h1_size, item_size)
+        '''then begin adding items and pass them the font sizes'''
+        # new game menu
+        menu_new_game = Menu(self, "Start Game", surface, menu_main, h2_size, item_size)
+        #   single player
+        menu_ng_singleplayer = Menu(self, "Singleplayer", surface, menu_new_game, h2_size, item_size)
+        menu_ng_singleplayer.add_item(MenuItem("New Game", None))
+        menu_ng_singleplayer.add_item(MenuItem("Resume", None))
+        menu_ng_singleplayer.add_item(MenuItem("Difficulty", None))
+        #   multiplayer
+        menu_ng_multiplayer = Menu(self, "Multiplayer", surface, menu_new_game, h2_size, item_size)
+        menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
+        # TODO: Add nice ip input
+        menu_ng_multiplayer.add_item(MenuItem("Start Server", self.network_connector.start_server_prompt))
+        menu_ng_multiplayer.add_item(MenuItem("Network Game", None))
+        menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
+        # finish top menu with sub menus
+        menu_new_game.add_item(MenuItem("Singleplayer", self.set_current_menu, vars=menu_ng_singleplayer))
+        menu_new_game.add_item(MenuItem("Multiplayer", self.set_current_menu, vars=menu_ng_multiplayer))
+        # settings menu
+        menu_settings = Menu(self, "Settings", surface, menu_main, h2_size, item_size)
+        menu_s_audio = Menu(self, "Audio Settings", surface, menu_settings, h2_size, item_size)
+        menu_s_audio.add_item(MenuItem("Music", self.switch_audio_volume, vars=(1, 0),
+                                       val=self.music_thread.play_music, bar=self.music_thread.music_volume))
+        menu_s_audio.add_item(MenuItem("Sounds", self.switch_audio_volume, vars=(2, 0),
+                                       val=self.music_thread.play_sfx, bar=self.music_thread.sfx_volume))
+        #   video settings
+        menu_s_video = Menu(self, "Video Settings", surface, menu_settings, h2_size, item_size)
+        menu_s_video.add_item(MenuItem("Fullscreen", self.switch_fullscreen, val=self.config.fullscreen))
+        menu_s_video.add_item(MenuItem("Switch Resolution", self.switch_fs_resolution,
+                                       val=self.config.switch_resolution))
+        # resolutions
+        menu_s_v_resolution = Menu(self, "Video Resolution", surface, menu_s_video, h2_size, item_size)
+        for res in self.render_thread.display_modes:
+            width, height = res
+            res_name = str(width) + "x" + str(height)
+            menu_s_v_resolution.add_item(MenuItem(res_name, self.set_resolution, vars=(width, height, True)))
+        res_name = str(self.config.screen_x) + "x" + str(self.config.screen_y)
+        menu_s_video.add_item(MenuItem('{:<24s} {:>10s}'.format("Resolution", res_name), self.set_current_menu,
+                                       vars=menu_s_v_resolution))
+        menu_s_video.add_item(MenuItem("Show FPS", self.switch_show_fps, val=self.render_thread.show_framerate))
+        menu_controls = Menu(self, "Controls", surface, menu_settings, h2_size, item_size)
+        menu_controls.add_item(MenuItem("Player 1", None))
+        menu_controls.add_item(MenuItem("Player 2", None))
+        '''complete the settings menu at the end to store the up to date objects'''
+        menu_settings.add_item(MenuItem("Audio", self.set_current_menu, vars=menu_s_audio))
+        menu_settings.add_item(MenuItem("Controls", self.set_current_menu, vars=menu_controls))
+        menu_settings.add_item(MenuItem("Video", self.set_current_menu, vars=menu_s_video))
+        '''complete main menu at the end to store the up to date objects'''
+        menu_main.add_item(MenuItem("Start Game", self.set_current_menu, vars=menu_new_game))
+        menu_main.add_item(MenuItem("Settings", self.set_current_menu, vars=menu_settings))
+        menu_main.add_item(MenuItem("Exit", self.main.quit_game))
         """
         Cave: menus need to be saved in the reverse order (bottom to top) so that
               the top menus contain all up to date sub-menu objects

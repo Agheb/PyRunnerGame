@@ -17,8 +17,8 @@ from .network_connector import NetworkConnector
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
            'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer',
-           'Level', 'Physics', 'Controller', 'NetworkConnector',
-           'Player', 'GoldScore', 'WorldObject', 'ExitGate']
+           'Level', 'Level', 'Controller', 'NetworkConnector',
+           'Player', 'GoldScore', 'WorldObject', 'ExitGate', 'Physics']
 
 
 __version__ = '0.1.3'

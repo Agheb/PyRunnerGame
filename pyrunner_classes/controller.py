@@ -4,7 +4,7 @@
 # Python 2 related fixes
 from __future__ import division
 import pdb
-from .game_physics import Physics 
+from .level import Level
 class Action():
     LEFT = "go_left"
     RIGHT = "go_right"
@@ -18,14 +18,17 @@ class Controller():
 
     """player controls manager"""
 
-    def __init__(self, level, config, network_connector):
+    def __init__(self, config, network_connector):
+        '''
         self.player_1 = level.player_1
         self.player_2 = level.player_2
         self.player_1_movements = []
         self.player_2_movements = []
+        '''
         self.network_connector = network_connector
         self.config = config
         '''only stop player if movement key got released'''
+        '''
         self.player_1_movements.append(self.config.p1_left)
         self.player_1_movements.append(self.config.p1_right)
         self.player_1_movements.append(self.config.p1_up)
@@ -34,6 +37,7 @@ class Controller():
         self.player_2_movements.append(self.config.p2_right)
         self.player_2_movements.append(self.config.p2_up)
         self.player_2_movements.append(self.config.p2_down)
+        '''
 
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
@@ -48,10 +52,12 @@ class Controller():
             self.current_action = Action.DOWN
         # TODO actions for both players
         elif key == self.config.p1_action_l:
-            self.player1.dig_left()
+            # self.player1.dig_left()
+            self.current_action = Action.DIG_LEFT
             print("Player 1 digs left")
         elif key == self.config.p1_action_r:
-            self.player1.dig_right()
+            # self.player1.dig_right()
+            self.current_action = Action.DIG_RIGHT
             print("Player 1 digs right")
         elif key == self.config.p1_interact:
             print("Player 1 interacts")
@@ -84,20 +90,22 @@ class Controller():
 
     def release_key(self, key):
         """stop walking"""
+        '''
         if self.player_1 and key in self.player_1_movements:
             self.player_1.stop_on_ground = True
         if self.player_2 and key in self.player_2_movements:
             self.player_2.stop_on_ground = True
+        '''
         self.network_connector.client.send_key(Action.STOP)
 
     @staticmethod
     def do_action(action, playerNum):
         playerNum = int(playerNum)
         if action == Action.LEFT:
-            Physics.players[playerNum].go_left()
+            Level.players[playerNum].go_left()
         elif action == Action.RIGHT:
-            Physics.players[playerNum].go_right()
+            Level.players[playerNum].go_right()
         elif action == Action.UP:
-            Physics.players[playerNum].go_up()
+            Level.players[playerNum].go_up()
         elif action == Action.STOP:
-            Physics.players[playerNum].schedule_stop()
+            Level.players[playerNum].schedule_stop()
