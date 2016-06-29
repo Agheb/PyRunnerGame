@@ -8,7 +8,8 @@ class StateMachine(object):
         self.stateslist[state.name] = state
         print("list of active states in Statemachine")
         print(self.stateslist)
-        print(len(self.stateslist))
+        print("state " + state.name + " added")
+        print("number of states in statelist: " + str(len(self.stateslist)))
 
     def think(self):
         # only continue if there is an active state.
@@ -19,7 +20,7 @@ class StateMachine(object):
             print(self.active_state)
             # Perform action of the active state and check conditions
             self.active_state.do_actions()
-            print("actions for state " + str(self.active_state) + "performed")
+            print("actions for state " + str(self.active_state) + " performed")
 
             new_state_name = self.active_state.check_conditions()
             if new_state_name is not None:

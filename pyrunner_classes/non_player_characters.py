@@ -4,7 +4,7 @@ from .npc_states import *
 import pygame
 
 SPRITE_SHEET_PATH = "./resources/sprites/"
-
+# TODO: Bots should not collect gold
 
 class Bots(Player):
     def __init__(self, pos, sheet):
@@ -12,14 +12,19 @@ class Bots(Player):
         # TODO: Spawn the Bot on other side of map
         # TODO: have spawn points in tilemap set for the bots in each level
 
+        # POSITIONAL RELATED
+        self.destination = (0, 6)
+        self.location = (self.rect.x, self.rect.y)
+        print(self.location)
+
+        # STATE RELATED
         # Create instances of each state
         exploring_state = Exploring(self)
-        # list of states in Statemachine
-        # {'exploring': <pyrunner_classes.npc_states.Exploring object at 0x0000023A4C5CE9E8>}
-
+        hunting_state = Hunting(self)
         # add states to the state machine
         self.brain = StateMachine()
         self.brain.add_state(exploring_state)
+        self.brain.add_state(hunting_state)
         # state the npc starts with
         self.brain.set_state('exploring')
 
@@ -60,20 +65,6 @@ class Bots(Player):
                 self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_l)
             elif self.direction == "Stop":
                 pass
-            # self.image = self.stop_frame
-            elif self.direction == "DL":
-                # Dig left/right
-                self.image = self.digging_frames_l[self.digging_frame // 4]
-                self.digging_frame += 1
-                if self.digging_frame is len(self.digging_frames_l) * 4:
-                    self.digging_frame = 0
-                    self.direction = "Stop"
-            elif self.direction == "DR":
-                self.image = self.digging_frames_r[self.digging_frame // 4]
-                self.digging_frame += 1
-                if self.digging_frame is len(self.digging_frames_l) * 4:
-                    self.digging_frame = 0
-                    self.direction = "Stop"
 
             # Gravity
             self.calc_gravity()
@@ -119,6 +110,7 @@ class Bots(Player):
 
     def kill(self):
         # TODO kill player when collision between player and bot
+    # TODO kill bot when in hole and respawn at set spawn point in level
         """kill animation"""
         self.killed = True
 

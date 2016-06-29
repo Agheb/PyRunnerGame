@@ -84,7 +84,7 @@ class Player(pygame.sprite.DirtySprite):
             # Load the left hanging images into a list and flip them to face right
             self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
             # death animation
-            self.death_frames = self.sprite_sheet.add_animation(5, 6, 8)
+            self.death_frames = self.sprite_sheet.add_animation(5, 5, 8)
 
             # Stop Frame: Sprite when player is not moving on ground
             self.stop_frame = self.sprite_sheet.add_animation(5, 3)
