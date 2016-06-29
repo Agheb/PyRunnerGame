@@ -57,7 +57,7 @@ class Player(pygame.sprite.DirtySprite):
         self.stop_at_y = 0
         self.is_human = False if bot else True
 
-        if True:
+        if self.is_human:
             # score related
             self.score_left = True if self.pid % 2 else False
             self.score_up = True if self.pid <= 2 else False
