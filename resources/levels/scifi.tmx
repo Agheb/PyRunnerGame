@@ -13,7 +13,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlDEOACAIA3myb9MPusjSKKDG4NBLOpgcOBAQIcSmjUTdSM1OTyJSH/Ut8G4QddCbgXWew/n/i84nMnelQMj/4D7Odj+K567+ICQL616d3LMbPyMdF4Yt0w==
+   eJxjYBgFowA/8IFiYtUSo4cUM0cB7QB6HPigYQYG4uMKXR8hNaPxP3gBOXE0GrdDD6DHGba8T4pZpNo1CkbBSAb48h89MACUDhX5
   </data>
  </layer>
  <layer name="Block_Removable" width="32" height="24">
@@ -22,7 +22,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlLEKACAIRP3j/P+poQYxLROignsgTd3Q6yQCYKSI4T4RWJyscrKZoL3ZyWztJerHu2s5p0Q+uIP043XY8gv+QvdRdzPq3vM/2y3oP3iJ1X/e7cAPO7MCCB8rDg==
+   eJxjYBgFowAT5CNhaplDLTNHIqBlmFESL7j0jsb58AG48vBo/A5/QGzc44r/0fQxCgYzICV90wIPNAAA4HghZA==
   </data>
  </layer>
  <layer name="Coins" width="32" height="24">
@@ -38,7 +38,7 @@
    <property name="climbable" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2BwAfUB1u81wPpzB1j/YAKUxiUy8CZDD6VxiQzyyNBDzbicSIaeAiraT6xfyImnwWA/IX0sNLafkP+omZfoAQbavdTM++SAgS7HR7r/RwIAAAMMCIg=
+   eJxjYBgFo2BwAfUB1u81wPpzB1j/YAKUxiUy8CZDD6VxiQzyyNBDzbicSEWzyAHE+oWceBoM9hPSx0Jj+wn5j5p5iR5goN1LzbxPDhjocnyk+38kAABw3wgY
   </data>
  </layer>
  <layer name="Leiter_Top" width="32" height="24">
@@ -47,7 +47,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFowAVcAyw/lEweAA143I0XQwNMBpPowAERtPBKBgFwxsAAHLvADE=
+   eJxjYBgFowAVcA6w/lEweAA143I0XQwNMBpPowAERtPBKBgFwxsAAJ/LADc=
   </data>
  </layer>
  <layer name="Seil" width="32" height="24">
@@ -55,10 +55,10 @@
    <property name="climbable_horizontal" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQwFsB2JGIvCOgXLgMAPEhDUuPApGwWi6GJlgtFwYBaNgFAwVAADmPQGU
+   eJxjYBgFQwFsB2JGIvCOgXLgMAPEhDUuPApGwUADbOXFKKA9GC0XRsEoGAVDBQAARHgCSg==
   </data>
  </layer>
- <objectgroup name="Spawn_Locations">
+ <objectgroup name="Spawn_Locations" visible="0">
   <object id="20" name="Player_1" x="64" y="220">
    <properties>
     <property name="players" type="bool" value="true"/>
