@@ -40,6 +40,7 @@ class Player(pygame.sprite.DirtySprite):
         self.score_left = True if self.pid % 2 else False
         self.score_up = True if self.pid <= 2 else False
         self.gold_score = GoldScore(self)
+        self.reached_exit = False
         # lists holding the image for movement. Up and down movement uses the same sprites.
         self.spawn_frames = []
         self.walking_frames_l = []
@@ -50,11 +51,13 @@ class Player(pygame.sprite.DirtySprite):
         self.hanging_frames_r = []
         self.death_frames = []
         self.sprite_sheet = SpriteSheet(sheet, self.tile_size, self.pixel_diff, self.fps)
+        # animation relevant values
         self.spawning = True
         self.spawn_frame = 0
         self.killed = False
         self.killed_frame = 0
         self.digging_frame = 0
+        # position to aim for
         self.stop_at_x = 0
         self.stop_at_y = 0
         self.is_human = False if bot else True
@@ -323,6 +326,10 @@ class Player(pygame.sprite.DirtySprite):
 
     def kill(self):
         """kill animation"""
+        if not self.reached_exit:
+            '''if the player dies in the level remove his gold'''
+            self.gold = 0
+            self.gold_score.kill()
         self.killed = True
 
     @property

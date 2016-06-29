@@ -19,10 +19,6 @@ class Physics(object):
         self.level = level
         self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 1, 32, self.level)
         self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 2, 32, self.level)
-        gold_y = self.level.height - self.level.tile_height + self.level.margin_top
-        margin = self.level.margin_left
-        # self.player_1_gold = GoldScore(self.player_1, (0 + margin, gold_y))
-        # self.player_2_gold = GoldScore(self.player_2, (self.level.width - self.level.tile_width + margin, gold_y), False)
         self.level_exit = False
         self.game_over = False
         return
@@ -162,15 +158,18 @@ class Physics(object):
                 # sprite.dirty = 1
                 # collect gold and remove the sprite
                 if sprite.collectible and not sprite.killed:
-                    player.add_gold()
-                    # clear the item
-                    # self.level.clean_sprite(sprite)
-                    # and remove it
-                    sprite.kill()
+                    if player.is_human:
+                        '''only human players can take gold'''
+                        player.add_gold()
+                        # clear the item
+                        # self.level.clean_sprite(sprite)
+                        # and remove it
+                        sprite.kill()
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:
                             player.rect.center = sprite.rect.center
+                            player.reached_exit = True
                             player.kill()
                             print("Next Level: ", str(self.level.next_level))
                 elif sprite.restoring:

@@ -97,8 +97,16 @@ class GoldScore(pygame.sprite.DirtySprite):
 
     @gold.setter
     def gold(self, amount):
-        self._gold = amount
-        self.changed = True
+        if self._gold is not amount:
+            self._gold = amount
+            self.changed = True
+
+    def kill(self):
+        """do a homicide to your family"""
+        for child in self.children:
+            child.kill()
+
+        pygame.sprite.DirtySprite.kill(self)
 
 
 class ScoreNumber(pygame.sprite.DirtySprite):
@@ -139,7 +147,7 @@ class ScoreNumber(pygame.sprite.DirtySprite):
             self.changed = True
 
     def set_clean_rect(self):
-        """copy a the clean background once"""
+        """copy a clean background once"""
         if self.background:
             try:
                 x, y = self.pos
@@ -149,6 +157,10 @@ class ScoreNumber(pygame.sprite.DirtySprite):
             except ValueError:
                 self.background_clean = None
                 print("%(x)s/%(y)s with the dimensions %(w)s/%(h)s is outside of the surface %(surface)s" % locals())
+
+    def draw_clean_background(self):
+        """clear the background of the sprite"""
+        self.background.blit(self.background_clean, self.pos)
 
     def update(self):
         """show number"""
@@ -160,7 +172,7 @@ class ScoreNumber(pygame.sprite.DirtySprite):
 
             if self.background_clean:
                 '''blit the score directly to the level surface so it won't have to refresh each frame'''
-                self.background.blit(self.background_clean, self.pos)
+                self.draw_clean_background()
                 self.background.blit(self.image, self.pos)
 
         if not self.background:
@@ -169,3 +181,10 @@ class ScoreNumber(pygame.sprite.DirtySprite):
                 if it's not blitted to the background with a dirty rect
             '''
             self.dirty = 1
+
+    def kill(self):
+        """remove all traces"""
+        if self.background_clean:
+            self.draw_clean_background()
+
+        pygame.sprite.DirtySprite.kill(self)
