@@ -84,7 +84,7 @@ class Controller(object):
         
         self.network_connector.client.send_key(self.current_action)
         # command, playerNum = self.network_connector.client.get_last_command()
-        self.do_action(self.current_action, 0)
+        # self.do_action(self.current_action, 0)
 
     def release_key(self, key):
         """stop walking"""
@@ -95,7 +95,7 @@ class Controller(object):
             self.player_2.stop_on_ground = True
         '''
         self.network_connector.client.send_key(Action.STOP)
-        self.do_action(Action.STOP, 0)
+        # self.do_action(Action.STOP, 0)
 
     @staticmethod
     def do_action(action, player_num):

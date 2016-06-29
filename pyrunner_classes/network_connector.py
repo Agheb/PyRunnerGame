@@ -126,7 +126,7 @@ class Client(threading.Thread, MastermindClientTCP):
                 try:
                     pid = int(pl_center.index('player_id'))
                 except ValueError:
-                    pid = 2
+                    pid = len(self.level.players)
                 # add the others
                 self.level.add_player(pid, pl_center)
             # add ourself
@@ -164,8 +164,8 @@ class Client(threading.Thread, MastermindClientTCP):
                 try:
                     self.level.players[int(data['player_id'])]
                 except IndexError:
-                    pass
-                    # self.level.add_player()
+                    pid = len(self.level.players)
+                    self.level.add_player(pid)
                 self.main.menu.show_menu(False)
 
     def send_keep_alive(self):

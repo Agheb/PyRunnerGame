@@ -59,7 +59,7 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.is_human:
             # score related
-            self.score_left = True if self.pid % 2 else False
+            self.score_left = True if not self.pid % 2 else False
             self.score_up = True if self.pid <= 2 else False
             # check for existing scores
             existing_score = None

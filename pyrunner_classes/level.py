@@ -182,13 +182,12 @@ class Level(object):
 
         if pid % 2 is 0:
             pos = self.player_1_pos if not pos else pos
-
             sheet = self.PLAYER1
         else:
             pos = self.player_2_pos if not pos else pos
             sheet = self.PLAYER2
 
-        new_player = Player(pos, sheet, pid + 1, self.SM_SIZE, self, self.fps)
+        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
         Level.players.append(new_player)
         log.info("Added Player. Players {}".format(Level.players))
 
