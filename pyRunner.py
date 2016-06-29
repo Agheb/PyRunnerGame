@@ -139,6 +139,8 @@ class PyRunner(object):
                 if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
 
+            self.network_connector.update()
+
             clock.tick(self.fps)
 
     def render_game(self):

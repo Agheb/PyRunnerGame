@@ -72,8 +72,10 @@ class NetworkConnector(object):
         join_server()
 
     def update(self):
-        if self.client:
+        try:
             self.client.update()
+        except (MastermindErrorClient, AttributeError):
+            pass
 
 
 class Client(threading.Thread, MastermindClientTCP):
