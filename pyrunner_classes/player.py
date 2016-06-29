@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-This module is used to hold the Player class. The Player represents the user-
-controlled sprite on the screen.
+This module is used to hold the Player/Bot class. The Player represents the user-
+controlled sprite on the screen. Bots are controlled by the computer inheriting from Player in the non_player_characters
+through the state_machine, npc_states.
 Passing sprite_sheet.getimage(x position in pixels upper left corner, y position in pixels upper left corner,
 widht of image, height of image) to spritesheet_handling to cut the sprite out of the sprite sheet.
 """
@@ -15,7 +16,7 @@ SPRITE_SHEET_PATH = "./resources/sprites/"
 
 
 class Player(pygame.sprite.DirtySprite):
-    """defines the main  player"""
+    """defines the main  player and bots"""
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
 
@@ -71,7 +72,6 @@ class Player(pygame.sprite.DirtySprite):
             # Stop Frame: Sprite when player is not moving on ground
             self.stop_frame = self.sprite_sheet.add_animation(5, 0)
 
-        # TODO: Set Ninja Sprites as frames
         elif bot:
             # Load all the left facing images into a list (x, y, height, width)
             self.walking_frames_l = self.sprite_sheet.add_animation(0, 3, 4)
@@ -87,7 +87,7 @@ class Player(pygame.sprite.DirtySprite):
             self.death_frames = self.sprite_sheet.add_animation(5, 6, 8)
 
             # Stop Frame: Sprite when player is not moving on ground
-            self.stop_frame = self.sprite_sheet.add_animation(5, 0)
+            self.stop_frame = self.sprite_sheet.add_animation(5, 3)
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
 
@@ -188,7 +188,7 @@ class Player(pygame.sprite.DirtySprite):
                 self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_l)
             elif self.direction == "Stop":
                 pass
-            #    self.image = self.stop_frame
+            # self.image = self.stop_frame
             elif self.direction == "DL":
                 # Dig left/right
                 self.image = self.digging_frames_l[self.digging_frame // 4]
