@@ -114,7 +114,7 @@ class Physics(object):
 
                 if not bottom_sprite and not player.on_rope:
                     '''if there's no ground below the feet'''
-                    player.schedule_stop()
+                    player.schedule_stop = True
                     on_ground = False
 
             '''find collisions with removed blocks'''
@@ -127,6 +127,12 @@ class Physics(object):
             if top_collision:
                 on_ground = True
                 self.hit_top(player, top_collision)
+
+            '''kill players touched by bots'''
+            player_collision = pygame.sprite.spritecollide(player, Player.group, False, False)
+            for p in player_collision:
+                if p.is_human and not player.is_human:
+                    p.kill()
 
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)

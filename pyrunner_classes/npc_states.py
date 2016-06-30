@@ -7,12 +7,16 @@ Bots are Instances of non_player_characters, inherited from player class.
 import random
 import pygame
 from .player import Player
+from .level import WorldObject
 
 
 class State(object):
-    def __init__(self, name):
+    def __init__(self, name, bot):
         self.name = name
+        self.bot = bot
         self.walking_direction = None
+        self.closest_player = None
+        self.closest_player_distance = 0
 
     def do_actions(self):
         # Called by the think function in statemachine in each frame.
@@ -38,42 +42,61 @@ class State(object):
         # if destination is right of bot, go_right else go_left
         # if bot collides right or left with not climbable block, change direction
         # if destination under bot and on_ladder, go_down else go_up (catch if up down not possible)
-        print("Bot calls go to destination" + str(self.bot.destination))
-        collision = False
+        print("Bot calls go_to_destination with destination set to " + str(self.bot.destination))
+        last_x, last_y = self.bot.last_pos
         destination = self.bot.destination
         location = self.bot.get_location()
-        print(location)
+        print("current bot location: " + str(location))
 
-        if not collision:
-            print("no collision")
-            if destination[0] > location[0]:
-                self.bot.go_right()
-                self.walking_direction = "right"
-                print("bot goes right")
-            else:
-                self.bot.go_left()
-                self.walking_direction = "left"
-        else:
-            if self.walking_direction == "right":
-                self.bot.go_left()
-            else:
-                self.bot.go_right()
+        dx, dy = destination
+        lx, ly = location
+        size = (self.bot.rect.right - self.bot.rect.left) // 2
 
-        if location != destination:
-            if destination[1] > location[1] and self.bot.on_ladder:
-                self.bot.go_down()
-            elif destination[1] < location[1] and self.bot.on_ladder:
-                self.bot.go_up()
+        collision = True if last_x is lx and last_y is ly else False
+
+        if not (lx - size < dx < lx + size and ly - size < dy < ly + size):
+            # go right or left towards destination
+            if not collision:
+                print("no collision")
+                if lx < dx:
+                    self.bot.go_right()
+                    print("bot goes right")
+                    self.walking_direction = "right"
+                elif lx > dx:
+                    self.bot.go_left()
+                    print("bot goes left")
+                    self.walking_direction = "left"
+            else:
+                if self.walking_direction == "right":
+                    self.bot.go_left()
+                    print("bot changes direction to left")
+                else:
+                    self.bot.go_right()
+                    print("bot changes direction to right")
+
+            # go ladders up or down, according to destination
+            if dy > ly:
+                if self.bot.on_ladder:
+                    self.bot.go_down()
+                    print("bot tried to go down")
+                elif not self.bot.on_ladder:
+                    self.bot.schedule_stop = True
+
+            elif dy < ly:
+                if self.bot.on_ladder:
+                    self.bot.go_up()
+                    print("bot tried to go up")
+                elif not self.bot.on_ladder:
+                    self.bot.schedule_stop = True
         else:
-            return "arrived"
+            print("Bot reached destination")
+            self.bot.schedule_stop = True
+            return True
 
     def check_closest_player(self):
-        # TODO determine which player is closest and return that player position
+        # TODO determine which player is closest and return that player position in a radius around bot
         # as destination
-        pass
-        closest_player = None
-        closest_player_distance = 0
-        pos_x, pos_y = self.rect.topleft
+        pos_x, pos_y = self.bot.rect.topleft
 
         for player in Player.group:
             if player.is_human:
@@ -82,72 +105,72 @@ class State(object):
                 distance_y = y - pos_y if y < pos_y else pos_y - y
                 distance = distance_x + distance_y
 
-                if not closest_player:
-                    closest_player = player
-                    closest_player_distance = distance
-                elif distance < closest_player_distance:
-                    closest_player = player
-                    closest_player_distance = distance
-        return closest_player_distance
+                if not self.closest_player:
+                    self.closest_player = player
+                    self.closest_player_distance = distance
+                elif distance < self.closest_player_distance:
+                    self.closest_player = player
+                    self.closest_player_distance = distance
+        return self.closest_player.get_location() if self.closest_player else False
 
+    def check_destination_reached(self):
+        # because of tile based movement, location == destination is not possible.
+        # check_destination_reached checks if destination is reached with a margin.
+        margin = 16
+        destination = self.bot.destination
+        location = self.bot.get_location()
+        x_reached = False
+        y_reached = False
 
-class Stupid(State):
-    def __init__(self, bot):
-        State.__init__(self, "stupid")
-        self.bot = bot  # set bot this state controlls
+        if destination[0] > location[0] - margin and destination[0] > location[0] + margin:
+            x_reached = True
 
-    def do_actions(self):
-        # if bot is over player go every ladder up / if under down
-        self.bot.go_right()
+        elif destination[1] > location[1] - margin and destination[1] > location[1] + margin:
+            y_reached = True
 
-    def check_conditions(self):
-        pass
+        if x_reached and y_reached:
+            return True
 
-    def entry_actions(self):
-        pass
+        elif y_reached:
+            return "yReached"
 
-    def exit_actions(self):
-        pass
+        elif x_reached:
+            return "xReached"
 
 
 class Exploring(State):
     def __init__(self, bot):
-        State.__init__(self, "exploring")
+        State.__init__(self, "exploring", bot)
         self.bot = bot  # set bot this state controlls
         self.first_call = True
 
     def random_destination(self):
         # TODO Go to Random spot on map
-        print("bot calls random destination")
-        info_object = pygame.display.Info()
-        screen_width = info_object.current_w
-        screen_height = info_object.current_h
-        self.bot.destination = (random.randint(0, screen_width), random.randint(0, screen_height))
+        for tile in WorldObject.group:
+            if tile.solid and not tile.climbable_horizontal and random.randint(0, len(WorldObject.group)) % 5 is 0:
+                self.bot.destination = tile.rect.midtop
+
         print("bot destination set: " + str(self.bot.destination))
 
     def do_actions(self):
-        print("bot starts actions")
         # Set random destination on first call, then change direction every x calls, so every x Frames
         if self.first_call:
             self.random_destination()
             self.first_call = False
-        elif random.randint(0, 50) == 1:
-            self.random_destination()
+
         self.go_to_destination()
 
     def check_conditions(self):
         # TODO Detect player in a specified range and then change state to hunting
         # if player in range, return "hunting"
-        # check_closest_player
-        print("bot check conditions")
-        return
+        # if check_closest_player from super returns a player, let check conditions return "hunting"
+        if self.check_closest_player():
+            return "hunting"
 
     def entry_actions(self):
-        print("bot check entry actions")
         return
 
     def exit_actions(self):
-        print("bot exit actions")
         return
 
 
@@ -155,17 +178,37 @@ class Hunting(State):
     # TODO walk towards player position
     # TODO when close to a player, speed up
     def __init__(self, bot):
-        State.__init__(self, "hunting")
+        State.__init__(self, "hunting", bot)
         self.bot = bot  # set bot this state controlls
 
     def do_actions(self):
-        # set desttination to nearest player location
-        pass
+        self.bot.destination = self.closest_player.rect.center if self.closest_player else self.check_closest_player()
+        self.go_to_destination()
 
     def check_conditions(self):
         # if nearest player is not empty state hunting
         # if another player is now closer, change to state hunting with destination set to the neares player.
         # if nearest player is empty, change state to exploring
+        if self.go_to_destination():
+            return "exploring"
+
+    def entry_actions(self):
+        pass
+
+    def exit_actions(self):
+        pass
+
+
+class Stupid(State):
+    def __init__(self, bot):
+        State.__init__(self, "stupid", bot)
+        self.bot = bot  # set bot this state controlls
+
+    def do_actions(self):
+        # if bot is over player go every ladder up / if under down
+        self.bot.go_right()
+
+    def check_conditions(self):
         pass
 
     def entry_actions(self):

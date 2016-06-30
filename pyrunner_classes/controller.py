@@ -76,6 +76,6 @@ class Controller(object):
     def release_key(self, key):
         """stop walking"""
         if self.player_1 and key in self.player_1_movements:
-            self.player_1.schedule_stop()
+            self.player_1.schedule_stop = True
         if self.player_2 and key in self.player_2_movements:
-            self.player_2.schedule_stop()
+            self.player_2.schedule_stop = True

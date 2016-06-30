@@ -10,14 +10,15 @@ SPRITE_SHEET_PATH = "./resources/sprites/"
 class Bots(Player):
 
     def __init__(self, pos, sheet):
-        Player.__init__(self, pos, sheet, bot=True, tile_size=32, fps=25)
         # TODO: Spawn the Bot on other side of map
         # TODO: have spawn points in tilemap set for the bots in each level
+        Player.__init__(self, pos, sheet, bot=True, tile_size=32, fps=25)
 
         self.is_human = False
 
         # POSITIONAL RELATED
-        self.destination = [0, 0]
+        self.destination = (0, 0)
+        self.last_pos = (0, 0)
 
         # STATEMACHINE RELATED
         # Create instances of each state
@@ -32,89 +33,36 @@ class Bots(Player):
         # state the npc starts with
         self.brain.set_state('exploring')
 
+        # Load all the left facing images into a list (x, y, height, width)
+        self.walking_frames_l = self.sprite_sheet.add_animation(0, 3, 4)
+        # Load all the left facing images into a list and flip them to make them face right
+        self.walking_frames_r = self.sprite_sheet.flip_list(self.walking_frames_l)
+        # Load all the up / down facing images into a list
+        self.walking_frames_ud = self.sprite_sheet.add_animation(0, 4, 4)
+        # Load the left hanging images into a list
+        self.hanging_frames_l = self.sprite_sheet.add_animation(4, 4, 4)
+        # Load the left hanging images into a list and flip them to face right
+        self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
+        # death animation
+        self.death_frames = self.sprite_sheet.add_animation(5, 5, 8)
+
+        # Stop Frame: Sprite when player is not moving on ground
+        self.stop_frame = self.sprite_sheet.add_animation(5, 3)
+
+        self.direction = "Stop"  # direction the player is facing at the beginning of the game
+
+        # Set the image the player starts with
+        self.image = self.stop_frame
+        # Set a reference to the image rect.
+        self.rect = self.image.get_rect()
+        # spawn the player at the desired location
+        self.rect.topleft = pos
+
     def process(self):
         self.brain.think()
-        print("bot denkt nach")
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
         self.dirty = 1
         self.process()
-
-        if not self.killed:
-            # Move left/right
-            self.rect.x += self.change_x
-            self.rect.y += self.change_y
-            self.x, self.y = self.rect.topleft
-
-            '''keep the correct movement animation according to the direction on screen'''
-            if self.change_x < 0:
-                self.direction = "RL" if self.on_rope else "L"
-            elif self.change_x > 0:
-                self.direction = "RR" if self.on_rope else "R"
-            elif not self.on_ground and not self.on_rope:
-                self.direction = "UD"
-
-            # Animations with Sprites
-            '''movements'''
-            if self.direction == "R":
-                self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_r)
-            elif self.direction == "L":
-                self.image = self.sprite_sheet.get_frame(self.x, self.walking_frames_l)
-            elif self.direction == "UD":
-                self.image = self.sprite_sheet.get_frame(self.y, self.walking_frames_ud)
-            elif self.direction == "RR":
-                self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_r)
-            elif self.direction == "RL":
-                self.image = self.sprite_sheet.get_frame(self.x, self.hanging_frames_l)
-            elif self.direction == "Stop":
-                pass
-
-            # Gravity
-            self.calc_gravity()
-        else:
-            self.image = self.death_frames[self.killed_frame // 2]
-            self.killed_frame += 1
-
-            if self.killed_frame is len(self.death_frames) * 2:
-                pygame.sprite.DirtySprite.kill(self)
-
-    def calc_gravity(self):
-        """ Calculate effect of gravity. """
-        # See if we are on the ground and not on a ladder or rope
-        if not self.on_ground and not self.on_ladder and not self.on_rope:
-            if self.change_y >= 4:
-                self.change_y += .35
-            else:
-                self.change_y = 4
-
-        if self.stop_on_ground:
-            if self.change_x is not 0:
-                if self.rect.x % self.tile_size is not 0:
-                    if self.change_x > 0:
-                        self.go_right()
-                    else:
-                        self.go_left()
-                else:
-                    self.change_x = 0
-
-            if self.change_y is not 0:
-                if self.change_y <= self.speed:
-                    # the player is lowered by one for a constant ground collision
-                    if (self.rect.y - 1) % self.tile_size is not 0:
-                        if self.change_y < 0:
-                            self.go_up()
-                        else:
-                            self.go_down()
-                    else:
-                        self.change_y = 0
-
-            if self.change_x is 0 and self.change_y is 0:
-                self.stop_on_ground = False
-
-    def kill(self):
-        # TODO kill player when collision between player and bot
-        # TODO kill bot when in hole and respawn at set spawn point in level
-        """kill animation"""
-        self.killed = True
-
+        Player.update(self)

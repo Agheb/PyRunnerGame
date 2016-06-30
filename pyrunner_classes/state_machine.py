@@ -16,7 +16,7 @@ class StateMachine(object):
         if not self.active_state:
             print("no state to think, active state is: " + str(self.active_state))
             return
-        elif self.active_state:
+        else:
             print(self.active_state)
             # Perform action of the active state and check conditions
             self.active_state.do_actions()
@@ -25,7 +25,7 @@ class StateMachine(object):
             new_state_name = self.active_state.check_conditions()
             if new_state_name is not None:
                 self.set_state(new_state_name)
-                print("new state" + new_state_name + "set")
+                print("new state " + new_state_name + " set")
 
     def set_state(self, new_state_name):
         # change state and perform exit / entry actions
