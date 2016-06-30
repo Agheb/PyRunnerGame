@@ -68,6 +68,7 @@ class PyRunner(object):
         """load another level"""
         '''clear all sprites from an old level if present'''
         if self.level:
+            self.bg_surface.fill(GRAY)
             self.level_exit = False
             Player.group.empty()
             WorldObject.group.empty()
