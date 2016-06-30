@@ -22,7 +22,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFowATaKJhaplDqXkjFeTT0GxK4gWX3tE4Hz4AVx4ejd/hD4iNe1zxn4+ER9PMKBhsgJT0PRwxAJKzE4Q=
+   eJxjYBgFowATaKJhaplDqXkjFeTT0GxK4gWX3tE4HxqAmHjBlYdH43f4A2LjHlf85yPh0TQzCgYbICV9D0cMAIjCE60=
   </data>
  </layer>
  <layer name="Coins" width="32" height="24">
@@ -58,7 +58,7 @@
    eJxjYBgFQwFsB2JGIvCOgXLgMAPEhDUuPApGwUADbOXFKKA9GC0XRsEoGAVDBQAARHgCSg==
   </data>
  </layer>
- <objectgroup name="Spawn_Locations" visible="0">
+ <objectgroup name="Spawn_Locations">
   <object id="20" name="Player_1" x="64" y="220">
    <properties>
     <property name="players" type="bool" value="true"/>
