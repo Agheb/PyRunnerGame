@@ -185,7 +185,7 @@ class Server(threading.Thread, MastermindServerTCP):
     """main network server"""
     def __init__(self, port, level, main):
         self.port = port
-        self.level = level
+        self._level = level
         self.main = main
         self.known_clients = []
         threading.Thread.__init__(self, daemon=True)
@@ -214,6 +214,8 @@ class Server(threading.Thread, MastermindServerTCP):
             for client in self.known_clients:
                 self.callback_client_send(client,json.dumps(data))
             pass
+
+        print(str(self.known_clients))
 
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
@@ -264,3 +266,15 @@ class Server(threading.Thread, MastermindServerTCP):
     def callback_disconnect(self):
         srvlog.info("Server disconnected from network")
         return super(MastermindServerTCP, self).callback_disconnect()
+
+    @property
+    def level(self):
+        """return the current level"""
+        return self._level
+
+    @level.setter
+    def level(self, level):
+        self._level = level
+
+        # TODO
+        # re-add players for each client on level change
