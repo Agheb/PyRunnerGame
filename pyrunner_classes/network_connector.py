@@ -215,8 +215,6 @@ class Server(threading.Thread, MastermindServerTCP):
                 self.callback_client_send(client,json.dumps(data))
             pass
 
-        print(str(self.known_clients))
-
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
         srvlog.info("New Client Connected %s" %str(connection_object.address))
@@ -275,6 +273,9 @@ class Server(threading.Thread, MastermindServerTCP):
     @level.setter
     def level(self, level):
         self._level = level
+
+        for client_id in range(len(self.known_clients)):
+            self.level.add_player(client_id)
 
         # TODO
         # re-add players for each client on level change
