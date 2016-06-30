@@ -158,9 +158,11 @@ class Level(object):
                         WorldObject(a, size, fps, solid)
 
                     if layer.name == "Background":
+                        print ( "Layer sucess")
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
+
 
     @staticmethod
     def render_tile(surface, tile):
