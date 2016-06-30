@@ -9,12 +9,10 @@ SPRITE_SHEET_PATH = "./resources/sprites/"
 
 class Bots(Player):
 
-    def __init__(self, pos, sheet):
+    def __init__(self, pos, sheet, level):
         # TODO: Spawn the Bot on other side of map
         # TODO: have spawn points in tilemap set for the bots in each level
-        Player.__init__(self, pos, sheet, bot=True, tile_size=32, fps=25)
-
-        self.is_human = False
+        Player.__init__(self, pos, sheet, None, 32, level, 25, True)
 
         # POSITIONAL RELATED
         self.destination = (0, 0)
@@ -33,21 +31,25 @@ class Bots(Player):
         # state the npc starts with
         self.brain.set_state('exploring')
 
+        self.spawn_frames = self.sprite_sheet.add_animation(4, 8, 4)
         # Load all the left facing images into a list (x, y, height, width)
         self.walking_frames_l = self.sprite_sheet.add_animation(0, 3, 4)
         # Load all the left facing images into a list and flip them to make them face right
         self.walking_frames_r = self.sprite_sheet.flip_list(self.walking_frames_l)
         # Load all the up / down facing images into a list
         self.walking_frames_ud = self.sprite_sheet.add_animation(0, 4, 4)
+        # Load all falling down frames
+        self.falling_frames = self.sprite_sheet.add_animation(5, 3, 4)
         # Load the left hanging images into a list
         self.hanging_frames_l = self.sprite_sheet.add_animation(4, 4, 4)
         # Load the left hanging images into a list and flip them to face right
         self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
         # death animation
-        self.death_frames = self.sprite_sheet.add_animation(5, 5, 8)
+        self.death_frames = self.sprite_sheet.flip_list(self.spawn_frames)
 
         # Stop Frame: Sprite when player is not moving on ground
         self.stop_frame = self.sprite_sheet.add_animation(5, 3)
+        self.stand_left = self.stand_right = self.stop_frame
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
 
@@ -60,9 +62,3 @@ class Bots(Player):
 
     def process(self):
         self.brain.think()
-
-    def update(self):  # updates the images and creates motion with sprites
-        """ Move the player. """
-        self.dirty = 1
-        self.process()
-        Player.update(self)

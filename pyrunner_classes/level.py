@@ -7,6 +7,7 @@ import pytmx
 from pytmx.util_pygame import load_pygame
 from .level_objecs import *
 from .player import Player
+from .non_player_characters import Bots
 from random import randint
 import logging
 
@@ -111,6 +112,9 @@ class Level(object):
         self.spawn_player_1_pos = p1_pos
         self.spawn_player_2_pos = p2_pos
         self.spawn_enemies_pos = bot_pos
+
+        self.bot_1 = Bots(self.spawn_enemies_pos, "LRCharacters32.png", self)
+
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""

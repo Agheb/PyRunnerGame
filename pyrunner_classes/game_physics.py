@@ -17,7 +17,6 @@ class Physics(object):
 
     def __init__(self, level, screen):
         self.level = level
-        self.bot_1 = Bots(self.level.bot_1_pos, "LRCharacters32.png")
         self.surface = screen
 
         # TODO: set level id on level id, via level.py or WorldObjects

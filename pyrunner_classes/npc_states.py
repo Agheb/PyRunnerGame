@@ -17,6 +17,7 @@ class State(object):
         self.walking_direction = None
         self.closest_player = None
         self.closest_player_distance = 0
+        self.find_ladder = False
 
     def do_actions(self):
         # Called by the think function in statemachine in each frame.
@@ -52,20 +53,19 @@ class State(object):
         lx, ly = location
         size = (self.bot.rect.right - self.bot.rect.left) // 2
 
-        collision = True if last_x is lx and last_y is ly else False
+        collision = True if last_x == lx and last_y == ly else False
 
         if not (lx - size < dx < lx + size and ly - size < dy < ly + size):
             # go right or left towards destination
             if not collision:
                 print("no collision")
                 if lx < dx:
-                    self.bot.go_right()
+                    if not self.find_ladder:
+                        self.bot.go_right()
                     print("bot goes right")
-                    self.walking_direction = "right"
                 elif lx > dx:
                     self.bot.go_left()
                     print("bot goes left")
-                    self.walking_direction = "left"
             else:
                 if self.walking_direction == "right":
                     self.bot.go_left()
@@ -76,18 +76,22 @@ class State(object):
 
             # go ladders up or down, according to destination
             if dy > ly:
-                if self.bot.on_ladder:
+                if self.bot.on_ladder or self.bot.on_rope:
                     self.bot.go_down()
                     print("bot tried to go down")
-                elif not self.bot.on_ladder:
-                    self.bot.schedule_stop = True
+                elif self.bot.on_rope and dx is lx:
+                    self.bot.go_down()
+                else:
+                    self.find_ladder = True
 
             elif dy < ly:
                 if self.bot.on_ladder:
                     self.bot.go_up()
                     print("bot tried to go up")
-                elif not self.bot.on_ladder:
-                    self.bot.schedule_stop = True
+                elif self.bot.on_rope and dx is lx:
+                    self.bot.go_down()
+                else:
+                    self.find_ladder = True
         else:
             print("Bot reached destination")
             self.bot.schedule_stop = True
@@ -119,13 +123,15 @@ class State(object):
         margin = 16
         destination = self.bot.destination
         location = self.bot.get_location()
+        dx, dy = destination
+        lx, ly = destination
         x_reached = False
         y_reached = False
 
-        if destination[0] > location[0] - margin and destination[0] > location[0] + margin:
+        if dx > lx - margin and dx > lx + margin:
             x_reached = True
 
-        elif destination[1] > location[1] - margin and destination[1] > location[1] + margin:
+        elif dy > ly - margin and dy > dy + margin:
             y_reached = True
 
         if x_reached and y_reached:
@@ -182,7 +188,7 @@ class Hunting(State):
         self.bot = bot  # set bot this state controlls
 
     def do_actions(self):
-        self.bot.destination = self.closest_player.rect.center if self.closest_player else self.check_closest_player()
+        self.bot.destination = self.closest_player.get_location() if self.closest_player else self.check_closest_player()
         self.go_to_destination()
 
     def check_conditions(self):

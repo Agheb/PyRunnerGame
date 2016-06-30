@@ -105,13 +105,13 @@ class Player(pygame.sprite.DirtySprite):
             self.stand_right = self.sprite_sheet.add_animation(3, 2)
             self.trapped = self.sprite_sheet.add_animation(5, 0)
 
-        self.direction = "Stop"  # direction the player is facing at the beginning of the game
-        # Set the image the player starts with
-        self.image = self.stand_right
-        # Set a reference to the image rect.
-        self.rect = self.image.get_rect()
-        # spawn the player at the desired location
-        self.rect.topleft = pos
+            self.direction = "Stop"  # direction the player is facing at the beginning of the game
+            # Set the image the player starts with
+            self.image = self.stand_right
+            # Set a reference to the image rect.
+            self.rect = self.image.get_rect()
+            # spawn the player at the desired location
+            self.rect.topleft = pos
 
     # Player-controlled movement:
     def go_left(self):
@@ -189,9 +189,16 @@ class Player(pygame.sprite.DirtySprite):
             self.direction = "DL"
             # self.player_collide()
 
+    def process(self):
+        """needed for the bots"""
+        pass
+
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
         self.dirty = 1
+
+        if not self.is_human:
+            self.process()
 
         if self.spawning:
             self.image = self.spawn_frames[self.spawn_frame]
@@ -362,4 +369,4 @@ class Player(pygame.sprite.DirtySprite):
         self.gold_score.gold += 1
 
     def get_location(self):
-        return self.rect.topleft
+        return self.rect.center
