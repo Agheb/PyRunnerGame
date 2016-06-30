@@ -31,7 +31,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/scifi.tmx"
+    START_LEVEL = "./resources/levels/scifi_16_9.tmx"
 
     def __init__(self):
         """initialize the game"""
