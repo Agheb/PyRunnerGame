@@ -59,7 +59,7 @@ class Player(pygame.sprite.DirtySprite):
 
         if self.is_human:
             # score related
-            self.score_left = True if self.pid % 2 else False
+            self.score_left = True if not self.pid % 2 else False
             self.score_up = True if self.pid <= 2 else False
             # check for existing scores
             existing_score = None
@@ -69,6 +69,7 @@ class Player(pygame.sprite.DirtySprite):
                     break
             if existing_score:
                 self.gold_score = existing_score
+                self.gold_score.change_player(self)
             else:
                 self.gold_score = GoldScore(self)
             self.reached_exit = False
@@ -147,6 +148,7 @@ class Player(pygame.sprite.DirtySprite):
             if self.change_y < self.speed:
                 '''don't let the player slow down while falling by pressing the down key again'''
                 self.direction = "UD"
+                self.rect.y += self.speed
                 self.change_y = self.speed
         if self.on_rope:
             self.rect.y += self.speed * 2

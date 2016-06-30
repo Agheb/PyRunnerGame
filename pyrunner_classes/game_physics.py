@@ -5,6 +5,10 @@ from __future__ import division
 from .level import *
 from .player import *
 import pygame
+import logging
+import pdb
+
+log = logging.getLogger("Physics")
 
 
 class Physics(object):
@@ -13,7 +17,8 @@ class Physics(object):
     def __init__(self, level, screen):
         self.level = level
         self.surface = screen
-        return
+
+        # TODO: set level id on level id, via level.py or WorldObjects
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -85,7 +90,7 @@ class Physics(object):
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
             if removed_collision:
-                if not removed_collision.trapped:
+                if not removed_collision.trapped and not player.is_human:
                     removed_collision.trapped = True
                     player.direction = "Trapped"
                     player.rect.center = removed_collision.rect.center
@@ -117,7 +122,6 @@ class Physics(object):
                             player.rect.center = sprite.rect.center
                             player.reached_exit = True
                             player.kill()
-                            print("Next Level: ", str(self.level.next_level))
                 elif sprite.restoring:
                     player.kill()
                 elif sprite.rect.collidepoint(player.rect.center):
@@ -199,9 +203,3 @@ class Physics(object):
                         self.hit_left(player, sprite)
                     elif player.change_x < 0:
                         self.hit_right(player, sprite)
-
-    def get_level_info_json(self):
-        pass
-
-    def set_level_info_via_json(self, json):
-        pass
