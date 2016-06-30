@@ -252,4 +252,4 @@ class Player(pygame.sprite.DirtySprite):
 
     def get_location(self):
         (x, y) = self.rect.topleft
-        return (x, y)
+        return x, y

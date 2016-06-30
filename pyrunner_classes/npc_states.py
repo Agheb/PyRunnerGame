@@ -37,32 +37,39 @@ class State(object):
         # check these conditions after x frames:
         # if destination is right of bot, go_right else go_left
         # if bot collides right or left with not climbable block, change direction
-        # if destination unter bot and on_ladder, go_down else go_up
+        # if destination under bot and on_ladder, go_down else go_up (catch if up down not possible)
+        print("Bot calls go to destination" + str(self.bot.destination))
         collision = False
+        destination = self.bot.destination
+        location = self.bot.get_location()
+        print(location)
 
         if not collision:
-            if tuple(self.bot.destination[0]) > tuple(self.bot.get_location[0]):
-                self.bot.go_right
+            print("no collision")
+            if destination[0] > location[0]:
+                self.bot.go_right()
                 self.walking_direction = "right"
+                print("bot goes right")
             else:
-                self.bot.go_left
+                self.bot.go_left()
                 self.walking_direction = "left"
         else:
             if self.walking_direction == "right":
-                self.bot.go_left
+                self.bot.go_left()
             else:
-                self.bot.go_right
+                self.bot.go_right()
 
-        if self.bot.get_location != self.bot.destination:
-            if self.bot.destination[1] > self.bot.get_location[1] and self.bot.on_ladder:
-                self.bot.go_down
-            elif self.bot.destination[1] < self.bot.get_location[1] and self.bot.on_ladder:
-                self.bot.go_up
+        if location != destination:
+            if destination[1] > location[1] and self.bot.on_ladder:
+                self.bot.go_down()
+            elif destination[1] < location[1] and self.bot.on_ladder:
+                self.bot.go_up()
         else:
             return "arrived"
 
     def check_closest_player(self):
-        # TODO determine if player is over or under bot and which player is closest
+        # TODO determine which player is closest and return that player position
+        # as destination
         pass
         closest_player = None
         closest_player_distance = 0
@@ -117,16 +124,14 @@ class Exploring(State):
         screen_height = info_object.current_h
         self.bot.destination = (random.randint(0, screen_width), random.randint(0, screen_height))
         print("bot destination set: " + str(self.bot.destination))
-        return self.bot.destination
 
     def do_actions(self):
-        # TODO go towards random destination
         print("bot starts actions")
         # Set random destination on first call, then change direction every x calls, so every x Frames
         if self.first_call:
             self.random_destination()
             self.first_call = False
-        elif random.randint(0, 20) == 1:
+        elif random.randint(0, 50) == 1:
             self.random_destination()
         self.go_to_destination()
 
