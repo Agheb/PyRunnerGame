@@ -48,18 +48,24 @@ class Level(object):
         self.fps = fps
         self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
-        self.tm_width = self.tm.width * self.tile_width
-        self.tm_height = self.tm.height * self.tile_height
+        '''
+            we have 32x32 pixel tiles and 40x23 pixels resulting in a resolution of 1280x736
+            because we want 720p (1280x720) and 16:9 we have to get rid of half of the pixels in the last row
+        '''
+        self.cols = self.tm.width
+        self.rows = self.tm.height
+        self.tm_width = self.cols * self.tile_width
+        self.tm_height = self.rows * self.tile_height - 16
         self.width, self.height = self.tm_width, self.tm_height
         self.pixel_diff = 0
         self.margin_left = 0
         self.margin_top = 0
         s_width, s_height = surface.get_size()
 
-        if self not in Level.levels:
-            Level.levels.append(self)
+        if path not in Level.levels:
+            Level.levels.append(path)
 
-        if self.tm_height is not s_height or self.tm_width is not s_width:
+        if self.tm_height != s_height or self.tm_width != s_width:
             '''automatically scale the tilemap'''
             diff_h = (s_height - self.tm_height) // self.tm.height
             diff_w = (s_width - self.tm_width) // self.tm.width
@@ -67,11 +73,12 @@ class Level(object):
             self.pixel_diff = diff_h if diff_h < diff_w else diff_w
             self.tile_width += self.pixel_diff
             self.tile_height += self.pixel_diff
-            self.width = self.tm.width * self.tile_width
-            self.height = self.tm.height * self.tile_height
+            self.width = self.cols * self.tile_width
+            self.height = self.rows * self.tile_height
             self.margin_left = (s_width - self.width) // 2
             self.margin_top = (s_height - self.height) // 2
-            # print(str(self.width), " ", str(self.height), " ", str(self.margin_left), " ", str(self.margin_top))
+
+        self.last_row = self.margin_top + self.height - self.tile_height
 
         '''draw the complete level'''
         self.render()
@@ -142,7 +149,12 @@ class Level(object):
 
                     pos_x = self.margin_left + (width * pos_x)
                     pos_y = self.margin_top + (height * pos_y)
+
                     image = pygame.transform.scale(image, size)
+
+                    '''chop off the bottom half in the last row to fit 720p'''
+                    if pos_y == self.last_row:
+                        image = self.squeeze_half_image(image)
 
                     a = pos_x, pos_y, image
 
@@ -161,6 +173,14 @@ class Level(object):
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
+
+    @staticmethod
+    def squeeze_half_image(image):
+        """remove the bottom half of an image"""
+        w, h = image.get_size()
+        h //= 2
+        size = w, h
+        return pygame.transform.scale(image, size)
 
     @staticmethod
     def render_tile(surface, tile):
