@@ -6,11 +6,12 @@ from __future__ import division
 import pytmx
 from pytmx.util_pygame import load_pygame
 from .level_objecs import *
+from .player import Player
+import logging
 
+log = logging.getLogger("Level")
 LEVEL_PATH = "./resources/levels/"
 LEVEL_EXT = ".tmx"
-LEVEL_LIST = ["./resources/levels/scifi.tmx", "./resources/levels/level2.tmx",
-                           "./resources/levels/level3.tmx"]
 
 """
 Level Builder for PyRunner game
@@ -33,13 +34,19 @@ class Level(object):
     2. load all tilesheet image
     3. draw layer by layer
     """
+    PLAYER1 = "LRCharacters32.png"
+    PLAYER2 = "LRCharacters32_p2.png"
+    SM_SIZE = 32
 
-    def __init__(self, surface, level_number=0, fps=25):
+    levels = []
+    players = []
+
+    def __init__(self, surface, path, fps=25):
         self.surface = surface
         self.background = self.surface.copy()
-        self.level_id = level_number
+        self.path = path
         self.fps = fps
-        self.tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
+        self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         self.tm_width = self.tm.width * self.tile_width
         self.tm_height = self.tm.height * self.tile_height
@@ -48,6 +55,9 @@ class Level(object):
         self.margin_left = 0
         self.margin_top = 0
         s_width, s_height = surface.get_size()
+
+        if self not in Level.levels:
+            Level.levels.append(self)
 
         if self.tm_height is not s_height or self.tm_width is not s_width:
             '''automatically scale the tilemap'''
@@ -165,3 +175,31 @@ class Level(object):
         dirty_rect = self.background.subsurface(sprite.rect)
         self.surface.blit(dirty_rect, sprite.rect)
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
+
+    def add_player(self, pid, pos=None, fps=25):
+        """add a new player"""
+        pid = int(pid)
+
+        if pid % 2 is 0:
+            pos = self.player_1_pos if not pos else pos
+            sheet = self.PLAYER1
+        else:
+            pos = self.player_2_pos if not pos else pos
+            sheet = self.PLAYER2
+
+        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+        Level.players.append(new_player)
+        log.info("Added Player. Players {}".format(Level.players))
+
+    @staticmethod
+    def get_level_info_json():
+        # TODO: finish me
+        a = []
+        for d in Level.players:
+            a.append(d.rect.topleft)
+        data = {'players': a}
+        return data
+
+    @staticmethod
+    def set_level_info_via_json(self, json):
+        pass
