@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-This module is used to hold the Player class. The Player represents the user-
-controlled sprite on the screen.
+This module is used to hold the Player/Bot class. The Player represents the user-
+controlled sprite on the screen. Bots are controlled by the computer inheriting from Player in the non_player_characters
+through the state_machine, npc_states.
 Passing sprite_sheet.getimage(x position in pixels upper left corner, y position in pixels upper left corner,
 widht of image, height of image) to spritesheet_handling to cut the sprite out of the sprite sheet.
 """
@@ -14,7 +15,7 @@ from .player_objects import GoldScore
 
 
 class Player(pygame.sprite.DirtySprite):
-    """defines the main  player"""
+    """defines the main  player and bots"""
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
 
@@ -26,6 +27,7 @@ class Player(pygame.sprite.DirtySprite):
         self.pixel_diff = self.level.pixel_diff if self.level else 0
         self.size = self.tile_size + self.pixel_diff
         self.fps = fps
+        self.is_human = True
         # positional attributes
         self.x, self.y = pos
         self.on_ground = False
@@ -358,3 +360,6 @@ class Player(pygame.sprite.DirtySprite):
     def add_gold(self):
         """increase the gold count by 1"""
         self.gold_score.gold += 1
+
+    def get_location(self):
+        return self.rect.topleft

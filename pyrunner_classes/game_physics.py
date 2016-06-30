@@ -4,6 +4,7 @@
 from __future__ import division
 from .level import *
 from .player import *
+from .non_player_characters import Bots
 import pygame
 import logging
 import pdb
@@ -16,6 +17,7 @@ class Physics(object):
 
     def __init__(self, level, screen):
         self.level = level
+        self.bot_1 = Bots(self.level.bot_1_pos, "LRCharacters32.png")
         self.surface = screen
 
         # TODO: set level id on level id, via level.py or WorldObjects
@@ -106,6 +108,12 @@ class Physics(object):
             if top_collision:
                 on_ground = True
                 self.hit_top(player, top_collision)
+
+            '''kill players touched by bots'''
+            player_collision = pygame.sprite.spritecollide(player, Player.group, False, False)
+            for p in player_collision:
+                if p.is_human and not player.is_human:
+                    p.kill()
 
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
