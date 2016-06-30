@@ -7,6 +7,7 @@ import pytmx
 from pytmx.util_pygame import load_pygame
 from .level_objecs import *
 from .player import Player
+from random import randint
 import logging
 
 log = logging.getLogger("Level")
@@ -54,9 +55,9 @@ class Level(object):
         '''
         self.cols = self.tm.width
         self.rows = self.tm.height
-        self.tm_width = self.cols * self.tile_width
-        self.tm_height = self.rows * self.tile_height - 16
-        self.width, self.height = self.tm_width, self.tm_height
+        tm_width = self.cols * self.tile_width
+        tm_height = self.rows * self.tile_height - 16
+        self.width, self.height = tm_width, tm_height
         self.pixel_diff = 0
         self.margin_left = 0
         self.margin_top = 0
@@ -65,10 +66,10 @@ class Level(object):
         if path not in Level.levels:
             Level.levels.append(path)
 
-        if self.tm_height != s_height or self.tm_width != s_width:
+        if tm_height != s_height or tm_width != s_width:
             '''automatically scale the tilemap'''
-            diff_h = (s_height - self.tm_height) // self.tm.height
-            diff_w = (s_width - self.tm_width) // self.tm.width
+            diff_h = (s_height - tm_height) // self.tm.height
+            diff_w = (s_width - tm_width) // self.tm.width
 
             self.pixel_diff = diff_h if diff_h < diff_w else diff_w
             self.tile_width += self.pixel_diff
@@ -95,14 +96,21 @@ class Level(object):
             x, y = p1_pos
             p2_pos = x + 32, y
         try:
+            bot_obj = self.tm.get_object_by_name("Enemies")
+            bot_pos = self.calc_object_pos((bot_obj.x, bot_obj.y))
+        except ValueError:
+            '''enemies fall from the sky'''
+            bot_pos = randint(0, self.width), 0
+        try:
             next_level = self.tm.get_object_by_name("Exit_Gate")
             self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
             self.next_level = LEVEL_PATH + next_level.type + LEVEL_EXT
         except ValueError:
             pass
 
-        self.player_1_pos = p1_pos
-        self.player_2_pos = p2_pos
+        self.spawn_player_1_pos = p1_pos
+        self.spawn_player_2_pos = p2_pos
+        self.spawn_enemies_pos = bot_pos
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -201,10 +209,10 @@ class Level(object):
         pid = int(pid)
 
         if pid % 2 is 0:
-            pos = self.player_1_pos if not pos else pos
+            pos = self.spawn_player_1_pos if not pos else pos
             sheet = self.PLAYER1
         else:
-            pos = self.player_2_pos if not pos else pos
+            pos = self.spawn_player_2_pos if not pos else pos
             sheet = self.PLAYER2
 
         new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)

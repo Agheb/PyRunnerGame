@@ -44,7 +44,7 @@
    <property name="climbable" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJzt1cEJACAIBdAO7dIuNUvt0sbRoWN8qi9K+O5aygdDcM6dSMr1SFauR6py/U+YWSrEXgszS43Ya2FmqRN7SWDNKpGTSft/qC5e9j19ZwftR/quWGN9Xuk7+sr6HbW+P4cNumUHqw==
+   eJxjYBgcIHegHUAAjLqPMjCc3KdOoV3k6CfFfV5kmE+pflLcR2laGOxpiZ6A0rSIDLypaBYMUJoWkUEeFc2CAWqmpYlUNIsWgFp+pUU6AYGBdh8hfSxkmkuqPbgAofChZlkwFMBg9y81yz5agMFejw728BsFhAEAaKkKpg==
   </data>
  </layer>
  <layer name="Leiter_Top" width="40" height="23">
@@ -75,7 +75,7 @@
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="25" name="Exit_Gate" type="jungle" x="975" y="220"/>
+  <object id="25" name="Exit_Gate" type="scifi_16_9" x="975" y="220"/>
   <object id="26" name="Player_2" x="512" y="640">
    <properties>
     <property name="players" type="bool" value="true"/>

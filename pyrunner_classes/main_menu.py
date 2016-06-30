@@ -71,9 +71,9 @@ class MainMenu(object):
         Cave: menus need to be saved in the reverse order (bottom to top) so that
               the top menus contain all up to date sub-menu objects
         """
-        s_width = (self.render_thread.screen.get_width() // 4) * 3
-        s_height = (self.render_thread.screen.get_height() // 3) * 2
-        surface = pygame.Surface((s_width, s_height), SRCALPHA)
+        s_width = (self.render_thread.screen.get_width() // 16) * 8
+        s_height = (self.render_thread.screen.get_height() // 9) * 5
+        surface = pygame.Surface((s_width, s_height))
         # regular font sizes
         h1_size = 72
         h2_size = 48

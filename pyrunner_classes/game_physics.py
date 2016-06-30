@@ -22,18 +22,22 @@ class Physics(object):
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
-        width, height = self.surface.get_size()
-        width -= player.rect.width
-        height -= player.rect.height
+        '''player'''
+        x, y, width, height = player.rect
+        '''boundaries'''
+        left = self.level.margin_left
+        right = left + self.level.width - width
+        top = self.level.margin_top
+        bottom = top + self.level.height - height
 
-        if player.rect.y > self.level.height:
-            player.rect.y = self.level.height
-        elif player.rect.y < self.level.margin_top:
-            player.rect.y = self.level.margin_top
-        if player.rect.x > self.level.width + self.level.margin_left - player.size:
-            player.rect.x = self.level.width + self.level.margin_left - player.size
-        elif player.rect.x < self.level.margin_left:
-            player.rect.x = self.level.margin_left
+        if y > bottom:
+            player.rect.y = bottom
+        elif y < top:
+            player.rect.y = top
+        if x > right:
+            player.rect.x = right
+        elif x < left:
+            player.rect.x = left
 
     @staticmethod
     def find_collision(x, y, group=WorldObject.group):
