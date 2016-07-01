@@ -192,9 +192,11 @@ class Level(object):
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
-                    elif not gold and pos_y is not self.rows - 1:
+                    elif not gold:
                         '''add all tiles that a player can walk on to this list'''
                         x, y = tile_id
+                        if y is self.rows - 1:
+                            continue
                         if rope:    # treat ropes as a layer below
                             y += 1
                         '''only add walkable tiles'''
@@ -234,11 +236,17 @@ class Level(object):
                 length = stop_x - start_x
                 # print(str(start_x), " to ", str(stop_x), " row: ", str(row), " length: ", str(length))
                 if length:
+                    length += 1  # we start at 0 but want to ignore single tiles (ladders etc.)
                     self.paths_horizontal.append((start_x, stop_x, current_row, length))
-                    print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s - length: %(length)s" % locals())
+                    # print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s - length: %(length)s" % locals())
                 # continue next loop with the current values
                 start_x = stop_x = x
                 current_row = y
+
+        # final check after the loop went through
+        if start_x is not stop_x:
+            length = stop_x - start_x + 1
+            self.paths_horizontal.append((start_x, stop_x, current_row, length))
 
         '''find all ladders'''
         ladders = []
@@ -246,30 +254,40 @@ class Level(object):
             if tile.climbable:
                 ladders.append(tile.tile_id)
         '''sort them by x value'''
-        ladders = sorted(ladders)
+        # remove duplicate entries
+        ladders = list(set(ladders))
+        # sort list by x, then by y
+        ladders.sort()
 
+        not_set = True
         '''convert them to paths'''
-        for ladder_id in ladders:
-            x, y = ladder_id
+        for x, y in ladders:
 
-            if not current_col:
-                current_col = x
-
-            if not start_y:
+            if not not_set:
                 start_y = stop_y = y
+                current_col = x
+                not_set = False
                 continue
 
-            if y is stop_y + 1 and current_col is x:
-                stop_y += 1
+            if y == stop_y + 1 and current_col is x:
+                stop_y = y
             else:
                 length = stop_y - start_y
-                self.paths_vertical.append((current_col, start_y, stop_y, length))
-                # print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s" % locals())
-                start_y = 0
-                current_col = 0
+                if length:
+                    length += 1  # we start at 0 but want to ignore single tiles (ladders etc.)
+                    self.paths_vertical.append((current_col, start_y, stop_y, length))
+                    # print("adding path from %(start_y)s to %(stop_y)s in column %(current_col)s - length: %(length)s" % locals())
+                # continue next loop with the current values
+                start_y = stop_y = y
+                current_col = x
 
-        # print(str(self.paths_horizontal))
-        # print(str(self.paths_vertical))
+        # final check after the loop went through
+        if start_y is not stop_y:
+            length = stop_y - start_y + 1
+            self.paths_vertical.append((current_col, start_y, stop_y, length))
+
+        print(str(self.paths_horizontal))
+        print(str(self.paths_vertical))
 
     @staticmethod
     def squeeze_half_image(image):
