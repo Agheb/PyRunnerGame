@@ -14,6 +14,8 @@ class WorldObject(pygame.sprite.DirtySprite):
 
     def __init__(self, tile, size, tile_id, fps=25, solid=True, removable=False, restoring=False):
         """world object item"""
+        '''the index is used to direct acces on network syncs'''
+        self.index = len(WorldObject.group)
         pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
         self.tile = tile
         self.size = size
@@ -71,6 +73,12 @@ class WorldObject(pygame.sprite.DirtySprite):
 
             self.dirty = 1
 
+    @staticmethod
+    def update_indices():
+        """update all group indexes"""
+        for index, world_object in enumerate(WorldObject.group):
+            world_object.index = index
+
     def kill(self):
         """remove this sprite"""
         if self.removable or self.collectible:
@@ -106,6 +114,12 @@ class Collectible(WorldObject):
         WorldObject.__init__(self, tile, size, tile_id, fps)
         self.collectible = True
 
+    def kill(self):
+        """remove the gold coin"""
+        WorldObject.kill(self)
+        WorldObject.update_indices()
+
+
 
 class RemovedBlock(pygame.sprite.DirtySprite):
     """store values of removed blocks to restore them later on"""
@@ -135,7 +149,7 @@ class RemovedBlock(pygame.sprite.DirtySprite):
 
     def restore(self):
         """recreate a sprite with the same values"""
-        return WorldObject(self.tile, self.size, self.fps, True, True, True)
+        return WorldObject(self.tile, self.size, self.tile_id, self.fps, True, True, True)
 
 
 class ExitGate(WorldObject):
