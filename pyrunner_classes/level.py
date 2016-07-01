@@ -222,23 +222,23 @@ class Level(object):
         for x, y in self.walkable_list:
             # jump to the next item if there's no first
             if not_set:
-                start_x = x
-                stop_x = x + 1
+                start_x = stop_x = x
                 current_row = y
                 not_set = False
                 continue
 
             # print(str(x), " ", str(stop_x))
-            if x == stop_x and current_row is y:
-                stop_x += 1
+            if x == stop_x + 1 and current_row is y:
+                stop_x = x
             else:
                 length = stop_x - start_x
                 # print(str(start_x), " to ", str(stop_x), " row: ", str(row), " length: ", str(length))
                 if length:
                     self.paths_horizontal.append((start_x, stop_x, current_row, length))
                     print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s - length: %(length)s" % locals())
-                start_x = 0
-                not_set = True
+                # continue next loop with the current values
+                start_x = stop_x = x
+                current_row = y
 
         '''find all ladders'''
         ladders = []
