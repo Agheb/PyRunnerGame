@@ -6,12 +6,12 @@ import threading
 import logging
 from pprint import pprint
 import pdb
-
 import Mastermind
 from .controller import Controller
 from datetime import datetime
 import json
 from Mastermind import *
+from .level_objecs import WorldObject
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parentdir)
@@ -155,6 +155,16 @@ class Client(threading.Thread, MastermindClientTCP):
         """run the server"""
         self.send_keep_alive()
         raw_data = self.receive(False)
+
+        # TODO sync world object state over network
+        # .pop(0) removes the first item in a list (FIFO with .append)
+        # and automatically empties the list
+        if WorldObject.network_kill_list:
+            for index in WorldObject.network_kill_list.pop(0):
+                pass
+                # TODO send index (list) to all clients
+                # TODO all clients should then call
+                # WorldObject.kill_world_object(index)
 
         if raw_data:
             data = json.loads(raw_data)

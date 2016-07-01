@@ -11,6 +11,7 @@ class WorldObject(pygame.sprite.DirtySprite):
 
     group = pygame.sprite.LayeredDirty(default_layer=0)
     removed = pygame.sprite.LayeredDirty(default_layer=0)
+    network_kill_list = []
 
     def __init__(self, tile, size, tile_id, fps=25, solid=True, removable=False, restoring=False):
         """world object item"""
@@ -94,6 +95,8 @@ class WorldObject(pygame.sprite.DirtySprite):
             self.killed = True
         else:
             self.super_kill()
+            '''let the network server know which sprite got killed'''
+            WorldObject.network_kill_list.append(self.index)
             '''always update the indices'''
             self.update_indices()
 
