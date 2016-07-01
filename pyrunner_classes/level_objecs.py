@@ -73,10 +73,9 @@ class WorldObject(pygame.sprite.DirtySprite):
 
             self.dirty = 1
 
-    @staticmethod
-    def update_indices():
-        """update all group indexes"""
-        for index, world_object in enumerate(WorldObject.group):
+    def update_indices(self):
+        """update all group indexes for all objects that follow this one in the list"""
+        for index, world_object in enumerate(WorldObject.group, self.index - 1):
             world_object.index = index
 
     def kill(self):
@@ -87,6 +86,8 @@ class WorldObject(pygame.sprite.DirtySprite):
             self.killed = True
         else:
             self.super_kill()
+            '''always update the indices'''
+            self.update_indices()
 
     def super_kill(self):
         """call the parent class kill function"""
@@ -117,8 +118,6 @@ class Collectible(WorldObject):
     def kill(self):
         """remove the gold coin"""
         WorldObject.kill(self)
-        WorldObject.update_indices()
-
 
 
 class RemovedBlock(pygame.sprite.DirtySprite):
