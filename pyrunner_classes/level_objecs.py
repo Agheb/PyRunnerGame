@@ -115,10 +115,6 @@ class Collectible(WorldObject):
         WorldObject.__init__(self, tile, size, tile_id, fps)
         self.collectible = True
 
-    def kill(self):
-        """remove the gold coin"""
-        WorldObject.kill(self)
-
 
 class RemovedBlock(pygame.sprite.DirtySprite):
     """store values of removed blocks to restore them later on"""
