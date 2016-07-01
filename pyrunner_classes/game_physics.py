@@ -53,39 +53,42 @@ class Physics(object):
         for player in Player.group:
             # check if the player is still on the screen
             self.check_world_boundaries(player)
+            half_size = player.tile_size // 2
 
             # assume he's flying in the air
             on_rope = False
             on_ladder = False
             on_ground = False
-            go_down = False
+            can_go_down = False
+
+            '''important sprites for the bot'''
+            bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + half_size)
+            left_sprite = self.find_collision(player.rect.centerx - player.tile_size, player.rect.bottom + half_size)
+            right_sprite = self.find_collision(player.rect.centerx + player.tile_size, player.rect.bottom + half_size)
+
+            '''check if there's a ladder below the feet'''
+            bot_go_down = True if bottom_sprite and bottom_sprite.climbable and not player.is_human else False
+            no_bottom_left = False if left_sprite else True
+            no_bottom_right = False if right_sprite else True
 
             '''find collisions according to certain actions outside of the direct sprite collision'''
             if player.direction is "DR":
                 '''remove the bottom sprite to the right'''
-                right_sprite = self.find_collision(player.rect.centerx + player.tile_size, player.rect.bottom + 1)
-
                 if right_sprite and right_sprite.removable:
                     right_sprite.kill()
             elif player.direction is "DL":
                 '''remove the bottom sprite to the left'''
-                left_sprite = self.find_collision(player.rect.centerx - player.tile_size, player.rect.bottom + 1)
-
                 if left_sprite and left_sprite.removable:
                     left_sprite.kill()
-            elif player.direction is "UD" and not player.on_ladder:
+            elif player.direction is "UD" and not player.on_ladder and bottom_sprite.climbable:
                 '''go down the top part of a solid ladder'''
-                bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + 1)
-
-                if bottom_sprite and bottom_sprite.climbable and player.change_y > 0:
+                if player.change_y > 0:
                     # bottom_sprite.dirty = 1
-                    player.rect.y += 4
+                    can_go_down = True
+                    player.rect.y += half_size
                     on_ladder = True
-                    go_down = True
             else:
                 '''make sure there's ground below the player'''
-                bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + 1)
-
                 if not bottom_sprite and not player.on_rope:
                     '''if there's no ground below the feet'''
                     on_ground = False
@@ -97,10 +100,7 @@ class Physics(object):
             if removed_collision:
                 if not removed_collision.trapped and not player.is_human:
                     removed_collision.trapped = True
-                    player.direction = "Trapped"
-                    player.rect.center = removed_collision.rect.center
-                on_ground = True
-                self.hit_inner_bottom(player, removed_collision)
+                    self.hit_inner_bottom(player, removed_collision)
 
             '''if a removed block contains another player we can walk over it'''
             top_collision = self.find_collision(player.rect.centerx, player.rect.bottom, Player.group)
@@ -148,25 +148,32 @@ class Physics(object):
                             player.rect.centerx = sprite.rect.centerx
                         if player.change_y is 0:
                             player.rect.y = sprite.rect.y
-                elif sprite.rect.collidepoint(player.rect.midbottom) and not go_down:
+                elif sprite.rect.collidepoint(player.rect.midbottom) and not can_go_down:
                     """if the player hits a solid sprite at his feet"""
                     if sprite.solid and not sprite.climbable_horizontal:
                         on_ground = True
                         self.hit_top(player, sprite)
-                elif not go_down:
+                elif not can_go_down:
                     self.fix_pos(player, sprite)
 
-                # update the player variables
+            # update the player variables
             player.on_rope = on_rope
             player.on_ladder = on_ladder
             player.on_ground = on_ground
+            player.can_go_down = can_go_down if player.is_human else bot_go_down
+            # variables only relevant to the bot
+            player.no_bottom_left = no_bottom_left
+            player.no_bottom_right = no_bottom_right
 
     @staticmethod
     def hit_inner_bottom(player, sprite):
         """player hits the inner ground of a sprite"""
         if player.rect.bottom > sprite.rect.bottom:
-            player.rect.bottom = sprite.rect.bottom + 1  # for permanent ground collision
+            player.rect.center = sprite.rect.center
+            player.change_x = 0
             player.change_y = 0
+            player.on_ground = True
+            player.direction = "Trapped"
 
     @staticmethod
     def hit_top(player, sprite):

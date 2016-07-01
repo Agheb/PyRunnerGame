@@ -19,18 +19,19 @@ netlog = logging.getLogger("Network")
 srvlog = netlog.getChild("Server")
 clientlog = netlog.getChild("Client")
 
+START_PORT = 6799
+
 
 class NetworkConnector(object):
     """the main network class"""
 
     COMPRESSION = None
-    START_PORT = 6799
 
     def __init__(self, main, level):
         self.ip = "localhost"
         self.main = main
         self.level = level
-        self.port = self.START_PORT
+        self.port = START_PORT
         self.client = None
         self.server = None
 
@@ -46,13 +47,11 @@ class NetworkConnector(object):
                     self.server.start()
                 else:
                     self.main.load_level(self.main.START_LEVEL)
-            except MastermindErrorSocket:
+            except (MastermindErrorSocket, OSError):
                 self.server.kill()
                 self.server = None
-
-                if self.port < self.START_PORT + 10:
-                    self.port += 1
-                    self.start_server_prompt()
+                self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
+                self.start_server_prompt()
 
         start_server()
         self.join_server_prompt()
@@ -68,10 +67,8 @@ class NetworkConnector(object):
             except ConnectionRefusedError:
                 self.client.kill()
                 self.client = None
-
-                if self.port < self.START_PORT + 10:
-                    self.port += 1
-                    self.join_server_prompt()
+                self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
+                self.join_server_prompt()
 
         join_server()
 
@@ -109,7 +106,7 @@ class Client(threading.Thread, MastermindClientTCP):
             self.connected = True
             self.wait_for_init_data()
         except (ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
-            pass
+            self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
 
     def get_last_command(self):
         # for now, maybe we need non blocking later
@@ -266,7 +263,7 @@ class Server(threading.Thread, MastermindServerTCP):
             self.accepting_allow()
             srvlog.info("server started and accepting connections on port %s" % self.port)
         except (ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
-            pass
+            self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
 
     def callback_disconnect(self):
         srvlog.info("Server disconnected from network")

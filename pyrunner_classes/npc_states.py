@@ -17,9 +17,11 @@ class State(object):
         self.walking_direction = None
         self.closest_player = None
         self.closest_player_distance = 0
+        self.last_direction = 0
         self.go_left = True
         self.switch_direction = False
         self.search_ladder = False
+        self.climbed_ladder = False
         self.fps_counter = 0
 
     def do_actions(self):
@@ -50,6 +52,7 @@ class State(object):
         last_x, last_y = self.bot.last_pos
         destination = self.bot.destination
         location = self.bot.get_location()
+        self.bot.last_pos = location
 
         mod = True if self.fps_counter % 25 is 0 else False
         self.fps_counter = self.fps_counter + 1 if self.fps_counter < 50 else 0
@@ -58,44 +61,59 @@ class State(object):
         lx, ly = location
         size = self.bot.size // 2
 
-        collision = True if self.bot.change_x is 0 and self.bot.change_y is 0 else False
+        # collision = True if self.bot.change_x is 0 and self.bot.change_y is 0 else False
+        if self.bot.change_x is 0 and self.bot.change_y is 0 and not self.bot.stop_on_ground:
+            collision = True
+        else:
+            collision = False
 
         if destination is not location:
+            '''only run every second so the bot won't change it's mind too fast'''
             if mod:
-                self.bot.last_pos = location
+                if self.bot.on_ladder and dy < ly:
+                    '''go ladders up'''
+                    self.bot.go_up()
+                    self.climbed_ladder = True
+                elif self.bot.can_go_down and dy > ly:
+                    '''and down'''
+                    self.bot.go_down()
+                    self.climbed_ladder = True
+                elif self.climbed_ladder:
+                    '''after switching platform go into the direction of the player'''
+                    self.go_left = True if dx < lx else False
+                else:
+                    '''if the ladder doesn't go into the desired direction move on'''
+                    self.bot.change_x = self.last_direction
 
-                if self.bot.on_ladder:
-                    if dy > ly:
-                        if collision:
-                            self.bot.go_right()
-                        else:
-                            self.bot.go_down()
-                    elif dy < ly:
-                        if collision:
-                            self.bot.go_left()
-                        else:
-                            self.bot.go_up()
-                if dx is not lx and not self.bot.on_ladder:
-                    if self.bot.on_rope and lx - size < dx < lx + size:
-                        self.bot.go_down()
-
+                if dx is not lx and (not self.bot.on_ladder or self.bot.change_y is 0):
+                    '''search the next ladder if the target is on a different height'''
                     if dy is not ly:
                         self.search_ladder = True
 
                     if self.go_left:
                         self.bot.go_left()
-                        if collision:
+                        '''go left until you collide or find a ladder'''
+                        if collision and not self.climbed_ladder:
                             self.go_left = False
+                        self.climbed_ladder = False
                     else:
                         self.bot.go_right()
-                        if collision:
+                        '''if the bot collided go right until you find a ladder'''
+                        if collision and not self.climbed_ladder:
                             self.go_left = True
+                        self.climbed_ladder = False
             else:
+                '''if we find a ladder stop on the current tile and save the last walking direction'''
                 if self.search_ladder:
-                    if self.bot.on_ladder:
+                    if self.bot.on_ladder or self.bot.can_go_down:
                         self.search_ladder = False
                         if self.bot.change_x is not 0:
+                            self.last_direction = self.bot.change_x
                             self.bot.stop_on_ground = True
+                else:
+                    '''jump off a rope if we are above a player'''
+                    if self.bot.on_rope and lx - size < dx < lx + size:
+                        self.bot.go_down()
         else:
             print("Bot reached destination")
             self.bot.stop_on_ground = True

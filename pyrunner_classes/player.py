@@ -33,6 +33,9 @@ class Player(pygame.sprite.DirtySprite):
         self.on_ground = False
         self.on_ladder = False
         self.on_rope = False
+        self.can_go_down = False
+        self.no_bottom_left = False
+        self.no_bottom_right = False
         self._stop_on_ground = False
         # movement related
         self.change_x = 0
@@ -58,6 +61,7 @@ class Player(pygame.sprite.DirtySprite):
         self.stop_at_x = 0
         self.stop_at_y = 0
         self.is_human = False if bot else True
+        self.reached_exit = False
 
         if self.is_human:
             # score related
@@ -74,8 +78,6 @@ class Player(pygame.sprite.DirtySprite):
                 self.gold_score.change_player(self)
             else:
                 self.gold_score = GoldScore(self)
-            self.reached_exit = False
-
             # animations
             self.digging_frames_l = []
             self.digging_frames_r = []
@@ -85,7 +87,7 @@ class Player(pygame.sprite.DirtySprite):
             # Load all the left facing images into a list (x, y, height, width)
             self.walking_frames_l = self.sprite_sheet.add_animation(0, 0, 4)
             # Load all the left facing images into a list and flip them to make them face right
-            self.walking_frames_r = self.sprite_sheet.flip_list(self.walking_frames_l)
+            self.walking_frames_r = self.sprite_sheet.flip_frames(self.walking_frames_l)
             # Load all the up / down facing images into a list
             self.walking_frames_ud = self.sprite_sheet.add_animation(0, 1, 4)
             # Load all falling down frames
@@ -93,11 +95,11 @@ class Player(pygame.sprite.DirtySprite):
             # Load all the digging left images
             self.digging_frames_l = self.sprite_sheet.add_animation(0, 2, 3)
             # Load all the digging left images and flip them do digging right
-            self.digging_frames_r = self.sprite_sheet.flip_list(self.digging_frames_l)
+            self.digging_frames_r = self.sprite_sheet.flip_frames(self.digging_frames_l)
             # Load the left hanging images into a list
             self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4)
             # Load the left hanging images into a list and flip them to face right
-            self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
+            self.hanging_frames_r = self.sprite_sheet.flip_frames(self.hanging_frames_l)
             # death animation
             self.death_frames = self.sprite_sheet.add_animation(5, 2, 8)
             # Stop Frame: Sprite when player is not moving on ground
@@ -349,7 +351,7 @@ class Player(pygame.sprite.DirtySprite):
 
     def kill(self):
         """kill animation"""
-        if not self.reached_exit:
+        if self.is_human and not self.reached_exit:
             '''if the player dies in the level remove his gold'''
             self.gold = 0
             self.gold_score.kill()
