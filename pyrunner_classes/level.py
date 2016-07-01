@@ -48,6 +48,8 @@ class Level(object):
         self.background = self.surface.copy()
         self.path = path
         self.fps = fps
+        self.paths_horizontal = []
+        self.paths_vertical = []
         self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         '''
@@ -85,6 +87,9 @@ class Level(object):
         '''draw the complete level'''
         self.render()
 
+        '''calculate walking paths'''
+        self.generate_paths()
+
         try:
             p1_obj = self.tm.get_object_by_name("Player_1")
             p1_pos = self.calc_object_pos((p1_obj.x, p1_obj.y))
@@ -114,7 +119,6 @@ class Level(object):
         self.spawn_enemies_pos = bot_pos
 
         self.bot_1 = Bots(self.spawn_enemies_pos, "LRCharacters32.png", self)
-
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -158,6 +162,7 @@ class Level(object):
                 for a in layer.tiles():
                     pos_x, pos_y, image = a
                     size = width, height
+                    tile_id = pos_x, pos_y
 
                     pos_x = self.margin_left + (width * pos_x)
                     pos_y = self.margin_top + (height * pos_y)
@@ -171,20 +176,83 @@ class Level(object):
                     a = pos_x, pos_y, image
 
                     if ladder:
-                        Ladder(a, size, fps, solid)
+                        Ladder(a, size, tile_id, fps, solid)
                     elif rope:
-                        Rope(a, size, fps)
+                        Rope(a, size, tile_id, fps)
                     elif gold:
-                        Collectible(a, size, fps)
+                        Collectible(a, size, tile_id, fps)
                     elif removable:
-                        WorldObject(a, size, fps, solid, removable)
+                        WorldObject(a, size, tile_id, fps, solid, removable)
                     elif solid:
-                        WorldObject(a, size, fps, solid)
+                        WorldObject(a, size, tile_id, fps, solid)
 
                     if layer.name == "Background":
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
+
+    def generate_paths(self):
+        """create paths by id for bots"""
+        start_x = 0
+        stop_x = 0
+        start_y = 0
+        stop_y = 0
+        current_col = 0
+        current_row = 0
+
+        '''find all horizontal paths'''
+        for tile in WorldObject.group:
+            x, y = tile.tile_id
+
+            # ignore the last "crippled" row
+            if y is self.rows - 1:
+                continue
+            elif not current_row:
+                current_row = y
+
+            if not start_x:
+                start_x = stop_x = x
+                continue
+
+            if x is stop_x + 1 and current_row is y:
+                stop_x += 1
+            else:
+                self.paths_horizontal.append((start_x, stop_x, current_row - 1))
+                # print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s" % locals())
+                start_x = 0
+                current_row = 0
+
+        '''find all ladders'''
+        ladders = []
+        for tile in WorldObject.group:
+            if tile.climbable:
+                ladders.append(tile.tile_id)
+        '''sort them by x value'''
+        ladders = sorted(ladders)
+
+        for ladder_id in ladders:
+            x, y = ladder_id
+
+            if not current_col:
+                current_col = x
+
+            if not start_y:
+                start_y = stop_y = y
+                continue
+
+            if y is stop_y + 1 and current_col is x:
+                stop_y += 1
+            else:
+                self.paths_vertical.append((start_y - 1, stop_y, current_col))
+                # print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s" % locals())
+                start_y = 0
+                current_col = 0
+
+        # print(str(self.paths_horizontal))
+        # print(str(self.paths_vertical))
+
+
+
 
     @staticmethod
     def squeeze_half_image(image):

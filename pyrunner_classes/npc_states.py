@@ -62,8 +62,9 @@ class State(object):
         size = self.bot.size // 2
 
         # collision = True if self.bot.change_x is 0 and self.bot.change_y is 0 else False
-        if self.bot.change_x is 0 and self.bot.change_y is 0 and not self.bot.stop_on_ground:
-            collision = True
+        if self.bot.change_x is 0 and self.bot.change_y is 0:
+            collision = True if not self.last_direction else False
+            self.last_direction = 0
         else:
             collision = False
 

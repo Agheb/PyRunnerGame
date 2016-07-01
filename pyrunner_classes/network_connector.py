@@ -31,7 +31,7 @@ class NetworkConnector(object):
         self.ip = "localhost"
         self.main = main
         self.level = level
-        self.port = START_PORT
+        self.port = 6799
         self.client = None
         self.server = None
 
@@ -47,7 +47,8 @@ class NetworkConnector(object):
                     self.server.start()
                 else:
                     self.main.load_level(self.main.START_LEVEL)
-            except (MastermindErrorSocket, OSError):
+            except (OSError, Mastermind._mm_errors.MastermindErrorSocket):
+                print(str(self.port))
                 self.server.kill()
                 self.server = None
                 self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
@@ -64,7 +65,8 @@ class NetworkConnector(object):
                 self.client = Client("localhost", self.port, self.level, self.main)
                 self.master = False
                 self.client.start()
-            except ConnectionRefusedError:
+            except (OSError, ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
+                print(str(self.port))
                 self.client.kill()
                 self.client = None
                 self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
@@ -99,14 +101,11 @@ class Client(threading.Thread, MastermindClientTCP):
         self.send(data, compression=NetworkConnector.COMPRESSION)
 
     def run(self):
-        try:
-            clientlog.info("Connecting to ip %s" % str(self.target_ip))
-            self.connect(self.target_ip, self.port)
-            clientlog.info("Client connecting, waiting for initData")
-            self.connected = True
-            self.wait_for_init_data()
-        except (ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
-            self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
+        clientlog.info("Connecting to ip %s" % str(self.target_ip))
+        self.connect(self.target_ip, self.port)
+        clientlog.info("Client connecting, waiting for initData")
+        self.connected = True
+        self.wait_for_init_data()
 
     def get_last_command(self):
         # for now, maybe we need non blocking later
@@ -258,12 +257,9 @@ class Server(threading.Thread, MastermindServerTCP):
         self.disconnect()
 
     def run(self):
-        try:
-            self.connect("localhost", self.port)
-            self.accepting_allow()
-            srvlog.info("server started and accepting connections on port %s" % self.port)
-        except (ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
-            self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
+        self.connect("localhost", self.port)
+        self.accepting_allow()
+        srvlog.info("server started and accepting connections on port %s" % self.port)
 
     def callback_disconnect(self):
         srvlog.info("Server disconnected from network")

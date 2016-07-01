@@ -80,13 +80,14 @@ class Physics(object):
                 '''remove the bottom sprite to the left'''
                 if left_sprite and left_sprite.removable:
                     left_sprite.kill()
-            elif player.direction is "UD" and not player.on_ladder and bottom_sprite.climbable:
+            elif player.direction is "UD" and not player.on_ladder:
                 '''go down the top part of a solid ladder'''
-                if player.change_y > 0:
-                    # bottom_sprite.dirty = 1
-                    can_go_down = True
-                    player.rect.y += half_size
-                    on_ladder = True
+                if bottom_sprite and bottom_sprite.climbable or player.on_rope:
+                    if player.change_y > 0:
+                        # bottom_sprite.dirty = 1
+                        can_go_down = True
+                        player.rect.y += half_size
+                        on_ladder = True
             else:
                 '''make sure there's ground below the player'''
                 if not bottom_sprite and not player.on_rope:

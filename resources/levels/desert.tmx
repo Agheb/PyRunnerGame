@@ -44,7 +44,7 @@
    <property name="climbable" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgcIHegHUAAjLqPMjCc3KdOoV3k6CfFfV5kmE+pflLcR2laGOxpiZ6A0rSIDLypaBYMUJoWkUEeFc2CAWqmpYlUNIsWgFp+pUU6AYGBdh8hfSxkmkuqPbgAofChZlkwFMBg9y81yz5agMFejw728BsFhAEAaKkKpg==
+   eJxjYBgFo2AUkALUB1g/IeA1wPoJgdwB1j8YAblpgpppyZsG9lAzLeXhkSPXfdRMSxPxyNE6zxMDqOVXfOmEEjDQ7iOkj4VMc0m1BxcgFD6DIY3REwx2/9K6HqUUDPZ6dLCH3yggDACMEAhH
   </data>
  </layer>
  <layer name="Leiter_Top" width="40" height="23">
@@ -53,7 +53,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2BwAc4B1j8Khh/QIFMfNdMSPrO8qWgPLcCo+ygDpLhvtPwaBYMBjKbDUTAKRgElAACnMAGL
+   eJzt0rEJADAIAEHb7L+wK0giKOGu/+4jYJcz3POf2yc6X/IlFT5hAx8CLxI9MgBA
   </data>
  </layer>
  <layer name="Seil" width="40" height="23">

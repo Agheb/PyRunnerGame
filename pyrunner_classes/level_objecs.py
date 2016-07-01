@@ -12,11 +12,12 @@ class WorldObject(pygame.sprite.DirtySprite):
     group = pygame.sprite.LayeredDirty(default_layer=0)
     removed = pygame.sprite.LayeredDirty(default_layer=0)
 
-    def __init__(self, tile, size, fps=25, solid=True, removable=False, restoring=False):
+    def __init__(self, tile, size, tile_id, fps=25, solid=True, removable=False, restoring=False):
         """world object item"""
         pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
         self.tile = tile
         self.size = size
+        self.tile_id = tile_id
         self.fps = fps
         self.width, self.height = self.size
         self.pos_x, self.pos_y, self.image_backup = self.tile
@@ -87,31 +88,32 @@ class WorldObject(pygame.sprite.DirtySprite):
 class Ladder(WorldObject):
     """climbable ladder"""
 
-    def __init__(self, tile, size, fps, solid=False):
-        WorldObject.__init__(self, tile, size, fps, solid)
+    def __init__(self, tile, size, tile_id, fps, solid=False):
+        WorldObject.__init__(self, tile, size, tile_id, fps, solid)
         self.climbable = True
 
 
 class Rope(WorldObject):
     """hangable rope"""
-    def __init__(self, tile, size, fps):
-        WorldObject.__init__(self, tile, size, fps)
+    def __init__(self, tile, size, tile_id, fps):
+        WorldObject.__init__(self, tile, size, tile_id, fps)
         self.climbable_horizontal = True
 
 
 class Collectible(WorldObject):
     """collectible gold"""
-    def __init__(self, tile, size, fps):
-        WorldObject.__init__(self, tile, size, fps)
+    def __init__(self, tile, size, tile_id, fps):
+        WorldObject.__init__(self, tile, size, tile_id, fps)
         self.collectible = True
 
 
 class RemovedBlock(pygame.sprite.DirtySprite):
     """store values of removed blocks to restore them later on"""
-    def __init__(self, tile, size, fps=25, time_out=1):
+    def __init__(self, tile, size, tile_id, fps=25, time_out=1):
         pygame.sprite.DirtySprite.__init__(self, WorldObject.removed)
         self.tile = tile
         self.size = size
+        self.tile_id = tile_id
         self.fps = fps
         self.time_out = time_out
         self.width, self.height = self.size
