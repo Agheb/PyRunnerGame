@@ -109,10 +109,10 @@ class Physics(object):
                 self.hit_top(player, top_collision)
 
             '''kill players touched by bots'''
-            player_collision = pygame.sprite.spritecollide(player, Player.group, False, False)
-            for p in player_collision:
-                if p.is_human and not player.is_human:
-                    p.kill()
+            if player.is_human:
+                killer = self.find_collision(player.rect.centerx, player.rect.centery, Player.group)
+                if not killer.is_human:
+                    player.kill()
 
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)

@@ -19,7 +19,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2Bwg3woJlYtMXpIMXMU0B7QIy7ycWB8ahhwqCNkvhaRbhgFowAbICeNkJq2RtPiKMBVJsLSgw+JZuEzXwsLHgWjYKiCwVBmPhjkGAA+eDn3
+   eJxjYBgFo2Bwg3woJlYtMXpIMXMUDA+QjwPjU8OAQx0h87WIdMMoGAXYADlphNS0NZoWRwGuMhGWHnxINAuf+VpY8CgYBUMVDIYy88EgxwD5hTmI
   </data>
  </layer>
  <layer name="Block_Removable" width="40" height="23">
@@ -28,7 +28,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlEsKACAIBb1Op/P+u7YiPChKMpiBt/K3GTQD6MdIubXndB/U4A9vn3ihZnEObqF+GH5BNavuKf88BGfhN6KrnpLrqk9lZ071dmcC/YAVzQ==
+   eJzt1EEKACAIRNGu0+m8/66tCAOFBhb/waxSV0NjAP3MkKo72Xv4T6YXapfOoYr6w+gXbtvtnuqfudBZvMZ31ULiu5pTOdlTs90tuJwVXg==
   </data>
  </layer>
  <layer name="Coins" width="40" height="23">

@@ -66,13 +66,16 @@ class SpriteSheet(object):
     @staticmethod
     def flip_list(frames):
         """horizontal flip all frames in a list (make left movements to right etc)"""
-        flipped_list = []
+        try:
+            flipped_list = []
 
-        for i in frames:
-            image = pygame.transform.flip(i, True, False)
-            flipped_list.append(image)
+            for i in frames:
+                image = pygame.transform.flip(i, True, False)
+                flipped_list.append(image)
 
-        return flipped_list
+            return flipped_list
+        except TypeError:
+            return pygame.transform.flip(frames, True, False)
 
     def get_frame(self, position, frame_list, speed=1):
         """returns the next frame in order"""

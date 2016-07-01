@@ -6,11 +6,12 @@ import threading
 import logging
 from pprint import pprint
 import pdb
+
+import Mastermind
 from .controller import Controller
 from datetime import datetime
 import json
 from Mastermind import *
-from Mastermind import MastermindErrorSocket
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parentdir)
@@ -101,11 +102,14 @@ class Client(threading.Thread, MastermindClientTCP):
         self.send(data, compression=NetworkConnector.COMPRESSION)
 
     def run(self):
-        clientlog.info("Connecting to ip %s" % str(self.target_ip))
-        self.connect(self.target_ip, self.port)
-        clientlog.info("Client connecting, waiting for initData")
-        self.connected = True
-        self.wait_for_init_data()
+        try:
+            clientlog.info("Connecting to ip %s" % str(self.target_ip))
+            self.connect(self.target_ip, self.port)
+            clientlog.info("Client connecting, waiting for initData")
+            self.connected = True
+            self.wait_for_init_data()
+        except (ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
+            pass
 
     def get_last_command(self):
         # for now, maybe we need non blocking later
@@ -257,9 +261,12 @@ class Server(threading.Thread, MastermindServerTCP):
         self.disconnect()
 
     def run(self):
-        self.connect("localhost", self.port)
-        self.accepting_allow()
-        srvlog.info("server started and accepting connections on port %s" % self.port)
+        try:
+            self.connect("localhost", self.port)
+            self.accepting_allow()
+            srvlog.info("server started and accepting connections on port %s" % self.port)
+        except (ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
+            pass
 
     def callback_disconnect(self):
         srvlog.info("Server disconnected from network")

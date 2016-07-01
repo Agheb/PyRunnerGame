@@ -17,6 +17,8 @@ class Bots(Player):
         # POSITIONAL RELATED
         self.destination = (0, 0)
         self.last_pos = (0, 0)
+        # give humans a chance
+        self.speed -= 1
 
         # STATEMACHINE RELATED
         # Create instances of each state
@@ -31,7 +33,7 @@ class Bots(Player):
         # state the npc starts with
         self.brain.set_state('exploring')
 
-        self.spawn_frames = self.sprite_sheet.add_animation(4, 8, 4)
+        self.spawn_frames = self.sprite_sheet.add_animation(8, 4, 4)
         # Load all the left facing images into a list (x, y, height, width)
         self.walking_frames_l = self.sprite_sheet.add_animation(0, 3, 4)
         # Load all the left facing images into a list and flip them to make them face right
@@ -49,7 +51,8 @@ class Bots(Player):
 
         # Stop Frame: Sprite when player is not moving on ground
         self.stop_frame = self.sprite_sheet.add_animation(5, 3)
-        self.stand_left = self.stand_right = self.stop_frame
+        self.stand_left = self.sprite_sheet.add_animation(3, 3)
+        self.stand_right = self.sprite_sheet.flip_list(self.stand_left)
 
         self.direction = "Stop"  # direction the player is facing at the beginning of the game
 
@@ -61,4 +64,5 @@ class Bots(Player):
         self.rect.topleft = pos
 
     def process(self):
+        """jetzt scharf nachdenken... denk denk denk"""
         self.brain.think()

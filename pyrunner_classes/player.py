@@ -206,6 +206,7 @@ class Player(pygame.sprite.DirtySprite):
 
             if self.spawn_frame is len(self.spawn_frames):
                 self.spawning = False
+                self.image = self.stand_right
         elif not self.killed:
             # Move left/right
             self.rect.x += self.change_x

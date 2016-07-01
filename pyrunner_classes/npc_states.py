@@ -17,7 +17,10 @@ class State(object):
         self.walking_direction = None
         self.closest_player = None
         self.closest_player_distance = 0
-        self.find_ladder = False
+        self.go_left = True
+        self.switch_direction = False
+        self.search_ladder = False
+        self.fps_counter = 0
 
     def do_actions(self):
         # Called by the think function in statemachine in each frame.
@@ -43,58 +46,59 @@ class State(object):
         # if destination is right of bot, go_right else go_left
         # if bot collides right or left with not climbable block, change direction
         # if destination under bot and on_ladder, go_down else go_up (catch if up down not possible)
-        print("Bot calls go_to_destination with destination set to " + str(self.bot.destination))
+        # print("Bot calls go_to_destination with destination set to " + str(self.bot.destination))
         last_x, last_y = self.bot.last_pos
         destination = self.bot.destination
         location = self.bot.get_location()
-        print("current bot location: " + str(location))
+
+        mod = True if self.fps_counter % 25 is 0 else False
+        self.fps_counter = self.fps_counter + 1 if self.fps_counter < 50 else 0
 
         dx, dy = destination
         lx, ly = location
-        size = (self.bot.rect.right - self.bot.rect.left) // 2
+        size = self.bot.size // 2
 
-        collision = True if last_x == lx and last_y == ly else False
+        collision = True if self.bot.change_x is 0 and self.bot.change_y is 0 else False
 
-        if not (lx - size < dx < lx + size and ly - size < dy < ly + size):
-            # go right or left towards destination
-            if not collision:
-                print("no collision")
-                if lx < dx:
-                    if not self.find_ladder:
-                        self.bot.go_right()
-                    print("bot goes right")
-                elif lx > dx:
-                    self.bot.go_left()
-                    print("bot goes left")
-            else:
-                if self.walking_direction == "right":
-                    self.bot.go_left()
-                    print("bot changes direction to left")
-                else:
-                    self.bot.go_right()
-                    print("bot changes direction to right")
+        if destination is not location:
+            if mod:
+                self.bot.last_pos = location
 
-            # go ladders up or down, according to destination
-            if dy > ly:
-                if self.bot.on_ladder or self.bot.on_rope:
-                    self.bot.go_down()
-                    print("bot tried to go down")
-                elif self.bot.on_rope and dx is lx:
-                    self.bot.go_down()
-                else:
-                    self.find_ladder = True
-
-            elif dy < ly:
                 if self.bot.on_ladder:
-                    self.bot.go_up()
-                    print("bot tried to go up")
-                elif self.bot.on_rope and dx is lx:
-                    self.bot.go_down()
-                else:
-                    self.find_ladder = True
+                    if dy > ly:
+                        if collision:
+                            self.bot.go_right()
+                        else:
+                            self.bot.go_down()
+                    elif dy < ly:
+                        if collision:
+                            self.bot.go_left()
+                        else:
+                            self.bot.go_up()
+                if dx is not lx and not self.bot.on_ladder:
+                    if self.bot.on_rope and lx - size < dx < lx + size:
+                        self.bot.go_down()
+
+                    if dy is not ly:
+                        self.search_ladder = True
+
+                    if self.go_left:
+                        self.bot.go_left()
+                        if collision:
+                            self.go_left = False
+                    else:
+                        self.bot.go_right()
+                        if collision:
+                            self.go_left = True
+            else:
+                if self.search_ladder:
+                    if self.bot.on_ladder:
+                        self.search_ladder = False
+                        if self.bot.change_x is not 0:
+                            self.bot.stop_on_ground = True
         else:
             print("Bot reached destination")
-            self.bot.schedule_stop = True
+            self.bot.stop_on_ground = True
             return True
 
     def check_closest_player(self):
