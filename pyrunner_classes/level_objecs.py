@@ -151,8 +151,7 @@ class RemovedBlock(pygame.sprite.DirtySprite):
 
     def update(self):
         """countdown on each update until the object get's restored"""
-        if (datetime.now() - self.timer).seconds > self.time_out:
-            print("restoring after ", str((datetime.now() - self.timer).seconds))
+        if (datetime.now() - self.timer).seconds == self.time_out:
             self.restore()
             self.kill()
 

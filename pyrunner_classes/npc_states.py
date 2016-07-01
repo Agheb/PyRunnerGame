@@ -187,8 +187,12 @@ class Exploring(State):
     def random_destination(self):
         # TODO Go to Random spot on map
         for tile in WorldObject.group:
-            if tile.solid and not tile.climbable_horizontal and random.randint(0, len(WorldObject.group)) % 5 is 0:
-                self.bot.destination = tile.rect.midtop
+            if tile.solid and not tile.climbable_horizontal and random.randint(0, len(WorldObject.group)) % 5:
+                x, y = tile.tile_id
+                if y != 22:     # ignore items in the last row (23 - 1)
+                    '''aim for the player position above the block'''
+                    self.bot.destination = tile.rect.centerx, tile.rect.top - (self.bot.size // 2)
+                    break
 
         print("bot destination set: " + str(self.bot.destination))
 
