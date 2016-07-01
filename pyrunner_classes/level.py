@@ -290,10 +290,11 @@ class Level(object):
             self.paths_vertical.append((current_col, start_y, stop_y, length))
 
         self.graph = Graph()
+        '''cycle through all horizontal sprites and add them all one by one (with path = 1 for neighbours)'''
         for start, stop, y, length in self.paths_horizontal:
             for i in range(start, stop + 1):
-                name = "%s, %s" % (i, y)
-                before = "%s, %s" % (i - 1, y)
+                name = "(%s, %s)" % (i, y)
+                before = "(%s, %s)" % (i - 1, y)
                 if i is not start:
                     self.graph.add_node(name)
                     self.graph.add_edge(name, before, 1)
@@ -302,20 +303,19 @@ class Level(object):
 
         '''for the ladders its enough to add start and stop points'''
         for x, start, stop, length in self.paths_vertical:
-            s_start = "%s, %s" % (x, start)
-            s_stop = "%s, %s" % (x, stop + 1)
+            s_start = "(%s, %s)" % (x, start)
+            s_stop = "(%s, %s)" % (x, stop + 1)   # + 1 to connect to the bottom tile
             self.graph.add_edge(s_start, s_stop, length)
 
-            '''add the ladder tiles inbetween'''
+            '''and to add the ladder tiles inbetween'''
             for i in range(start + 1, stop + 1):
-                name = "%s, %s" % (x, i)
-                before = "%s, %s" % (x, i - 1)
+                name = "(%s, %s)" % (x, i)
+                before = "(%s, %s)" % (x, i - 1)
                 self.graph.add_node(name)
                 self.graph.add_edge(before, name, 1)
 
         # print(self.graph)
-        print(self.graph.shortest_path('20, 4', '5, 7'))
-
+        # print(self.graph.shortest_path('20, 4', '5, 7'))
         # print(str(self.paths_horizontal))
         # print(str(self.paths_vertical))
 

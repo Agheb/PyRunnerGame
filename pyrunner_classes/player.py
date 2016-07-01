@@ -30,6 +30,7 @@ class Player(pygame.sprite.DirtySprite):
         self.is_human = True
         # positional attributes
         self.x, self.y = pos
+        self.on_tile = None
         self.on_ground = False
         self.on_ladder = False
         self.on_rope = False

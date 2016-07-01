@@ -243,6 +243,43 @@ class Hunting(State):
         pass
 
 
+class ShortestPath(State):
+
+    def __init__(self, bot):
+        State.__init__(self, "shortest path", bot)
+        self.bot = bot  # set bot this state controlls
+
+    def do_actions(self):
+        # self.closest_player = self.check_closest_player()
+        player = None
+        for p in Player.group:
+            if p.is_human:
+                player = p
+                break
+
+        if self.bot.on_tile and player.on_tile:
+            target_tile = str(player.on_tile)
+            own_tile = str(self.bot.on_tile)
+            path = self.bot.level.graph.shortest_path(own_tile, target_tile)
+            # self.bot.destination = self.closest_player.get_location() if self.closest_player else self.check_closest_player()
+            # self.go_to_destination()
+            print(path)
+
+    def check_conditions(self):
+        # if nearest player is not empty state hunting
+        # if another player is now closer, change to state hunting with destination set to the neares player.
+        # if nearest player is empty, change state to exploring
+        # if self.go_to_destination():
+        #    return "exploring"
+        pass
+
+    def entry_actions(self):
+        pass
+
+    def exit_actions(self):
+        pass
+
+
 class Stupid(State):
     def __init__(self, bot):
         State.__init__(self, "stupid", bot)
