@@ -78,6 +78,14 @@ class WorldObject(pygame.sprite.DirtySprite):
         for index, world_object in enumerate(WorldObject.group, self.index - 1):
             world_object.index = index
 
+    @staticmethod
+    def kill_world_object(item_index):
+        """kill a specific item in the WorldObject.group"""
+        for index, world_object in enumerate(WorldObject.group, item_index):
+            if world_object.index == item_index:
+                world_object.kill()
+                return
+
     def kill(self):
         """remove this sprite"""
         if self.removable or self.collectible:
@@ -91,6 +99,7 @@ class WorldObject(pygame.sprite.DirtySprite):
 
     def super_kill(self):
         """call the parent class kill function"""
+        self.dirty = 1
         pygame.sprite.DirtySprite.kill(self)
 
 
