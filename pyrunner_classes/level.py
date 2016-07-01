@@ -199,6 +199,7 @@ class Level(object):
         stop_y = 0
         current_col = 0
         current_row = 0
+        is_rope = False
 
         '''find all horizontal paths'''
         for tile in WorldObject.group:
@@ -207,20 +208,30 @@ class Level(object):
             # ignore the last "crippled" row
             if y is self.rows - 1:
                 continue
-            elif not current_row:
-                current_row = y
-
+            # ignore and all coins
+            if tile.collectible:
+                continue
+            # jump to the next item if there's no first
             if not start_x:
                 start_x = stop_x = x
+                current_row = y
                 continue
+            # treat ropes as if they were one level lower
+            if tile.climbable_horizontal:
+                "adding rope"
+                is_rope = True
 
-            if x is stop_x + 1 and current_row is y:
+            # print(str(x), " ", str(stop_x))
+            if x == stop_x + 1 and current_row is y:
                 stop_x += 1
             else:
-                self.paths_horizontal.append((start_x, stop_x, current_row - 1))
+                row = current_row if is_rope else current_row - 1
+                rlen = stop_x - start_x
+                print(str(start_x), " to ", str(stop_x), " row: ", str(row), " length: ", str(rlen))
+                self.paths_horizontal.append((start_x, stop_x, row))
                 # print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s" % locals())
                 start_x = 0
-                current_row = 0
+                is_rope = False
 
         '''find all ladders'''
         ladders = []
@@ -230,6 +241,7 @@ class Level(object):
         '''sort them by x value'''
         ladders = sorted(ladders)
 
+        '''convert them to paths'''
         for ladder_id in ladders:
             x, y = ladder_id
 
@@ -243,7 +255,7 @@ class Level(object):
             if y is stop_y + 1 and current_col is x:
                 stop_y += 1
             else:
-                self.paths_vertical.append((start_y - 1, stop_y, current_col))
+                self.paths_vertical.append((current_col, start_y - 1, stop_y))
                 # print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s" % locals())
                 start_y = 0
                 current_col = 0
