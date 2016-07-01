@@ -1,16 +1,15 @@
-"""
-This class and its instances are the states of the bot.
-The states determine what the bot does, when to change states, what to do when changing states.
-The state_machine controlls the states, it is the brain of the bot.
-Bots are Instances of non_player_characters, inherited from player class.
-"""
 import random
-import pygame
 from .player import Player
 from .level import WorldObject
 
 
 class State(object):
+    """
+        This class and its instances are the states of the bot.
+        The states determine what the bot does, when to change states, what to do when changing states.
+        The state_machine controlls the states, it is the brain of the bot.
+        Bots are Instances of non_player_characters, inherited from player class.
+    """
     def __init__(self, name, bot):
         self.name = name
         self.bot = bot
@@ -25,37 +24,47 @@ class State(object):
         self.fps_counter = 0
 
     def do_actions(self):
-        # Called by the think function in statemachine in each frame.
-        # All actions the bot should perform when in this state.
+        """
+            Called by the think function in statemachine in each frame.
+            All actions the bot should perform when in this state.
+        """
         pass
 
     def check_conditions(self):
-        # Called in every Frame from Statemachine
-        # If check_conditions returns a string (name of state), a new active state will be selected
-        # and any exit and entry actions will be called from the StateMachine
+        """
+            Called in every Frame from Statemachine
+            If check_conditions returns a string (name of state), a new active state will be selected
+            and any exit and entry actions will be called from the StateMachine
+        """
         pass
 
     def entry_actions(self):
-        # actions the player should do when entering this state
+        """actions the player should do when entering this state"""
         pass
 
     def exit_actions(self):
-        # actions the player should do when exiting this state
+        """actions the player should do when exiting this state"""
         pass
 
     def go_to_destination(self):
-        # check these conditions after x frames:
-        # if destination is right of bot, go_right else go_left
-        # if bot collides right or left with not climbable block, change direction
-        # if destination under bot and on_ladder, go_down else go_up (catch if up down not possible)
+        """
+            check these conditions after x frames:
+            if destination is right of bot, go_right else go_left
+            if bot collides right or left with not climbable block, change direction
+            if destination under bot and on_ladder, go_down else go_up (catch if up down not possible)
+        """
         # print("Bot calls go_to_destination with destination set to " + str(self.bot.destination))
         last_x, last_y = self.bot.last_pos
         destination = self.bot.destination
         location = self.bot.get_location()
         self.bot.last_pos = location
 
-        mod = True if self.fps_counter % 25 is 0 else False
-        self.fps_counter = self.fps_counter + 1 if self.fps_counter < 50 else 0
+        if self.fps_counter is 25:
+            mod = True
+            self.fps_counter = 0
+        else:
+            mod = False
+            self.fps_counter += 1
 
         dx, dy = destination
         lx, ly = location
@@ -68,7 +77,7 @@ class State(object):
         else:
             collision = False
 
-        if destination is not location:
+        if destination is not location and self.bot.direction is not "Trapped":
             '''only run every second so the bot won't change it's mind too fast'''
             if mod:
                 if self.bot.on_ladder and dy < ly:
@@ -121,6 +130,7 @@ class State(object):
             return True
 
     def check_closest_player(self):
+        """get the closest player to the bot"""
         # TODO determine which player is closest and return that player position in a radius around bot
         # as destination
         pos_x, pos_y = self.bot.rect.topleft
@@ -141,6 +151,7 @@ class State(object):
         return self.closest_player.get_location() if self.closest_player else False
 
     def check_destination_reached(self):
+        """check if the bot reached the destination which was set"""
         # because of tile based movement, location == destination is not possible.
         # check_destination_reached checks if destination is reached with a margin.
         margin = 16

@@ -4,6 +4,7 @@
 # Python 2 related fixes
 from __future__ import division
 from .spritesheet_handling import *
+from datetime import datetime
 
 
 class WorldObject(pygame.sprite.DirtySprite):
@@ -91,14 +92,15 @@ class WorldObject(pygame.sprite.DirtySprite):
         """remove this sprite"""
         if self.removable or self.collectible:
             if not self.killed and self.removable:
-                RemovedBlock(self.tile, self.rect.size, 4, self.fps)
+                RemovedBlock(self.tile, self.rect.size, self.tile_id, self.fps, 10)
             self.killed = True
         else:
-            self.super_kill()
             '''let the network server know which sprite got killed'''
             WorldObject.network_kill_list.append(self.index)
             '''always update the indices'''
             self.update_indices()
+            '''remove the tile from all groups'''
+            self.super_kill()
 
     def super_kill(self):
         """call the parent class kill function"""
@@ -137,6 +139,7 @@ class RemovedBlock(pygame.sprite.DirtySprite):
         self.tile_id = tile_id
         self.fps = fps
         self.time_out = time_out
+        self.timer = datetime.now()
         self.width, self.height = self.size
         self.pos_x, self.pos_y, self.restore_image = self.tile
         self.image = pygame.Surface(size, SRCALPHA)
@@ -148,9 +151,8 @@ class RemovedBlock(pygame.sprite.DirtySprite):
 
     def update(self):
         """countdown on each update until the object get's restored"""
-        self.counter += 1
-
-        if self.counter is self.fps * self.time_out:
+        if (datetime.now() - self.timer).seconds > self.time_out:
+            print("restoring after ", str((datetime.now() - self.timer).seconds))
             self.restore()
             self.kill()
 
