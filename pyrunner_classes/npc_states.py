@@ -1,6 +1,7 @@
 import random
 from .player import Player
 from .level import WorldObject
+from ast import literal_eval as make_tuple
 
 
 class State(object):
@@ -248,22 +249,61 @@ class ShortestPath(State):
     def __init__(self, bot):
         State.__init__(self, "shortest path", bot)
         self.bot = bot  # set bot this state controlls
+        self.path = None
+        self.target = None
+        self.next_pos = None
+        self.fps_counter = 0
+
+    def get_next_position(self):
+        length, pos_list = self.path
+        return make_tuple(pos_list.pop(0)) if pos_list else False
 
     def do_actions(self):
         # self.closest_player = self.check_closest_player()
-        player = None
-        for p in Player.group:
-            if p.is_human:
-                player = p
-                break
+        if self.fps_counter < 50:
+            self.fps_counter += 1
 
-        if self.bot.on_tile and player.on_tile:
-            target_tile = str(player.on_tile)
-            own_tile = str(self.bot.on_tile)
-            path = self.bot.level.graph.shortest_path(own_tile, target_tile)
-            # self.bot.destination = self.closest_player.get_location() if self.closest_player else self.check_closest_player()
+            if self.next_pos and self.bot.on_tile:
+                x, y = self.next_pos
+                bx, by = self.bot.on_tile
+
+                # print(str(self.next_pos))
+                # print(str(self.bot.on_tile))
+
+                if x < bx:
+                    self.bot.go_left()
+                elif x > bx:
+                    self.bot.go_right()
+                elif y > by:
+                    self.bot.go_down()
+                elif y < by:
+                    self.bot.go_up()
+
+                if x == bx or y == by:
+                    self.next_pos = self.get_next_position()
+        else:
+            self.fps_counter = 0
+
+            player = None
+            for p in Player.group:
+                if p.is_human:
+                    player = p
+                    break
+
+            if self.bot.on_tile and player.on_tile:
+                target_tile = str(player.on_tile)
+                own_tile = str(self.bot.on_tile)
+                try:
+                    self.path = self.bot.level.graph.shortest_path(own_tile, target_tile)
+                except KeyError:
+                    print(own_tile, " or ", target_tile, " were invalid.")
+                    pass
+                self.next_pos = self.get_next_position()
+
+
+
+                # self.bot.destination = self.closest_player.get_location() if self.closest_player else self.check_closest_player()
             # self.go_to_destination()
-            print(path)
 
     def check_conditions(self):
         # if nearest player is not empty state hunting
