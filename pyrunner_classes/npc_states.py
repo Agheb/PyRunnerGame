@@ -253,33 +253,43 @@ class ShortestPath(State):
         self.target = None
         self.next_pos = None
         self.fps_counter = 0
+        self.last_direction = self.bot.change_x
 
     def get_next_position(self):
-        length, pos_list = self.path
+        """return the next tile to walk to"""
+        if self.path:
+            length, pos_list = self.path
+        else:
+            pos_list = False
+
         return make_tuple(pos_list.pop(0)) if pos_list else False
 
     def do_actions(self):
         # self.closest_player = self.check_closest_player()
-        if self.fps_counter < 50:
+        if self.fps_counter < 25:
             self.fps_counter += 1
 
             if self.next_pos and self.bot.on_tile:
                 x, y = self.next_pos
                 bx, by = self.bot.on_tile
 
-                # print(str(self.next_pos))
-                # print(str(self.bot.on_tile))
+                y -= 1
+
+                print(str(self.next_pos))
+                print(str(self.bot.on_tile))
 
                 if x < bx:
                     self.bot.go_left()
+                    self.go_left = True
                 elif x > bx:
                     self.bot.go_right()
+                    self.go_left = False
                 elif y > by:
                     self.bot.go_down()
                 elif y < by:
                     self.bot.go_up()
 
-                if x == bx or y == by:
+                if x == bx or y == by or self.bot.change_x is 0 and self.bot.change_y is 0:
                     self.next_pos = self.get_next_position()
         else:
             self.fps_counter = 0
@@ -297,7 +307,12 @@ class ShortestPath(State):
                     self.path = self.bot.level.graph.shortest_path(own_tile, target_tile)
                 except KeyError:
                     print(own_tile, " or ", target_tile, " were invalid.")
-                    pass
+
+                    self.bot.go_left() if self.go_left else self.bot.go_right()
+
+                    if self.bot.change_x is 0:
+                        self.go_left = False if self.go_left else True
+
                 self.next_pos = self.get_next_position()
 
 

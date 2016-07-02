@@ -27,7 +27,7 @@ class Player(pygame.sprite.DirtySprite):
         self.pixel_diff = self.level.pixel_diff if self.level else 0
         self.size = self.tile_size + self.pixel_diff
         self.fps = fps
-        self.is_human = True
+        self.is_human = True if not bot else False
         # positional attributes
         self.x, self.y = pos
         self.on_tile = None

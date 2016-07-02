@@ -53,8 +53,6 @@ class Level(object):
         self.fps = fps
         self.graph = None
         self.walkable_list = []
-        self.paths_horizontal = []
-        self.paths_vertical = []
         self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         '''
@@ -215,6 +213,8 @@ class Level(object):
         current_row = 0
         not_set = True
 
+        # graph to use with dijkstra's shortest path algorithm
+        self.graph = Graph()
         # remove duplicate entries (e.g. ropes that count one row deeper)
         self.walkable_list = list(set(self.walkable_list))
         # sort list by x, then by y
@@ -234,14 +234,27 @@ class Level(object):
 
             # print(str(x), " ", str(stop_x))
             if x == stop_x + 1 and current_row is y:
+                name = "(%s, %s)" % (x, y)
+                before = "(%s, %s)" % (x - 1, y)
+                self.graph.add_node(name)
+                if x is not 0:
+                    self.graph.add_edge(name, before, 1)
+                    self.graph.add_edge(before, name, 1)
                 stop_x = x
             else:
                 length = stop_x - start_x
+                if length:
+                    start = "(%s, %s)" % (start_x, y)
+                    end = "(%s, %s)" % (stop_x, y)
+                    self.graph.add_edge(start, end, length + 1)
+                    self.graph.add_edge(end, start, length + 1)
                 # print(str(start_x), " to ", str(stop_x), " row: ", str(row), " length: ", str(length))
+                '''
                 if length:
                     length += 1  # we start at 0 but want to ignore single tiles (ladders etc.)
-                    self.paths_horizontal.append((start_x, stop_x, current_row, length))
+                    # self.paths_horizontal.append((start_x, stop_x, current_row, length))
                     # print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s - length: %(length)s" % locals())
+                '''
                 # continue next loop with the current values
                 start_x = stop_x = x
                 current_row = y
@@ -249,7 +262,14 @@ class Level(object):
         # final check after the loop went through
         if start_x is not stop_x:
             length = stop_x - start_x + 1
+            start = "(%s, %s)" % (start_x, current_row)
+            stop = "(%s, %s)" % (stop_x, current_row)
+            self.graph.add_edge(start, stop, length)
+            self.graph.add_edge(stop, start, length)
+            '''
+            length = stop_x - start_x + 1
             self.paths_horizontal.append((start_x, stop_x, current_row, length))
+            '''
 
         '''find all ladders'''
         ladders = []
@@ -273,12 +293,25 @@ class Level(object):
                 continue
 
             if y == stop_y + 1 and current_col is x:
+                name = "(%s, %s)" % (current_col, y)
+                before = "(%s, %s)" % (current_col, y - 1)
+                self.graph.add_node(name)
+                if y is not 0:
+                    self.graph.add_edge(name, before, 1)
                 stop_y = y
             else:
                 length = stop_y - start_y
                 if length:
                     length += 1  # we start at 0 but want to ignore single tiles (ladders etc.)
-                    self.paths_vertical.append((current_col, start_y, stop_y, length))
+                    name = "(%s, %s)" % (current_col, start_y)
+                    before = "(%s, %s)" % (current_col, stop_y)
+                    down = "(%s, %s)" % (current_col, stop_y + 1)
+                    self.graph.add_node(down)
+                    self.graph.add_edge(before, down, 1)
+                    self.graph.add_edge(down, before, 1)
+                    self.graph.add_edge(name, down, length + 1)
+                    self.graph.add_edge(down, name, length + 1)
+                    # self.paths_vertical.append((current_col, start_y, stop_y, length))
                     # print("adding path from %(start_y)s to %(stop_y)s in column %(current_col)s - length: %(length)s" % locals())
                 # continue next loop with the current values
                 start_y = stop_y = y
@@ -287,32 +320,39 @@ class Level(object):
         # final check after the loop went through
         if start_y is not stop_y:
             length = stop_y - start_y + 1
-            self.paths_vertical.append((current_col, start_y, stop_y, length))
-
-        self.graph = Graph()
-        '''cycle through all horizontal sprites and add them all one by one (with path = 1 for neighbours)'''
-        for start, stop, y, length in self.paths_horizontal:
-            for i in range(start, stop + 1):
-                name = "(%s, %s)" % (i, y)
-                before = "(%s, %s)" % (i - 1, y)
-                if i is not start:
-                    self.graph.add_node(name)
-                    self.graph.add_edge(name, before, 1)
-                else:
-                    self.graph.add_node(name)
-
-        '''for the ladders its enough to add start and stop points'''
-        for x, start, stop, length in self.paths_vertical:
-            s_start = "(%s, %s)" % (x, start)
-            s_stop = "(%s, %s)" % (x, stop + 1)   # + 1 to connect to the bottom tile
-            self.graph.add_edge(s_start, s_stop, length)
-
-            '''and to add the ladder tiles inbetween'''
-            for i in range(start + 1, stop + 1):
-                name = "(%s, %s)" % (x, i)
-                before = "(%s, %s)" % (x, i - 1)
-                self.graph.add_node(name)
-                self.graph.add_edge(before, name, 1)
+            start = "(%s, %s)" % (current_col, start_y)
+            stop = "(%s, %s)" % (current_col, stop_y)
+            down = "(%s, %s)" % (current_col, stop_y + 1)
+            self.graph.add_node(down)
+            self.graph.add_edge(stop, down, 1)
+            self.graph.add_edge(start, down, length + 1)
+            self.graph.add_edge(down, stop, 1)
+            self.graph.add_edge(down, start, length + 1)
+            # self.paths_vertical.append((current_col, start_y, stop_y, length))
+        #
+        # '''cycle through all horizontal sprites and add them all one by one (with path = 1 for neighbours)'''
+        # for start, stop, y, length in self.paths_horizontal:
+        #     for i in range(start - 1, stop + 2):
+        #         name = "(%s, %s)" % (i, y)
+        #         before = "(%s, %s)" % (i - 1, y)
+        #         if i is not start:
+        #             self.graph.add_node(name)
+        #             self.graph.add_edge(name, before, 1)
+        #         else:
+        #             self.graph.add_node(name)
+        #
+        # '''for the ladders its enough to add start and stop points'''
+        # for x, start, stop, length in self.paths_vertical:
+        #     s_start = "(%s, %s)" % (x, start)
+        #     s_stop = "(%s, %s)" % (x, stop + 1)   # + 1 to connect to the bottom tile
+        #     self.graph.add_edge(s_start, s_stop, length)
+        #
+        #     '''and to add the ladder tiles inbetween'''
+        #     for i in range(start, stop + 2):
+        #         name = "(%s, %s)" % (x, i)
+        #         before = "(%s, %s)" % (x, i - 1)
+        #         self.graph.add_node(name)
+        #         self.graph.add_edge(before, name, 1)
 
         # print(self.graph)
         # print(self.graph.shortest_path('20, 4', '5, 7'))
