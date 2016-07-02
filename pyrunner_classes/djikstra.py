@@ -54,6 +54,11 @@ class Graph(object):
         return visited, path
 
     def shortest_path(self, origin, destination):
+        if not isinstance(origin, str):
+            origin = str(origin)
+        if not isinstance(destination, str):
+            destination = str(destination)
+        
         visited, paths = self.dijkstra(self, origin)
         full_path = deque()
         _destination = paths[destination]
