@@ -70,6 +70,7 @@ class Physics(object):
             bot_go_down = True if bottom_sprite and bottom_sprite.climbable and not player.is_human else False
             no_bottom_left = False if left_sprite else True
             no_bottom_right = False if right_sprite else True
+            on_tile = bottom_sprite.tile_id if bottom_sprite else None
 
             '''find collisions according to certain actions outside of the direct sprite collision'''
             if player.direction is "DR":
@@ -137,8 +138,10 @@ class Physics(object):
                 elif sprite.restoring:
                     player.kill()
                 elif sprite.rect.collidepoint(player.rect.center):
+                    x, y = sprite.tile_id
                     """check which sprite contains the player"""
                     if sprite.climbable_horizontal and player.direction is not "Falling":
+                        y += 1
                         """player is hanging on the rope"""
                         on_rope = True
                         player.rect.top = sprite.rect.top
@@ -149,6 +152,7 @@ class Physics(object):
                             player.rect.centerx = sprite.rect.centerx
                         if player.change_y is 0:
                             player.rect.y = sprite.rect.y
+                    on_tile = x, y
                 elif sprite.rect.collidepoint(player.rect.midbottom) and not can_go_down:
                     """if the player hits a solid sprite at his feet"""
                     if sprite.solid and not sprite.climbable_horizontal:
@@ -158,6 +162,7 @@ class Physics(object):
                     self.fix_pos(player, sprite)
 
             # update the player variables
+            player.on_tile = on_tile
             player.on_rope = on_rope
             player.on_ladder = on_ladder
             player.on_ground = on_ground
