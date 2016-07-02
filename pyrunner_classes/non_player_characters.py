@@ -23,17 +23,13 @@ class Bots(Player):
         # STATEMACHINE RELATED
         # Create instances of each state
         exploring_state = Exploring(self)
-        hunting_state = Hunting(self)
-        stupid_state = Stupid(self)
         shortest_state = ShortestPath(self)
         # add states to the state machine
         self.brain = StateMachine()
-        # self.brain.add_state(exploring_state)
-        # self.brain.add_state(hunting_state)
-        # self.brain.add_state(stupid_state)
+        self.brain.add_state(exploring_state)
         self.brain.add_state(shortest_state)
         # state the npc starts with
-        self.brain.set_state('shortest path')
+        self.brain.set_state('exploring')
 
         self.spawn_frames = self.sprite_sheet.add_animation(8, 4, 4)
         # Load all the left facing images into a list (x, y, height, width)

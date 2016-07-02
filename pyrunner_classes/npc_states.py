@@ -2,7 +2,7 @@ import random
 from .player import Player
 from .level import WorldObject
 from ast import literal_eval as make_tuple
-
+import math
 
 class State(object):
     """
@@ -11,6 +11,7 @@ class State(object):
         The state_machine controlls the states, it is the brain of the bot.
         Bots are Instances of non_player_characters, inherited from player class.
     """
+
     def __init__(self, name, bot):
         self.name = name
         self.bot = bot
@@ -131,121 +132,61 @@ class State(object):
             return True
 
     def check_closest_player(self):
-        """get the closest player to the bot"""
-        # TODO determine which player is closest and return that player position in a radius around bot
-        # as destination
-        pos_x, pos_y = self.bot.rect.topleft
+        # Bot checks if a player is in a specified radius. If its is returns the position of the closest player.
+        def distance(p0, p1):
+            return math.sqrt((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2)
 
-        for player in Player.group:
-            if player.is_human:
-                x, y = player.rect.topleft
-                distance_x = x - pos_x if x < pos_x else pos_x - x
-                distance_y = y - pos_y if y < pos_y else pos_y - y
-                distance = distance_x + distance_y
+        bot_pos = self.bot.rect.topleft
+        radius = 500
 
+        player = None
+        for p in Player.group:
+            if p.is_human:
+                player = p
+                break
+
+        if player:
+            player_pos = player.rect.topleft
+            distance = distance(player_pos, bot_pos)
+
+            if distance < radius:
                 if not self.closest_player:
                     self.closest_player = player
                     self.closest_player_distance = distance
                 elif distance < self.closest_player_distance:
                     self.closest_player = player
                     self.closest_player_distance = distance
-        return self.closest_player.get_location() if self.closest_player else False
-
-    def check_destination_reached(self):
-        """check if the bot reached the destination which was set"""
-        # because of tile based movement, location == destination is not possible.
-        # check_destination_reached checks if destination is reached with a margin.
-        margin = 16
-        destination = self.bot.destination
-        location = self.bot.get_location()
-        dx, dy = destination
-        lx, ly = destination
-        x_reached = False
-        y_reached = False
-
-        if dx > lx - margin and dx > lx + margin:
-            x_reached = True
-
-        elif dy > ly - margin and dy > dy + margin:
-            y_reached = True
-
-        if x_reached and y_reached:
-            return True
-
-        elif y_reached:
-            return "yReached"
-
-        elif x_reached:
-            return "xReached"
+                return player_pos
+            else:
+                return False
 
 
 class Exploring(State):
     def __init__(self, bot):
         State.__init__(self, "exploring", bot)
         self.bot = bot  # set bot this state controlls
-        self.first_call = True
 
     def random_destination(self):
         # TODO Go to Random spot on map
-        for tile in WorldObject.group:
-            if tile.solid and not tile.climbable_horizontal and random.randint(0, len(WorldObject.group)) % 5:
-                x, y = tile.tile_id
-                if y != 22:     # ignore items in the last row (23 - 1)
-                    '''aim for the player position above the block'''
-                    self.bot.destination = tile.rect.centerx, tile.rect.top - (self.bot.size // 2)
-                    break
-
-        print("bot destination set: " + str(self.bot.destination))
+        pass
 
     def do_actions(self):
-        # Set random destination on first call, then change direction every x calls, so every x Frames
-        if self.first_call:
-            self.random_destination()
-            self.first_call = False
-
-        self.go_to_destination()
+        pass
 
     def check_conditions(self):
         # TODO Detect player in a specified range and then change state to hunting
-        # if player in range, return "hunting"
-        # if check_closest_player from super returns a player, let check conditions return "hunting"
         if self.check_closest_player():
-            return "hunting"
+            print("player found")
+            return "shortest path"
 
     def entry_actions(self):
         return
 
     def exit_actions(self):
         return
-
-
-class Hunting(State):
-    # TODO walk towards player position
-    # TODO when close to a player, speed up
-    def __init__(self, bot):
-        State.__init__(self, "hunting", bot)
-        self.bot = bot  # set bot this state controlls
-
-    def do_actions(self):
-        self.bot.destination = self.closest_player.get_location() if self.closest_player else self.check_closest_player()
-        self.go_to_destination()
-
-    def check_conditions(self):
-        # if nearest player is not empty state hunting
-        # if another player is now closer, change to state hunting with destination set to the neares player.
-        # if nearest player is empty, change state to exploring
-        if self.go_to_destination():
-            return "exploring"
-
-    def entry_actions(self):
-        pass
-
-    def exit_actions(self):
-        pass
 
 
 class ShortestPath(State):
-
     def __init__(self, bot):
         State.__init__(self, "shortest path", bot)
         self.bot = bot  # set bot this state controlls
@@ -318,34 +259,14 @@ class ShortestPath(State):
 
 
                 # self.bot.destination = self.closest_player.get_location() if self.closest_player else self.check_closest_player()
-            # self.go_to_destination()
+                # self.go_to_destination()
 
     def check_conditions(self):
         # if nearest player is not empty state hunting
         # if another player is now closer, change to state hunting with destination set to the neares player.
         # if nearest player is empty, change state to exploring
-        # if self.go_to_destination():
-        #    return "exploring"
-        pass
-
-    def entry_actions(self):
-        pass
-
-    def exit_actions(self):
-        pass
-
-
-class Stupid(State):
-    def __init__(self, bot):
-        State.__init__(self, "stupid", bot)
-        self.bot = bot  # set bot this state controlls
-
-    def do_actions(self):
-        # if bot is over player go every ladder up / if under down
-        self.bot.go_right()
-
-    def check_conditions(self):
-        pass
+        if not self.check_closest_player():
+            return "exploring"
 
     def entry_actions(self):
         pass
