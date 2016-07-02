@@ -138,10 +138,9 @@ class Physics(object):
                 elif sprite.restoring:
                     player.kill()
                 elif sprite.rect.collidepoint(player.rect.center):
-                    x, y = sprite.tile_id
+                    on_tile = sprite.tile_id
                     """check which sprite contains the player"""
                     if sprite.climbable_horizontal and player.direction is not "Falling":
-                        y += 1
                         """player is hanging on the rope"""
                         on_rope = True
                         player.rect.top = sprite.rect.top
@@ -152,7 +151,6 @@ class Physics(object):
                             player.rect.centerx = sprite.rect.centerx
                         if player.change_y is 0:
                             player.rect.y = sprite.rect.y
-                    on_tile = x, y
                 elif sprite.rect.collidepoint(player.rect.midbottom) and not can_go_down:
                     """if the player hits a solid sprite at his feet"""
                     if sprite.solid and not sprite.climbable_horizontal:
