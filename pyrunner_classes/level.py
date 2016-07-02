@@ -213,7 +213,7 @@ class Level(object):
         self.walkable_list.sort(key=itemgetter(0))
         self.walkable_list.sort(key=itemgetter(1))
 
-        horizontals = self.add_paths(self.walkable_list, True)
+        self.add_paths(self.walkable_list, True)  # horizontals =
 
         '''find all ladders'''
         ladders = []
@@ -295,7 +295,6 @@ class Level(object):
             self.graph.add_edge(start_node, stop_node, length)
             self.graph.add_edge(stop_node, start_node, length)
             print("adding path from ", start_node, " to ", stop_node, " with a length of ", length)
-
 
     def add_paths(self, node_list, horizontal=True):
         """find intersections between different levels"""

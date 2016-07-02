@@ -172,7 +172,7 @@ class Exploring(State):
         pass
 
     def do_actions(self):
-        pass
+        self.bot.go_left() if self.go_left else self.bot.go_right()
 
     def check_conditions(self):
         if self.check_closest_player():
