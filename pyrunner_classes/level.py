@@ -10,7 +10,7 @@ from .player import Player
 from .non_player_characters import Bots
 from random import randint
 from operator import itemgetter
-from .dijkstra import Graph, Digraph
+from .dijkstra import Graph
 import logging
 
 log = logging.getLogger("Level")

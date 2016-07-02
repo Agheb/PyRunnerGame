@@ -58,7 +58,7 @@ class Graph(object):
             origin = str(origin)
         if not isinstance(destination, str):
             destination = str(destination)
-        
+
         visited, paths = self.dijkstra(self, origin)
         full_path = deque()
         _destination = paths[destination]
