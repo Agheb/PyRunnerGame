@@ -70,16 +70,28 @@ class State(object):
                 print(str(self.next_pos))
                 print(str(self.bot.on_tile))
 
+                if self.bot.on_ladder or self.bot.can_go_down:
+                    if self.bot.on_rope:
+                        if bx < x:
+                            self.bot.go_right()
+                        elif bx > x:
+                            self.bot.go_left()
+                    elif self.bot.change_x is not 0:
+                        self.last_direction = self.bot.change_x
+                        self.bot.stop_on_ground = True
+                    if y > by:
+                        self.bot.stop_on_ground = True
+                        self.bot.go_down()
+                    elif y < by:
+                        # self.bot.stop_on_ground = True
+                        self.bot.go_up()
+
                 if x < bx:
                     self.bot.go_left()
                     self.go_left = True
                 elif x > bx:
                     self.bot.go_right()
                     self.go_left = False
-                elif y > by:
-                    self.bot.go_down()
-                elif y < by:
-                    self.bot.go_up()
 
                 if x == bx or y == by or self.bot.change_x is 0 and self.bot.change_y is 0:
                     self.next_pos = self.get_next_position()
