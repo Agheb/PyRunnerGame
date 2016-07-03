@@ -19,7 +19,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2BwA3dGCCZWLTF6YPKE8CigDxiosEa3F1v8E5sWiEk3xKa70fQ3sgE5aWA07YwCUgE1yx5sekbT4ygYBbQDpLYn6I0BlHgbAQ==
+   eJxjYBgFo2BwA3dGCCZWLTF6YPKE8CigDxiosEa3F1v8E5sWiEk3xKax0fQ3sgE5ZdBo2TUKSAXUrPuw6RlNj6NgKANsaZec/EJJO5PYtupgxAAvLCAR
   </data>
  </layer>
  <layer name="Block_Removable" width="40" height="23">
@@ -28,7 +28,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2DwASVGVEwtcyg1bxQMP0BJusCldzTNjQJiADHpAlcZNpq+RgGtAbFpj9x0PApGwSgYvgAAoAQGkQ==
+   eJztlkEKACAIBO0rfcb//yi61WFB1MMWO+AxWWyMzITgY467uvpU+4n/qHiBzkadc3I/UT4nyYhyvJIvctfoDetw5oX5nc6dxQBLDkQ1X9S9rMfs8xNiE/G8ezfY/gIZFrvUD1A=
   </data>
  </layer>
  <layer name="Coins" width="40" height="23">
@@ -36,7 +36,7 @@
    <property name="collectible" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFIxl4otHk6qfEjFEwMgCu9EFJuhlNc6OAmoCY9DSa5kYBuYDUtENI/WhaHAWjgLaA2Dw2WndgAgCL2QRI
+   eJxjYBgFIxl4otHk6qfEjFEwMgCu9EFJuhlNc6OAmoCY9DRc05wnEh4FtAGkhi0h9aNxNQqGOqB1GibF/NH8RF0AAFlLBSM=
   </data>
  </layer>
  <layer name="Leiter" width="40" height="23">
@@ -44,7 +44,7 @@
    <property name="climbable" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlMENwCAMA8N+7Sx0ljJLmY8vP6vYEWmV+ztK5AOzJEnecBUuf5J5RCPns/chOjmfve9PKLvy8FLZlYeXrIsz0b1U9ev1P6jmrvZwg5yq31XnHpBTuvwFjuD31uD7Id93E30/9B4TswGt3w3H
+   eJztlMENwCAMA+l+MAudBWah8/XbnwV2RIpyf0eJfEpKQRDMcF9cvpB5RCfns/chHnI+e99JKLuy8FLZlYWXrItfvHup6tfqP6jmrvbQQE7V76pzA+SULv+B7Pze6nw/5PtuvO8XYF7eOQ0R
   </data>
  </layer>
  <layer name="Leiter_Top" width="40" height="23">
