@@ -67,9 +67,8 @@ class Physics(object):
                 if not removed_collision.trapped:
                     '''only trap bots'''
                     if not player.is_human:
-                        removed_collision.trapped = True
-                        player.change_x = 0
                         self.hit_inner_bottom(player, removed_collision)
+                        removed_collision.trapped = True
                         on_ground = True
 
             '''important sprites for the bot'''
@@ -110,11 +109,10 @@ class Physics(object):
 
             '''if a removed block contains another player we can walk over it'''
             top_collision = self.find_collision(player.rect.centerx, player.rect.bottom, Player.group)
-            if top_collision:
+            if top_collision and top_collision.direction == "Trapped":
                 on_ground = True
-                if not player.is_human:
-                    '''if a bot hits a player from below the player should die'''
-                    self.hit_top(player, top_collision)
+                '''if a bot hits a player from below the player should die'''
+                self.hit_top(player, top_collision)
 
             '''kill players touched by bots'''
             if player.is_human:
@@ -180,13 +178,18 @@ class Physics(object):
             player.change_x = 0
             player.change_y = 0
             player.rect.midbottom = sprite.rect.midbottom
-            player.on_ground = True
 
     @staticmethod
     def hit_top(player, sprite):
         """player hits the ground"""
         if player.rect.bottom > sprite.rect.top:
-            player.rect.bottom = sprite.rect.top + 1    # for permanent ground collision
+            top = sprite.rect.top
+            # the player collides with sprites left and right in the ground of a trapped player
+            if not isinstance(sprite, Player):
+                # so we can only add one on regular sprites for permanent ground collision
+                # if we don't add one the player will lose ground contact every frame and think he falls
+                top += 1
+            player.rect.bottom = top
             player.change_y = 0
             if player.change_x is 0:
                 '''make sure the player stands in a correct position'''
