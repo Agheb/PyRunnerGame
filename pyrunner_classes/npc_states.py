@@ -66,7 +66,25 @@ class State(object):
             return
 
         if self.bot.on_ladder or self.bot.can_go_down:
-            if y > by and self.bot.can_go_down:
+            if self.bot.left_tile and self.bot.left_tile.climbable_horizontal and x < bx:
+                self.bot.change_y = 0
+                # get past ground collisions
+                self.bot.on_rope = True
+                self.bot.rect.y = self.bot.left_tile.rect.y
+                self.bot.rect.x -= self.bot.speed
+                # go left
+                self.bot.go_left()
+                self.go_left = True
+            elif self.bot.right_tile and self.bot.right_tile.climbable_horizontal and bx < x:
+                self.bot.change_y = 0
+                # get past ground collisions
+                self.bot.on_rope = True
+                self.bot.rect.y = self.bot.right_tile.rect.y
+                self.bot.rect.x += self.bot.speed
+                # go right
+                self.bot.go_right()
+                self.go_left = False
+            elif y > by and self.bot.can_go_down:
                 self.bot.stop_on_ground = True
                 self.bot.go_down()
             elif y < by:
@@ -77,10 +95,10 @@ class State(object):
                 self.last_direction = self.bot.speed if x > bx else -self.bot.speed
                 self.bot.stop_on_ground = True
 
-        if x < bx:
+        if x < bx or bx == self.bot.level.cols - 1:
             self.bot.go_left()
             self.go_left = True
-        elif x > bx or bx == 0:
+        elif bx < x or bx == 0:
             self.bot.go_right()
             self.go_left = False
 
@@ -101,7 +119,7 @@ class State(object):
 
                     self.walk_the_line(x, y, bx, by)
 
-                    if x == bx or y == by or (self.bot.change_x is 0 and self.bot.change_y is 0):
+                    if x == bx or y == by:  # or (self.bot.change_x is 0 and self.bot.change_y is 0):
                         self.next_pos = self.get_next_position()
 
                 '''make the bot walk into the other direction if he is stuck at the level borders'''
@@ -126,13 +144,15 @@ class State(object):
                 x, y = target_tile
                 bx, by = self.bot.on_tile
                 try:
-                    self.path = self.bot.level.graph.shortest_path(str(own_tile), str(target_tile))
-                    self.next_pos = self.get_next_position()
+                    new_path = self.bot.level.graph.shortest_path(own_tile, target_tile)
+                    if new_path:
+                        self.path = new_path
+                        self.next_pos = self.get_next_position()
                 except KeyError:
                     # print(own_tile, " or ", target_tile, " were invalid.")
-                    if self.bot.on_ladder and by > y:
-                        self.bot.go_up()
-                    else:
+                    self.walk_the_line(x, y, bx, by)
+
+                    if self.bot.change_x is 0 and self.bot.change_y is 0:
                         self.bot.go_left() if self.go_left else self.bot.go_right()
 
     def check_closest_player(self):
