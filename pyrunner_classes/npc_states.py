@@ -62,6 +62,9 @@ class State(object):
 
     def walk_the_line(self, x, y, bx, by):
         """Walk according to directions"""
+        if self.bot.direction == "Trapped":
+            return
+
         if self.bot.on_ladder or self.bot.can_go_down:
             if y > by and self.bot.can_go_down:
                 self.bot.stop_on_ground = True
@@ -172,7 +175,8 @@ class Exploring(State):
         pass
 
     def do_actions(self):
-        self.bot.go_left() if self.go_left else self.bot.go_right()
+        if self.bot.direction is not "Trapped":
+            self.bot.go_left() if self.go_left else self.bot.go_right()
 
     def check_conditions(self):
         if self.check_closest_player():

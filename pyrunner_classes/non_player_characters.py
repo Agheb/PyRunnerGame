@@ -64,4 +64,5 @@ class Bots(Player):
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
-        self.brain.think()
+        if not self.direction == "Trapped":
+            self.brain.think()

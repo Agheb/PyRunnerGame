@@ -14,9 +14,15 @@ class Graph(object):
         self.distances = {}
 
     def add_node(self, value):
+        if not isinstance(value, str):
+            value = str(value)
         self.nodes.add(value)
 
     def add_edge(self, from_node, to_node, distance):
+        if not isinstance(from_node, str):
+            from_node = str(from_node)
+        if not isinstance(to_node, str):
+            to_node = str(to_node)
         self.edges[from_node].append(to_node)
         self.edges[to_node].append(from_node)
         self.distances[(from_node, to_node)] = distance

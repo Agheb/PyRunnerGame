@@ -289,12 +289,12 @@ class Level(object):
                 # print(str(stop_a), "/", str(stop_b))
                 tuple_list.append((stop_a, stop_b))
             '''name the nodes'''
-            start_node = "(%s, %s)" % (start_a, start_b)
-            stop_node = "(%s, %s)" % (stop_a, stop_b)
+            start_node = start_a, start_b
+            stop_node = stop_a, stop_b
             '''add the edges'''
             self.graph.add_edge(start_node, stop_node, length)
             self.graph.add_edge(stop_node, start_node, length)
-            print("adding path from ", start_node, " to ", stop_node, " with a length of ", length)
+            print("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
 
     def add_paths(self, node_list, horizontal=True):
         """find intersections between different levels"""
@@ -302,12 +302,12 @@ class Level(object):
         def add_node(cur_x, cur_y, cur_x_y):
             """add a node and a short path between two neighboring tiles"""
             tuple_list.append((cur_x, cur_y))
-            node = "(%s, %s)" % (cur_x, cur_y)
+            node = (cur_x, cur_y)
             self.graph.add_node(node)
             '''if it's not the first tile in a row or column add a path to the previous one'''
             if cur_x_y is not 0:
                 prev_x, prev_y = (cur_x - 1, cur_y) if horizontal else (cur_x, cur_y - 1)
-                prev_node = "(%s, %s)" % (prev_x, prev_y)
+                prev_node = (prev_x, prev_y)
                 self.graph.add_edge(node, prev_node, 1)
                 self.graph.add_edge(prev_node, node, 1)
 
