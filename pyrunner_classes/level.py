@@ -10,8 +10,7 @@ from .player import Player
 from .non_player_characters import Bots
 from random import randint
 from operator import itemgetter
-from .djikstra import Graph
-from pprint import pprint as pp
+from .dijkstra import Graph
 import logging
 
 log = logging.getLogger("Level")
@@ -196,23 +195,16 @@ class Level(object):
                     elif not gold:
                         '''add all tiles that a player can walk on to this list'''
                         x, y = tile_id
+                        # ignore the last row because it gets cut by 16 pixels
                         if y is self.rows - 1:
                             continue
-                        if rope:    # treat ropes as a layer below
-                            y += 1
+                        # if rope:    # treat ropes as a layer below
+                        #    y += 1
                         '''only add walkable tiles'''
-                        self.walkable_list.append((x, y))
+                        self.walkable_list.append(tile_id)
 
     def generate_paths(self):
         """create paths by id for bots"""
-        start_x = 0
-        stop_x = 0
-        start_y = 0
-        stop_y = 0
-        current_col = 0
-        current_row = 0
-        not_set = True
-
         # graph to use with dijkstra's shortest path algorithm
         self.graph = Graph()
         # remove duplicate entries (e.g. ropes that count one row deeper)
@@ -221,55 +213,7 @@ class Level(object):
         self.walkable_list.sort(key=itemgetter(0))
         self.walkable_list.sort(key=itemgetter(1))
 
-        # print(str(self.walkable_list))
-
-        '''find all horizontal paths'''
-        for x, y in self.walkable_list:
-            # jump to the next item if there's no first
-            if not_set:
-                start_x = stop_x = x
-                current_row = y
-                not_set = False
-                continue
-
-            # print(str(x), " ", str(stop_x))
-            if x == stop_x + 1 and current_row is y:
-                name = "(%s, %s)" % (x, y)
-                before = "(%s, %s)" % (x - 1, y)
-                self.graph.add_node(name)
-                if x is not 0:
-                    self.graph.add_edge(name, before, 1)
-                    self.graph.add_edge(before, name, 1)
-                stop_x = x
-            else:
-                length = stop_x - start_x
-                if length:
-                    start = "(%s, %s)" % (start_x, y)
-                    end = "(%s, %s)" % (stop_x, y)
-                    self.graph.add_edge(start, end, length + 1)
-                    self.graph.add_edge(end, start, length + 1)
-                # print(str(start_x), " to ", str(stop_x), " row: ", str(row), " length: ", str(length))
-                '''
-                if length:
-                    length += 1  # we start at 0 but want to ignore single tiles (ladders etc.)
-                    # self.paths_horizontal.append((start_x, stop_x, current_row, length))
-                    # print("adding path from %(start_x)s to %(stop_x)s in row %(current_row)s - length: %(length)s" % locals())
-                '''
-                # continue next loop with the current values
-                start_x = stop_x = x
-                current_row = y
-
-        # final check after the loop went through
-        if start_x is not stop_x:
-            length = stop_x - start_x + 1
-            start = "(%s, %s)" % (start_x, current_row)
-            stop = "(%s, %s)" % (stop_x, current_row)
-            self.graph.add_edge(start, stop, length)
-            self.graph.add_edge(stop, start, length)
-            '''
-            length = stop_x - start_x + 1
-            self.paths_horizontal.append((start_x, stop_x, current_row, length))
-            '''
+        self.add_paths(self.walkable_list, True)  # horizontals =
 
         '''find all ladders'''
         ladders = []
@@ -282,82 +226,123 @@ class Level(object):
         # sort list by x, then by y
         ladders.sort()
 
-        not_set = True
-        '''convert them to paths'''
-        for x, y in ladders:
+        '''add the bottom below the ladder as well'''
+        ladder_plus = [tile_id for tile_id in ladders]
+        old_y = 0
+        for tile_id in ladders:
+            x, y = tile_id
+            if not old_y:
+                old_y = y
+            elif y is not old_y:
+                ladder_plus.append((x, y + 1))
+                old_y = y
 
-            if not not_set:
-                start_y = stop_y = y
-                current_col = x
+        # remove duplicate entries
+        ladders = list(set(ladder_plus))
+        # sort list by x, then by y
+        ladders.sort()
+
+        self.add_paths(ladders, False)
+
+        # intersections = [tile_id for tile_id in horizontals if tile_id in ladder_plus]
+        # intersections.sort()
+
+        # print("adding intersections")
+        # self.add_intersections(horizontals, intersections)
+        # print(str(self.walkable_list))
+        # print(str(ladders))
+        # print(str(intersections))
+
+    def get_is_path(self, a, b):
+        """returns if a target is reachable"""
+        try:
+            return True if self.graph.shortest_path(a, b) else False
+        except KeyError:
+            return False
+
+    def add_intersections(self, horizontals, intersections):
+        """find all important intersections between layers and connect them"""
+        for ladder_id in intersections:
+            for tile_id in horizontals:
+                if self.get_is_path(tile_id, ladder_id):
+                    x, y = tile_id
+                    lx, ly = ladder_id
+                    length = x - lx if x > lx else lx - x
+                    length += 1
+                    self.graph.add_edge(tile_id, ladder_id, length)
+
+    def add_long_path(self, cur_start, cur_stop, cur_locked_x_y, horizontal, tuple_list):
+        """add a path that is longer than 1 tile"""
+        length = cur_stop - cur_start
+        if length:
+            length += 1
+            if horizontal:
+                '''the length is + 1 because tiles start with index 0'''
+                start_a, start_b = cur_start, cur_locked_x_y
+                stop_a, stop_b = cur_stop, cur_locked_x_y
+            else:
+                '''connect the ladder to the next bottom horizontal row'''
+                # cur_stop += 1
+                # length += 2
+                start_a, start_b = cur_locked_x_y, cur_start
+                stop_a, stop_b = cur_locked_x_y, cur_stop
+                # print(str(stop_a), "/", str(stop_b))
+                tuple_list.append((stop_a, stop_b))
+            '''name the nodes'''
+            start_node = start_a, start_b
+            stop_node = stop_a, stop_b
+            '''add the edges'''
+            self.graph.add_edge(start_node, stop_node, length)
+            self.graph.add_edge(stop_node, start_node, length)
+            print("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
+
+    def add_paths(self, node_list, horizontal=True):
+        """find intersections between different levels"""
+
+        def add_node(cur_x, cur_y, cur_x_y):
+            """add a node and a short path between two neighboring tiles"""
+            tuple_list.append((cur_x, cur_y))
+            node = (cur_x, cur_y)
+            self.graph.add_node(node)
+            '''if it's not the first tile in a row or column add a path to the previous one'''
+            if cur_x_y is not 0:
+                prev_x, prev_y = (cur_x - 1, cur_y) if horizontal else (cur_x, cur_y - 1)
+                prev_node = (prev_x, prev_y)
+                self.graph.add_edge(node, prev_node, 1)
+                self.graph.add_edge(prev_node, node, 1)
+
+        '''variables to store the start and stop in a path'''
+        tuple_list = []
+        start = 0
+        stop = 0
+        locked_x_y = 0
+        not_set = True
+
+        for x, y in node_list:
+            '''jump to the next item if this is the first'''
+            if not_set:
+                start = stop = x if horizontal else y
+                locked_x_y = y if horizontal else x
                 not_set = False
                 continue
 
-            if y == stop_y + 1 and current_col is x:
-                name = "(%s, %s)" % (current_col, y)
-                before = "(%s, %s)" % (current_col, y - 1)
-                self.graph.add_node(name)
-                if y is not 0:
-                    self.graph.add_edge(name, before, 1)
-                stop_y = y
+            '''make this function universal for horizontal and vertical lookups'''
+            current_x_y = x if horizontal else y
+            cur_row_col = y if horizontal else x
+
+            if current_x_y == stop + 1 and locked_x_y is cur_row_col:
+                add_node(x, y, current_x_y)
+                stop = current_x_y
             else:
-                length = stop_y - start_y
-                if length:
-                    length += 1  # we start at 0 but want to ignore single tiles (ladders etc.)
-                    name = "(%s, %s)" % (current_col, start_y)
-                    before = "(%s, %s)" % (current_col, stop_y)
-                    down = "(%s, %s)" % (current_col, stop_y + 1)
-                    self.graph.add_node(down)
-                    self.graph.add_edge(before, down, 1)
-                    self.graph.add_edge(down, before, 1)
-                    self.graph.add_edge(name, down, length + 1)
-                    self.graph.add_edge(down, name, length + 1)
-                    # self.paths_vertical.append((current_col, start_y, stop_y, length))
-                    # print("adding path from %(start_y)s to %(stop_y)s in column %(current_col)s - length: %(length)s" % locals())
-                # continue next loop with the current values
-                start_y = stop_y = y
-                current_col = x
+                self.add_long_path(start, stop, locked_x_y, horizontal, tuple_list)  # add_long_path does the sanity check
+                '''continue next loop with the current values'''
+                start = stop = x if horizontal else y
+                locked_x_y = y if horizontal else x
 
-        # final check after the loop went through
-        if start_y is not stop_y:
-            length = stop_y - start_y + 1
-            start = "(%s, %s)" % (current_col, start_y)
-            stop = "(%s, %s)" % (current_col, stop_y)
-            down = "(%s, %s)" % (current_col, stop_y + 1)
-            self.graph.add_node(down)
-            self.graph.add_edge(stop, down, 1)
-            self.graph.add_edge(start, down, length + 1)
-            self.graph.add_edge(down, stop, 1)
-            self.graph.add_edge(down, start, length + 1)
-            # self.paths_vertical.append((current_col, start_y, stop_y, length))
-        #
-        # '''cycle through all horizontal sprites and add them all one by one (with path = 1 for neighbours)'''
-        # for start, stop, y, length in self.paths_horizontal:
-        #     for i in range(start - 1, stop + 2):
-        #         name = "(%s, %s)" % (i, y)
-        #         before = "(%s, %s)" % (i - 1, y)
-        #         if i is not start:
-        #             self.graph.add_node(name)
-        #             self.graph.add_edge(name, before, 1)
-        #         else:
-        #             self.graph.add_node(name)
-        #
-        # '''for the ladders its enough to add start and stop points'''
-        # for x, start, stop, length in self.paths_vertical:
-        #     s_start = "(%s, %s)" % (x, start)
-        #     s_stop = "(%s, %s)" % (x, stop + 1)   # + 1 to connect to the bottom tile
-        #     self.graph.add_edge(s_start, s_stop, length)
-        #
-        #     '''and to add the ladder tiles inbetween'''
-        #     for i in range(start, stop + 2):
-        #         name = "(%s, %s)" % (x, i)
-        #         before = "(%s, %s)" % (x, i - 1)
-        #         self.graph.add_node(name)
-        #         self.graph.add_edge(before, name, 1)
+        '''final check after the loop went through'''
+        self.add_long_path(start, stop, locked_x_y, horizontal, tuple_list)
 
-        # print(self.graph)
-        # print(self.graph.shortest_path('20, 4', '5, 7'))
-        # print(str(self.paths_horizontal))
-        # print(str(self.paths_vertical))
+        return tuple_list
 
     @staticmethod
     def squeeze_half_image(image):

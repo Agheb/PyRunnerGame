@@ -33,4 +33,5 @@ class StateMachine(object):
             self.active_state.exit_actions()
 
         self.active_state = self.stateslist[new_state_name]
-        self.active_state.entry_actions()
+        self.active_state.entry_actions
+        print("state " + str(self.active_state) + "set")

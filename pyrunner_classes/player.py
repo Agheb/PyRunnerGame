@@ -35,8 +35,6 @@ class Player(pygame.sprite.DirtySprite):
         self.on_ladder = False
         self.on_rope = False
         self.can_go_down = False
-        self.no_bottom_left = False
-        self.no_bottom_right = False
         self._stop_on_ground = False
         # movement related
         self.change_x = 0
@@ -273,7 +271,7 @@ class Player(pygame.sprite.DirtySprite):
     def calc_gravity(self):
         """ Calculate effect of gravity. """
         # See if we are on the ground and not on a ladder or rope
-        if not self.on_ground and not self.on_ladder and not self.on_rope:
+        if not self.on_ground and not self.on_ladder and not self.on_rope and self.direction is not "Trapped":
             if self.speed <= self.change_y <= self.speed * 2.5:
                 self.change_y += .35
             else:
