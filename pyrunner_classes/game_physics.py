@@ -71,6 +71,12 @@ class Physics(object):
                         removed_collision.trapped = True
                         on_ground = True
 
+            if not player.is_human:
+                player.right_tile = self.find_collision(player.rect.centerx + player.size,
+                                                        player.rect.centery, WorldObject.group)
+                player.left_tile = self.find_collision(player.rect.centerx - player.size,
+                                                       player.rect.centery, WorldObject.group)
+
             '''important sprites for the bot'''
             bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + half_size)
 

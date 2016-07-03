@@ -17,6 +17,8 @@ class Bots(Player):
         # POSITIONAL RELATED
         self.destination = (0, 0)
         self.last_pos = (0, 0)
+        self.right_tile = None
+        self.left_tile = None
         # give humans a chance
         self.speed -= 1
 
