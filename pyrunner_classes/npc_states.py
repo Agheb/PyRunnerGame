@@ -67,6 +67,7 @@ class State(object):
 
         if self.bot.on_ladder or self.bot.can_go_down:
             if self.bot.left_tile and self.bot.left_tile.climbable_horizontal and x < bx:
+                '''climb on ropes which are connected to ladders etc. left of the player'''
                 self.bot.change_y = 0
                 # get past ground collisions
                 self.bot.on_rope = True
@@ -76,6 +77,7 @@ class State(object):
                 self.bot.go_left()
                 self.go_left = True
             elif self.bot.right_tile and self.bot.right_tile.climbable_horizontal and bx < x:
+                '''climb on ropes which are connected to ladders etc. right of the player'''
                 self.bot.change_y = 0
                 # get past ground collisions
                 self.bot.on_rope = True
@@ -85,20 +87,37 @@ class State(object):
                 self.bot.go_right()
                 self.go_left = False
             elif y > by and self.bot.can_go_down:
+                '''use ladders solid top spots to climb down'''
                 self.bot.stop_on_ground = True
                 self.bot.go_down()
             elif y < by:
+                '''or simply climb up'''
                 self.bot.go_up()
-
             '''save the last walking direction'''
             if self.bot.change_x is not 0:
                 self.last_direction = self.bot.speed if x > bx else -self.bot.speed
                 self.bot.stop_on_ground = True
-
+        elif y > by and self.bot.on_rope and x - 1 <= bx <= x + 1:
+            '''jump down of ropes if the player is walking below the bot'''
+            jump_down = True
+            '''check if there's nothing in the way'''
+            for tile in self.bot.level.walkable_list:
+                tx, ty = tile
+                if bx is tx:
+                    if by < ty < y:
+                        jump_down = False
+                    elif ty >= y:
+                        break
+            '''then jump down'''
+            if jump_down:
+                self.bot.change_x = 0
+                self.bot.go_down()
         if x < bx or bx == self.bot.level.cols - 1:
+            '''else simply go to the left if the player is on the left or we hit the right border'''
             self.bot.go_left()
             self.go_left = True
         elif bx < x or bx == 0:
+            '''or right if the player is on the right or we hit the left border'''
             self.bot.go_right()
             self.go_left = False
 
@@ -112,10 +131,6 @@ class State(object):
 
                 if self.next_pos:
                     x, y = self.next_pos
-
-                    # y -= 1  # set it to player height
-                    # print(str(self.next_pos))
-                    # print(str(self.bot.on_tile))
 
                     self.walk_the_line(x, y, bx, by)
 
