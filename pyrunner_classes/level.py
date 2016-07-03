@@ -213,7 +213,7 @@ class Level(object):
         self.walkable_list.sort(key=itemgetter(0))
         self.walkable_list.sort(key=itemgetter(1))
 
-        self.add_paths(self.walkable_list, True)  # horizontals =
+        horizontals = self.add_paths(self.walkable_list, True)  # horizontals =
 
         '''find all ladders'''
         ladders = []
@@ -244,14 +244,30 @@ class Level(object):
 
         self.add_paths(ladders, False)
 
-        # intersections = [tile_id for tile_id in horizontals if tile_id in ladder_plus]
-        # intersections.sort()
+        # '''initialize the graph'''
+        # for tile_a in self.walkable_list:
+        #     for tile_b in self.walkable_list:
+        #         if tile_a is not tile_b:
+        #             try:
+        #                 self.graph.shortest_path(tile_a, tile_b)
+        #                 # print("Success: %s and %s" % (tile_a, tile_b))
+        #             except KeyError:
+        #                 # print("Error %s and %s" % (tile_a, tile_b))
+        #                 pass
 
-        # print("adding intersections")
-        # self.add_intersections(horizontals, intersections)
-        # print(str(self.walkable_list))
-        # print(str(ladders))
-        # print(str(intersections))
+        intersections = [tile_id for tile_id in horizontals if tile_id in ladders]
+        intersections.sort()
+
+        '''partially initialize the graph'''
+        for tile in self.walkable_list:
+            for ladder in intersections:
+                if tile is not ladder:
+                    try:
+                        self.graph.shortest_path(tile, ladder)
+                        print("Success: %s and %s" % (tile, ladder))
+                    except KeyError:
+                        # print("Error %s and %s" % (tile, ladder))
+                        pass
 
     def get_is_path(self, a, b):
         """returns if a target is reachable"""

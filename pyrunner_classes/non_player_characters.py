@@ -19,8 +19,10 @@ class Bots(Player):
         self.last_pos = (0, 0)
         self.right_tile = None
         self.left_tile = None
+        self.walk_left = True
         # give humans a chance
         self.speed -= 1
+        self.frame_counter = 0
 
         # STATEMACHINE RELATED
         # Create instances of each state
@@ -69,4 +71,13 @@ class Bots(Player):
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
         if not self.direction == "Trapped":
-            self.brain.think()
+            if self.frame_counter & 1:
+                self.frame_counter = 0
+                '''don't think too fast'''
+                try:
+                    self.brain.think()
+                except (TypeError, AttributeError):
+                    '''sometimes values are not set fast enough'''
+                    pass
+            else:
+                self.frame_counter += 1
