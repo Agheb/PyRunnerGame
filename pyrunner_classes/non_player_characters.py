@@ -26,10 +26,12 @@ class Bots(Player):
         # Create instances of each state
         exploring_state = Exploring(self)
         shortest_state = ShortestPath(self)
+        hunting_state = Hunting(self)
         # add states to the state machine
         self.brain = StateMachine()
         self.brain.add_state(exploring_state)
         self.brain.add_state(shortest_state)
+        self.brain.add_state(hunting_state)
         # state the npc starts with
         self.brain.set_state('exploring')
 

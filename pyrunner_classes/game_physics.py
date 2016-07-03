@@ -79,6 +79,7 @@ class Physics(object):
 
             '''important sprites for the bot'''
             bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + half_size)
+            jump_off_rope = True if not bottom_sprite else False
 
             '''check if there's a ladder below the feet'''
             bot_go_down = True if bottom_sprite and bottom_sprite.climbable and not player.is_human else False
@@ -172,6 +173,7 @@ class Physics(object):
             # update the player variables
             player.on_tile = on_tile
             player.on_rope = on_rope
+            player.jump_off_rope = jump_off_rope
             player.on_ladder = on_ladder
             player.on_ground = on_ground
             player.can_go_down = can_go_down if player.is_human else bot_go_down
