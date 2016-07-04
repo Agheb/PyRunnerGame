@@ -12,7 +12,8 @@ from time import sleep
 import json
 import socket
 from Mastermind import *
-from zeroconf import ServiceBrowser, ServiceStateChange, ServiceInfo, Zeroconf
+from zeroconf import ServiceBrowser, ServiceStateChange, ServiceInfo, Zeroconf, NonUniqueNameException, \
+    BadTypeInNameException
 from .level_objecs import WorldObject
 from .menu import MenuItem
 
@@ -31,7 +32,7 @@ class NetworkConnector(object):
     COMPRESSION = None
 
     def __init__(self, main, level):
-        self.ip = "localhost"
+        self.ip = "127.0.0.1"
         self.main = main
         self.level = level
         self.port = START_PORT
@@ -91,13 +92,12 @@ class NetworkConnector(object):
         start_server()
 
         if self.server and self.server.connected:
-            print("success")
-            print("connecting to own host")
+            self.join_server_prompt()
+            '''propagate server over zeroconf'''
             self.zeroconf = ZeroConfListener(self.main.menu, self.main.network_connector,
                                              self.ip, self.port)
             self.zeroconf.start()
             self.zeroconf.server()
-            self.join_server_prompt()
 
     def join_server_menu(self):
         """browse for games and then join"""
@@ -105,7 +105,7 @@ class NetworkConnector(object):
         self.zeroconf.start()
         self.zeroconf.start_browser()
 
-    def join_server_prompt(self, ip_and_port=("localhost", START_PORT)):
+    def join_server_prompt(self, ip_and_port=("127.0.0.1", START_PORT)):
         """join a server from the main menu"""
         self.ip, self.port = ip_and_port
 
@@ -141,6 +141,10 @@ class NetworkConnector(object):
 
             # self.ip = input("Please enter an ip to connect to: ")
 
+        if self.client:
+            '''disconnect from other servers first'''
+            self.client.disconnect()
+
         join_server()
 
         if self.client and self.client.connected:
@@ -160,6 +164,7 @@ class ZeroConfListener(threading.Thread):
         threading.Thread.__init__(self, daemon=True)
         self.menu = menu
         self.network_connector = network_connector
+        self.id = 0
         self.ip = ip
         self.port = port
         self.listener = Zeroconf()
@@ -168,11 +173,12 @@ class ZeroConfListener(threading.Thread):
         self.gamename = self.hostname + "_pyrunner._tcp.local."
         self.desc = {'game': 'pyRunner v1.0'}
 
-        self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton("127.0.0.1"),
+        self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
                                 self.port, 0, 0, self.desc, self.hostname)
 
     def shutdown(self):
         """stop service advertisement"""
+        print("shutting down zeroconf")
         self.listener.unregister_service(self.info)
         self.listener.close()
 
@@ -182,14 +188,27 @@ class ZeroConfListener(threading.Thread):
 
     def server(self):
         """propagate your own server"""
-        self.listener.register_service(self.info)
+        try:
+            self.listener.register_service(self.info)
+        except NonUniqueNameException:
+            try:
+                self.id += 1
+                self.gamename = "%s %s" % (self.gamename, self.id)
+                self.hostname = "%s %s" % (self.hostname, self.id)
+                self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton("127.0.0.1"),
+                                        self.port, 0, 0, self.desc, self.hostname)
+                self.listener.register_service(self.info)
+            except BadTypeInNameException:
+                self.kill()
 
     def run(self):
         """main function"""
         if self.browser:
-            pass
+            if self.network_connector.client and self.network_connector.client.connected:
+                '''shutdown the browser if the user is in a game'''
+                self.kill()
 
-        sleep(0.1)
+        sleep(1)
 
     def start_browser(self):
         """browse for games"""
@@ -204,8 +223,17 @@ class ZeroConfListener(threading.Thread):
             if info:
                 address = socket.inet_ntoa(info.address)
                 port = info.port
-                self.menu.network.add_item(MenuItem(name, self.network_connector.join_server_prompt,
-                                                    vars=(address, port)))
+                menu_item = MenuItem(info.server, self.network_connector.join_server_prompt, vars=(address, port))
+                '''add the full name as id so it can be removed if the server goes offline'''
+                menu_item.id = name
+                self.menu.network.add_item(menu_item)
+                self.menu.show_menu(True)
+
+        if state_change is ServiceStateChange.Removed:
+            '''remove the item from the menu and refresh it if the user still has it open'''
+            self.menu.network.delete_item(name)
+            if self.menu.in_menu:
+                '''refresh the menu'''
                 self.menu.show_menu(True)
 
 

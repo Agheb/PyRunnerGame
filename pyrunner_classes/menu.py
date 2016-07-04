@@ -78,9 +78,12 @@ class Menu(object):
         """
         return self.menu_items[index]
 
-    def delete_item(self, item):
+    def delete_item(self, name):
         """remove a menu item"""
-        return self.menu_items.remove(item)
+        for item in self.menu_items:
+            if item.name == name or item.id == name:
+                self.length -= 1
+                return self.menu_items.remove(item)
 
     def _draw_item(self, menu_item, index, pos, margin_top=None):
         """draw a specific MenuItem
@@ -275,6 +278,7 @@ class MenuItem(object):
     def __init__(self, name, action=None, **kwargs):
         self.menu = None
         self.name = name
+        self.id = None
         self.size = None
         self.action = action
         self._action_values = None

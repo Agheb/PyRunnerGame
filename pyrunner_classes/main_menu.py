@@ -142,7 +142,7 @@ class MainMenu(object):
         '''game over menu'''
         menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, item_size)
         '''network related menu'''
-        menu_network_browser = Menu(self, "Browse Games", surface, menu_ng_multiplayer, h1_size, item_size)
+        menu_network_browser = Menu(self, "Browse Games", surface, menu_ng_multiplayer, h2_size, item_size)
 
         '''save the menus'''
         self.game_over = menu_game_over
