@@ -28,7 +28,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2BwAiVGBKaGGdQwbxQMP0BJusCl153I9IaubjCmz8HuvqEMiAlLXGXYSImT4e6/wQ6onfZGQpodBcMLEJNmKckfw7VcBwDS/goj
+   eJxjYBgFo2BwAiVGCKaGGeh4FIwCGKAkXeDS605kekNXNxjT52B331AGxIQlrjJspMTJcPffYAfUTnsjIc2OguEFiEmzlOSP4VquAwA4PAoA
   </data>
  </layer>
  <layer name="Vertical Wall" width="40" height="23">
