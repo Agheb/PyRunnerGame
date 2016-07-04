@@ -8,10 +8,13 @@ from pprint import pprint
 import pdb
 from .controller import Controller
 from datetime import datetime
-import time
+from time import sleep
 import json
+import socket
 from Mastermind import *
+from zeroconf import ServiceBrowser, ServiceStateChange, ServiceInfo, Zeroconf
 from .level_objecs import WorldObject
+from .menu import MenuItem
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parentdir)
@@ -34,6 +37,16 @@ class NetworkConnector(object):
         self.port = START_PORT
         self.client = None
         self.server = None
+        self.zeroconf = None
+
+    def quit(self):
+        """shutdown all threads"""
+        try:
+            self.server.kill()
+            self.client.kill()
+            self.zeroconf.kill()
+        except AttributeError:
+            pass
 
     def start_server_prompt(self, port=START_PORT):
         """starting a network server from the main menu"""
@@ -58,7 +71,7 @@ class NetworkConnector(object):
 
                 while not self.server.connected:
                     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-                    time.sleep(0.25)
+                    sleep(0.25)
 
                     if not self.server.connected:
                         '''if it fails (e.g. port still in use) switch the port up to 5 times'''
@@ -80,17 +93,28 @@ class NetworkConnector(object):
         if self.server and self.server.connected:
             print("success")
             print("connecting to own host")
+            self.zeroconf = ZeroConfListener(self.main.menu, self.main.network_connector,
+                                             self.ip, self.port)
+            self.zeroconf.start()
+            self.zeroconf.server()
             self.join_server_prompt()
 
-    def join_server_prompt(self):
+    def join_server_menu(self):
+        """browse for games and then join"""
+        self.zeroconf = ZeroConfListener(self.main.menu, self, self.ip, self.port)
+        self.zeroconf.start()
+        self.zeroconf.start_browser()
+
+    def join_server_prompt(self, ip_and_port=("localhost", START_PORT)):
         """join a server from the main menu"""
+        self.ip, self.port = ip_and_port
 
         def init_new_client():
             """start a new client thread"""
             if self.client:
                 self.client.kill()
 
-            self.client = Client("localhost", self.port, self.level, self.main)
+            self.client = Client(self.ip, self.port, self.level, self.main)
             self.master = False
             self.client.start()
 
@@ -101,7 +125,7 @@ class NetworkConnector(object):
 
             while not self.client.connected:
                 '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-                time.sleep(0.25)
+                sleep(0.25)
 
                 if not self.client.connected:
                     '''if it fails (e.g. no server running on this port) switch the port up to 5 times'''
@@ -127,6 +151,62 @@ class NetworkConnector(object):
             self.client.update()
         except (MastermindErrorClient, AttributeError):
             pass
+
+
+class ZeroConfListener(threading.Thread):
+    """propagate network server via zeroconf multicast"""
+
+    def __init__(self, menu, network_connector, ip, port):
+        threading.Thread.__init__(self, daemon=True)
+        self.menu = menu
+        self.network_connector = network_connector
+        self.ip = ip
+        self.port = port
+        self.listener = Zeroconf()
+        self.browser = None
+        self.hostname = socket.gethostname()
+        self.gamename = self.hostname + "_pyrunner._tcp.local."
+        self.desc = {'game': 'pyRunner v1.0'}
+
+        self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton("127.0.0.1"),
+                                self.port, 0, 0, self.desc, self.hostname)
+
+    def shutdown(self):
+        """stop service advertisement"""
+        self.listener.unregister_service(self.info)
+        self.listener.close()
+
+    def kill(self):
+        """quit this process"""
+        self.shutdown()
+
+    def server(self):
+        """propagate your own server"""
+        self.listener.register_service(self.info)
+
+    def run(self):
+        """main function"""
+        if self.browser:
+            pass
+
+        sleep(0.1)
+
+    def start_browser(self):
+        """browse for games"""
+        self.browser = ServiceBrowser(self.listener, "_pyrunner._tcp.local.", handlers=[self.on_service_state_change])
+        self.menu.set_current_menu(self.menu.network)
+
+    def on_service_state_change(self, zeroconf, service_type, name, state_change):
+        """check for new services"""
+
+        if state_change is ServiceStateChange.Added:
+            info = zeroconf.get_service_info(service_type, name)
+            if info:
+                address = socket.inet_ntoa(info.address)
+                port = info.port
+                self.menu.network.add_item(MenuItem(name, self.network_connector.join_server_prompt,
+                                                    vars=(address, port)))
+                self.menu.show_menu(True)
 
 
 class Client(threading.Thread, MastermindClientTCP):

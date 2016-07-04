@@ -97,6 +97,7 @@ class PyRunner(object):
         self.config.write_settings()
         self.render_thread.stop_thread()
         self.music_thread.stop_thread()
+        self.network_connector.quit()
         pygame.quit()
         if shutdown:
             exit()

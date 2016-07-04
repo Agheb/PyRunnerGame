@@ -25,6 +25,7 @@ class MainMenu(object):
         self.current_menu = None
         self.main_menu = None
         self.game_over = None
+        self.network = None
         self.surface = None
         # regular font sizes
         self.h1_size = 72
@@ -99,7 +100,7 @@ class MainMenu(object):
         menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
         #TODO: Add nice ip input
         menu_ng_multiplayer.add_item(MenuItem("Start Server", self.network_connector.start_server_prompt))
-        menu_ng_multiplayer.add_item(MenuItem("Join Server", self.network_connector.join_server_prompt))
+        menu_ng_multiplayer.add_item(MenuItem("Join Server", self.network_connector.join_server_menu))
         menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
         # finish top menu with sub menus
         menu_new_game.add_item(MenuItem("Singleplayer", self.set_current_menu, vars=menu_ng_singleplayer))
@@ -140,9 +141,12 @@ class MainMenu(object):
 
         '''game over menu'''
         menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, item_size)
+        '''network related menu'''
+        menu_network_browser = Menu(self, "Browse Games", surface, menu_ng_multiplayer, h1_size, item_size)
 
         '''save the menus'''
         self.game_over = menu_game_over
+        self.network = menu_network_browser
         self.main_menu = menu_main
 
         '''show the main menu'''

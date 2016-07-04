@@ -78,6 +78,10 @@ class Menu(object):
         """
         return self.menu_items[index]
 
+    def delete_item(self, item):
+        """remove a menu item"""
+        return self.menu_items.remove(item)
+
     def _draw_item(self, menu_item, index, pos, margin_top=None):
         """draw a specific MenuItem
 
