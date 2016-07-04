@@ -32,11 +32,12 @@ class NetworkConnector(object):
     COMPRESSION = None
 
     def __init__(self, main, level):
-        self.ip = "127.0.0.1"
+        self.ip = "0.0.0.0"
         self.external_ip = socket.gethostbyname(socket.getfqdn())   # (socket.gethostname())
         self.main = main
         self.level = level
         self.port = START_PORT
+        self.master = False
         self.client = None
         self.server = None
         self.browser = None
@@ -52,26 +53,26 @@ class NetworkConnector(object):
         except AttributeError:
             pass
 
+    def init_new_server(self):
+        """start a new server thread"""
+        if self.server:
+            self.server.kill()
+
+        self.server = Server(self.ip, self.port, self.level, self.main)
+        self.master = True
+        self.server.start()
+
     def start_server_prompt(self, port=START_PORT):
         """starting a network server from the main menu"""
 
         self.port = port if port else START_PORT
-
-        def init_new_server():
-            """start a new server thread"""
-            if self.server:
-                self.server.kill()
-
-            self.server = Server(self.port, self.level, self.main)
-            self.master = True
-            self.server.start()
 
         def start_server():
             """try to start a server"""
 
             if not self.server:
 
-                init_new_server()
+                self.init_new_server()
 
                 while not self.server.connected:
                     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
@@ -81,7 +82,7 @@ class NetworkConnector(object):
                         '''if it fails (e.g. port still in use) switch the port up to 5 times'''
                         if self.port < START_PORT + 5:
                             self.port += 1
-                            init_new_server()
+                            self.init_new_server()
                             print("changing server and port to ", str(self.port))
                         else:
                             '''if it still fails give up'''
@@ -108,8 +109,13 @@ class NetworkConnector(object):
     def join_server_prompt(self, ip_and_port):
         """join a server from the main menu"""
         ip, self.port = ip_and_port
+        print(str(ip))
+        if isinstance(ip, str):
+            ip = socket.gethostbyname(ip)
         '''change to localhost ip if we are on the same computer'''
-        self.ip = "127.0.0.1" if self.ip == self.external_ip else ip
+        self.ip = ip    # "127.0.0.1" if self.ip == self.external_ip else ip
+
+        print(str(ip))
 
         def init_new_client():
             """start a new client thread"""
@@ -143,14 +149,14 @@ class NetworkConnector(object):
 
             # self.ip = input("Please enter an ip to connect to: ")
 
-        if self.client and not self.server:
+        if self.client and self.client.connected:
             '''disconnect from other servers first'''
             self.client.disconnect()
 
         join_server()
 
         if self.client and self.client.connected:
-            print("connected to localhost")
+            print("connected to %s" % self.ip)
 
     def update(self):
         try:
@@ -242,9 +248,9 @@ class ZeroConfListener(threading.Thread):
         if state_change is ServiceStateChange.Added:
             info = zeroconf.get_service_info(service_type, name)
             if info:
-                address = socket.inet_ntoa(info.address)
+                # address = socket.inet_ntoa(info.address)
                 port = info.port
-                menu_item = MenuItem(info.server, self.network_connector.join_server_prompt, vars=(address, port))
+                menu_item = MenuItem(info.server, self.network_connector.join_server_prompt, vars=(info.server, port))
                 '''add the full name as id so it can be removed if the server goes offline'''
                 menu_item.id = name
                 self.menu.network.add_item(menu_item)
@@ -285,7 +291,7 @@ class Client(threading.Thread, MastermindClientTCP):
             self.connected = True
             self.wait_for_init_data()
         except (OSError, MastermindErrorSocket):
-            raise
+            pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
     def get_last_command(self):
@@ -377,7 +383,8 @@ class Client(threading.Thread, MastermindClientTCP):
 class Server(threading.Thread, MastermindServerTCP):
 
     """main network server"""
-    def __init__(self, port, level, main):
+    def __init__(self, ip, port, level, main):
+        self.ip = ip
         self.port = port
         self._level = level
         self.main = main
@@ -462,10 +469,12 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def run(self):
         try:
-            self.connect("localhost", self.port)
+            self.connect(self.ip, self.port)
             self.accepting_allow()
             self.connected = True
         except (OSError, MastermindErrorSocket):
+            print(str(OSError))
+            print(str(MastermindErrorSocket))
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
         srvlog.info("server started and accepting connections on port %s" % self.port)
