@@ -57,14 +57,17 @@ class NetworkConnector(object):
                 init_new_server()
 
                 while not self.server.connected:
+                    '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
                     time.sleep(0.25)
 
                     if not self.server.connected:
+                        '''if it fails (e.g. port still in use) switch the port up to 5 times'''
                         if self.port < START_PORT + 5:
                             self.port += 1
                             init_new_server()
                             print("changing server and port to ", str(self.port))
                         else:
+                            '''if it still fails give up'''
                             self.server.kill()
                             break
             else:
@@ -82,7 +85,7 @@ class NetworkConnector(object):
     def join_server_prompt(self):
 
         def init_new_client():
-            """start a new server thread"""
+            """start a new client thread"""
             if self.client:
                 self.client.kill()
 
@@ -91,18 +94,22 @@ class NetworkConnector(object):
             self.client.start()
 
         def join_server():
+            """join your own or another server"""
 
             init_new_client()
 
             while not self.client.connected:
+                '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
                 time.sleep(0.25)
 
                 if not self.client.connected:
+                    '''if it fails (e.g. no server running on this port) switch the port up to 5 times'''
                     if self.port < START_PORT + 5:
                         self.port += 1
                         self.client.port = self.port
                         print("changing client and port to ", str(self.port))
                     else:
+                        '''if it still fails give up'''
                         self.client.kill()
                         break
                     # init_new_client()
