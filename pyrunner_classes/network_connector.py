@@ -61,7 +61,7 @@ class NetworkConnector(object):
 
                 while not self.server.connected:
 
-                    if (datetime.now() - self.timer).seconds >= 2:
+                    if (datetime.now() - self.timer).seconds >= 1:
                         if not self.server.connected:
                             self.timer = datetime.now()
                             if self.port < START_PORT + 5:
@@ -156,7 +156,7 @@ class Client(threading.Thread, MastermindClientTCP):
             clientlog.info("Client connecting, waiting for initData")
             self.connected = True
             self.wait_for_init_data()
-        except (OSError, Mastermind._mm_errors.MastermindErrorSocket):
+        except (OSError, MastermindErrorSocket):
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
@@ -201,7 +201,10 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def kill(self):
         """stop the server"""
-        self.disconnect()
+        try:
+            self.disconnect()
+        except AttributeError:
+            pass
         self.connected = False
 
     def update(self):
@@ -334,7 +337,7 @@ class Server(threading.Thread, MastermindServerTCP):
             self.connect("localhost", self.port)
             self.accepting_allow()
             self.connected = True
-        except (OSError, Mastermind._mm_errors.MastermindErrorSocket):
+        except (OSError, MastermindErrorSocket):
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
         srvlog.info("server started and accepting connections on port %s" % self.port)
