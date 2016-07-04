@@ -34,7 +34,7 @@ class Player(pygame.sprite.DirtySprite):
         self.on_ground = False
         self.on_ladder = False
         self.on_rope = False
-        self.jump_off_rope = False
+        self.can_jump_off = False
         self.can_go_down = False
         self._stop_on_ground = False
         # movement related
@@ -151,7 +151,7 @@ class Player(pygame.sprite.DirtySprite):
         if self.direction is not "Trapped":
             if self.on_rope:
                 '''only let the player jump down if there's no bottom tile below'''
-                if self.jump_off_rope:
+                if self.can_jump_off:
                     self.rect.y += self.speed * 2
                     self.on_rope = False
                     self.on_ladder = False

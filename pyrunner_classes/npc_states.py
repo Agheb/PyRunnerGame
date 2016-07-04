@@ -71,6 +71,8 @@ class State(object):
         if self.bot.direction == "Trapped":
             return
 
+        # print("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
+
         if self.bot.on_ladder or self.bot.can_go_down:
             if self.bot.left_tile and self.bot.left_tile.climbable_horizontal and x < bx:
                 '''climb on ropes which are connected to ladders etc. left of the player'''
@@ -127,43 +129,6 @@ class State(object):
             self.bot.walk_left = False
 
         self.check_world_borders()
-
-    def find_your_way(self):
-        """walk along to a path"""
-        if self.next_pos and self.bot.on_tile:
-            x, y = self.next_pos
-            bx, by = self.bot.on_tile
-
-            self.walk_the_line(x, y, bx, by)
-
-            '''get a new position if we reached our target'''
-            if x == bx or y == by:  # or (self.bot.change_x is 0 and self.bot.change_y is 0):
-                new_x = bx
-                new_y = by
-                if self.bot.on_rope:
-                    new_x += 1 if self.bot.change_x > 0 else -1
-                elif self.bot.left_tile and self.bot.left_tile.climbable_horizontal:
-                    new_x -= 1
-                elif self.bot.right_tile and self.bot.right_tile.climbable_horizontal:
-                    new_x += 1
-                elif y < by and self.bot.on_ladder:
-                    print("fyw up")
-                    new_y = by - 1
-                    self.climbed_ladder = True
-                elif y > by and self.bot.can_go_down and not self.climbed_ladder:
-                    print("fyw down")
-                    new_y = by + 1
-                '''store the changed position'''
-                if new_x is not bx and new_y is not by:
-                    self.next_pos = new_x, new_y
-
-                if not self.bot.change_y and not self.bot.change_x and self.climbed_ladder:
-                    self.climbed_ladder = False
-
-            elif self.bot.change_y <= 0 and self.bot.on_ladder and not self.climbed_ladder:
-                new_y = by - 1
-                self.next_pos = bx, new_y
-                self.climbed_ladder = True
 
     def calc_shortest_paths(self, own_tile, target_tile):
         """check all players for who's closest"""
@@ -235,56 +200,65 @@ class State(object):
         if self.bot.on_tile:
             bx, by = self.bot.on_tile
 
+            '''
+                check for collisions with other sprites:
+                note that all sprites that shouldn't collide with the bot are excluded in game_physics.py
+            '''
+            if self.bot.left_tile:
+                print("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.climbable_horizontal))
+                self.bot.walk_left = False
+            elif self.bot.right_tile:
+                print("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.right_tile))
+                self.bot.walk_left = True
+
             if bx == self.bot.level.cols - 1:
-                self.bot.go_left()
                 self.bot.walk_left = True
             elif bx == 0:
-                self.bot.go_right()
                 self.bot.walk_left = False
+
+            self.bot.go_left() if self.bot.walk_left else self.bot.go_right()
 
 
 class Exploring(State):
     """wander around the map"""
     def __init__(self, bot):
         State.__init__(self, "exploring", bot)
-
-    def random_destination(self):
-        """walk to random destination"""
-        own_tile = self.bot.on_tile
-
-        if own_tile:
-            bx, by = own_tile
-
-            for obj in WorldObject.group:
-                obj_tile = obj.tile_id
-                x, y = obj_tile
-                check_x = bx - x if bx > x else x - bx
-                check_y = by - y if by > y else y - by
-
-                '''check for a tile next to you'''
-                if check_x <= 10 and check_y <= 3 and own_tile is not obj_tile:
-                    if random.randint(0, 10) is 7:
-                        if y > by and self.bot.change_y >= 0:
-                            return obj_tile
-                        elif y < by and self.bot.change_y < 0:
-                            return obj_tile
-                        elif x < bx and self.bot.walk_left:
-                            return obj_tile
-                        elif x > bx and not self.bot.walk_left:
-                            return obj_tile
-
-        return False
+        self.visited_paths = []
 
     def do_actions(self):
         """if the player can move we will walk around the map until we find a close player"""
         if self.bot.direction is not "Trapped":
-            '''if there's no shortest path search for the closest player'''
+            '''if there's no shortest path walk around and lookout for players'''
             if self.bot.on_tile:
+                x, y = bx, by = self.bot.on_tile
+
                 if self.next_pos is not self.old_pos:
-                    self.old_pos = self.next_pos
-                    self.find_your_way()
+                    if self.bot.on_ladder or self.bot.can_go_down:
+                        if self.bot.on_ladder or self.bot.change_y < 0:
+                            y = by - 1
+                            self.climbed_ladder = True
+                        elif self.bot.can_go_down and not self.climbed_ladder and not self.bot.can_jump_off:
+                            self.bot.stop_on_ground = True
+                            y = by + 1
+
+                        if not self.bot.change_y and not self.bot.change_x and self.climbed_ladder:
+                            self.climbed_ladder = False
+
+                        self.visited_paths.append((bx, by))
+                    else:
+                        x = bx - 1 if self.bot.walk_left else bx + 1
+
+                    self.walk_next_tile(x, y, bx, by)
                 else:
-                    self.next_pos = self.random_destination()
+                    x = bx - 1 if self.bot.walk_left else bx + 1
+                    self.walk_next_tile(x, y, bx, by)
+
+    def walk_next_tile(self, x, y, bx, by):
+        """store the current positions and proceed"""
+        self.old_pos = bx, by
+        self.next_pos = x, y
+
+        self.walk_the_line(x, y, bx, by)
 
     def check_conditions(self):
         """as soon as a player is in sight switch to a hunting mode"""
@@ -293,9 +267,11 @@ class Exploring(State):
             return "shortest path"
 
     def entry_actions(self):
+        """check these conditions when entering this state"""
         return
 
     def exit_actions(self):
+        """perform these actions when switching state"""
         return
 
 
@@ -328,8 +304,7 @@ class ShortestPath(State):
 
             x, y = self.next_pos
 
-            # print("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
-            self.walk_the_line(x, y, bx, by)  # find_your_way()
+            self.walk_the_line(x, y, bx, by)
 
             if x == bx or y == by or (not self.bot.change_x and not self.bot.change_y):
                 self.old_pos = self.next_pos
@@ -391,8 +366,6 @@ class Hunting(Exploring):
                     self.walk_the_line(x, y, bx, by)
                 else:
                     '''make the bot walk into the other direction if he is stuck at the level borders'''
-                    self.bot.walk_left = True if x < bx else False
-                    self.bot.go_left() if self.bot.walk_left else self.bot.go_right()
                     self.check_world_borders()
 
     def check_conditions(self):

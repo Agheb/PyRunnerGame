@@ -72,14 +72,22 @@ class Physics(object):
                         on_ground = True
 
             if not player.is_human:
-                player.right_tile = self.find_collision(player.rect.centerx + player.size,
-                                                        player.rect.centery, WorldObject.group)
-                player.left_tile = self.find_collision(player.rect.centerx - player.size,
-                                                       player.rect.centery, WorldObject.group)
+                '''add sprites left and right of the bot for collision detection'''
+                right_tile = self.find_collision(player.rect.x + 2, player.rect.y, WorldObject.group)
+                if right_tile and not (right_tile.collectible or right_tile.climbable or right_tile.climbable_horizontal):
+                    player.right_tile = right_tile
+                else:
+                    player.right_tile = None
+
+                left_tile = self.find_collision(player.rect.x - 2, player.rect.y, WorldObject.group)
+                if left_tile and not (left_tile.collectible or left_tile.climbable or left_tile.climbable_horizontal):
+                    player.left_tile = left_tile
+                else:
+                    player.left_tile = None
 
             '''important sprites for the bot'''
             bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + half_size)
-            jump_off_rope = True if not bottom_sprite or bottom_sprite.climbable else False
+            can_jump_off = True if not bottom_sprite or bottom_sprite.climbable else False
 
             '''check if there's a ladder below the feet'''
             bot_go_down = True if bottom_sprite and bottom_sprite.climbable and not player.is_human else False
@@ -173,7 +181,7 @@ class Physics(object):
             # update the player variables
             player.on_tile = on_tile
             player.on_rope = on_rope
-            player.jump_off_rope = jump_off_rope
+            player.can_jump_off = can_jump_off
             player.on_ladder = on_ladder
             player.on_ground = on_ground
             player.can_go_down = can_go_down if player.is_human else bot_go_down

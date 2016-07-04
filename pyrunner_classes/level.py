@@ -255,19 +255,19 @@ class Level(object):
         #                 # print("Error %s and %s" % (tile_a, tile_b))
         #                 pass
 
-        intersections = [tile_id for tile_id in horizontals if tile_id in ladders]
-        intersections.sort()
-
-        '''partially initialize the graph'''
-        for tile in self.walkable_list:
-            for ladder in intersections:
-                if tile is not ladder:
-                    try:
-                        self.graph.shortest_path(tile, ladder)
-                        print("Success: %s and %s" % (tile, ladder))
-                    except KeyError:
-                        # print("Error %s and %s" % (tile, ladder))
-                        pass
+        # intersections = [tile_id for tile_id in horizontals if tile_id in ladders]
+        # intersections.sort()
+        #
+        # '''partially initialize the graph'''
+        # for tile in self.walkable_list:
+        #     for ladder in intersections:
+        #         if tile is not ladder:
+        #             try:
+        #                 self.graph.shortest_path(tile, ladder)
+        #                 print("Success: %s and %s" % (tile, ladder))
+        #             except KeyError:
+        #                 # print("Error %s and %s" % (tile, ladder))
+        #                 pass
 
     def get_is_path(self, a, b):
         """returns if a target is reachable"""
