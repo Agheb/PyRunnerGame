@@ -73,14 +73,14 @@ class Physics(object):
 
             if not player.is_human:
                 '''add sprites left and right of the bot for collision detection'''
-                right_tile = self.find_collision(player.rect.x + 2, player.rect.y, WorldObject.group)
-                if right_tile and not (right_tile.collectible or right_tile.climbable or right_tile.climbable_horizontal):
+                right_tile = self.find_collision(player.rect.centerx + half_size, player.rect.y, WorldObject.group)
+                if right_tile and not (right_tile.collectible or right_tile.climbable or right_tile.is_rope):
                     player.right_tile = right_tile
                 else:
                     player.right_tile = None
 
-                left_tile = self.find_collision(player.rect.x - 2, player.rect.y, WorldObject.group)
-                if left_tile and not (left_tile.collectible or left_tile.climbable or left_tile.climbable_horizontal):
+                left_tile = self.find_collision(player.rect.centerx - half_size, player.rect.y, WorldObject.group)
+                if left_tile and not (left_tile.collectible or left_tile.climbable or left_tile.is_rope):
                     player.left_tile = left_tile
                 else:
                     player.left_tile = None
@@ -159,7 +159,7 @@ class Physics(object):
                 elif sprite.rect.collidepoint(player.rect.center):
                     on_tile = sprite.tile_id
                     """check which sprite contains the player"""
-                    if sprite.climbable_horizontal and player.direction is not "Falling":
+                    if sprite.is_rope and player.direction is not "Falling":
                         """player is hanging on the rope"""
                         on_rope = True
                         player.rect.top = sprite.rect.top
@@ -172,7 +172,7 @@ class Physics(object):
                             player.rect.y = sprite.rect.y
                 elif sprite.rect.collidepoint(player.rect.midbottom) and not can_go_down:
                     """if the player hits a solid sprite at his feet"""
-                    if sprite.solid and not sprite.climbable_horizontal:
+                    if sprite.solid and not sprite.is_rope:
                         on_ground = True
                         self.hit_top(player, sprite)
                 elif not can_go_down and sprite is not bottom_sprite:
@@ -240,7 +240,7 @@ class Physics(object):
                         self.hit_top(player, sprite)
                     elif player.change_y < 0:
                         self.hit_bottom(player, sprite)
-            elif not player.on_rope and not sprite.collectible and not sprite.climbable_horizontal:
+            elif not player.on_rope and not sprite.collectible and not sprite.is_rope:
                 """ignore left/right collisions with sprites that are below the player"""
                 if player.change_x > 0:
                     self.hit_left(player, sprite)

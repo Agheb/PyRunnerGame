@@ -19,7 +19,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2BwA3dGCCZWLTF6YPKE8CigDxiosEa3F1v8E5sWiEk3xKaxwZL+hqr7CMnRC5DrPnLKIHLKrqEUfoOxfB5K4YdNjpp1HzY9xJZz5Ja5AwlG3UcZGAruw5YOyckvlOQ1YtuqgxEDAMUTKIE=
+   eJxjYBgFo2BwA3dGCCZWLTF6YPKE8CgY3gA9jrHFP7FpgZh0Q2waG01/IxuQUwYN97JruPtvIAA16z5sesgpE3GZNQpGAb0BtrRLTn6hpJ1JbFt1MGIAL6siUQ==
   </data>
  </layer>
  <layer name="Block_Removable" width="40" height="23">
@@ -29,6 +29,14 @@
   </properties>
   <data encoding="base64" compression="zlib">
    eJxjYBgFo2DwASVGVEwtcyg1bxQMP0BJusCll9g05z4E0udgd99QBsSEJa4ybKTEyXD332AGxKY9ctPxKBgFQwEQk2apnTeGQx4BAJOACtA=
+  </data>
+ </layer>
+ <layer name="Vertical Wall" width="40" height="23">
+  <properties>
+   <property name="vertical_wall" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt0bkNACAMBEGojv47QuQ8Eg7sYCa8aKVrDSDX6NkF7Jx+WXuFz24N+t70xeiLqd4H/JspLgUR
   </data>
  </layer>
  <layer name="Coins" width="40" height="23">
@@ -58,7 +66,7 @@
  </layer>
  <layer name="Seil" width="40" height="23">
   <properties>
-   <property name="climbable_horizontal" type="bool" value="true"/>
+   <property name="rope" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
    eJzt1bENACAMA0Fn/4FgPJgApYlo7qTv3TmBZN2q0f41EAAGvb4PgL4DOBYBgA==

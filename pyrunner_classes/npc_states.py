@@ -1,7 +1,6 @@
-import random
 from .player import Player
-from .level_objecs import WorldObject
 from ast import literal_eval as make_tuple
+from datetime import datetime
 import math
 
 
@@ -94,10 +93,13 @@ class State(object):
                 # go right
                 self.bot.go_right()
                 self.bot.walk_left = False
-            elif y > by and (self.bot.can_go_down or (self.bot.on_ladder and self.bot.jump_off_rope)):
+            elif y > by and (self.bot.can_go_down or self.bot.on_ladder):
                 '''use ladders solid top spots to climb down'''
-                self.bot.stop_on_ground = True
-                self.bot.go_down()
+                if self.bot.can_go_down:
+                    self.bot.stop_on_ground = True
+                if self.bot.can_jump_off:
+                    self.bot.go_down()
+                print("DOWWWWN", str(self.bot.can_go_down), str(self.bot.on_ladder))
             elif y < by and self.bot.on_ladder:
                 '''or simply climb up'''
                 self.bot.change_x = 0
@@ -135,6 +137,7 @@ class State(object):
         try:
             return self.bot.level.graph.shortest_path(own_tile, target_tile)
         except KeyError:
+            print("Error: ", str(own_tile), " ", str(target_tile))
             return False
 
     def shortest_path(self):
@@ -223,7 +226,6 @@ class Exploring(State):
     """wander around the map"""
     def __init__(self, bot):
         State.__init__(self, "exploring", bot)
-        self.visited_paths = []
 
     def do_actions(self):
         """if the player can move we will walk around the map until we find a close player"""
@@ -243,8 +245,6 @@ class Exploring(State):
 
                         if not self.bot.change_y and not self.bot.change_x and self.climbed_ladder:
                             self.climbed_ladder = False
-
-                        self.visited_paths.append((bx, by))
                     else:
                         x = bx - 1 if self.bot.walk_left else bx + 1
 
@@ -342,6 +342,7 @@ class Hunting(Exploring):
         State.__init__(self, "hunting", bot)
         self.check_sp = False
         self.change_layer = False
+        self.switch_time = None
 
     def do_actions(self):
         """walk along the path"""
@@ -374,9 +375,8 @@ class Hunting(Exploring):
         if not self.closest_player:
             '''else wander along until you find a new one'''
             return "exploring"
-        if self.check_sp:
+        if self.check_sp and (datetime.now() - self.switch_time).seconds > 1:
             '''check if there's a shortest path to the target'''
-            self.check_sp = False
             return "shortest path"
 
     def entry_actions(self):
@@ -385,5 +385,5 @@ class Hunting(Exploring):
 
     def exit_actions(self):
         """perform these when leaving this state"""
-        pass
-
+        self.check_sp = False
+        self.switch_time = datetime.now()
