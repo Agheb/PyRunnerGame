@@ -218,7 +218,7 @@ class Level(object):
         self.walkable_list.sort(key=itemgetter(0))
         self.walkable_list.sort(key=itemgetter(1))
 
-        self.add_paths(self.walkable_list, True)    # horizontals =
+        horizontals = self.add_paths(self.walkable_list, True)    # horizontals =
 
         '''find all ladders'''
         # remove duplicate entries
@@ -226,23 +226,23 @@ class Level(object):
         # sort list by x, then by y
         self.climbable_list.sort()
 
-        # '''add the bottom below the ladder as well'''
-        # ladder_plus = [tile_id for tile_id in ladders]
-        # old_y = 0
-        # for tile_id in ladders:
-        #     x, y = tile_id
-        #     if not old_y:
-        #         old_y = y
-        #     elif y is not old_y:
-        #         ladder_plus.append((x, y + 1))
-        #         old_y = y
+        '''add the bottom below the ladder as well'''
+        ladder_plus = [tile_id for tile_id in self.climbable_list]
+        old_y = 0
+        for tile_id in self.climbable_list:
+            x, y = tile_id
+            if not old_y:
+                old_y = y
+            elif y is not old_y:
+                ladder_plus.append((x, y + 1))
+                old_y = y
 
         # remove duplicate entries
-        # ladders = list(set(ladder_plus))
+        ladders = list(set(ladder_plus))
         # sort list by x, then by y
-        # ladders.sort()
+        ladders.sort()
 
-        self.add_paths(self.climbable_list, False)
+        self.add_paths(ladders, False)
 
         # '''initialize the graph'''
         # for tile_a in self.walkable_list:
@@ -254,7 +254,7 @@ class Level(object):
         #             except KeyError:
         #                 # print("Error %s and %s" % (tile_a, tile_b))
         #                 pass
-
+        #
         # intersections = [tile_id for tile_id in horizontals if tile_id in ladders]
         # intersections.sort()
         #
@@ -298,9 +298,8 @@ class Level(object):
                 stop_a, stop_b = cur_stop, cur_locked_x_y
             else:
                 '''connect the ladder to the next bottom horizontal row'''
-                length += 1
                 start_a, start_b = cur_locked_x_y, cur_start
-                stop_a, stop_b = cur_locked_x_y, cur_stop + 1
+                stop_a, stop_b = cur_locked_x_y, cur_stop
                 tuple_list.append((stop_a, stop_b))
             '''name the nodes'''
             start_node = start_a, start_b
@@ -309,6 +308,15 @@ class Level(object):
             self.graph.add_edge(start_node, stop_node, length)
             self.graph.add_edge(stop_node, start_node, length)
             print("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
+
+            # for node_a in range(stop_a, stop_b):
+            #         for node_b in range(stop_a, stop_b):
+            #             if node_a is not node_b:
+            #                 length = node_b - node_a if node_b > node_a else node_a - node_b
+            #                 length += 1
+            #                 self.graph.add_edge(node_a, node_b, length)
+            #                 # self.graph.add_edge(stop_node, start_node, length)
+            #                 print("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
 
     def add_paths(self, node_list, horizontal=True):
         """find intersections between different levels"""

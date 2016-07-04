@@ -74,10 +74,9 @@ class State(object):
 
         if self.bot.on_ladder or self.bot.can_go_down:
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
-                print("climb left")
                 '''climb on ropes which are connected to ladders etc. left of the player'''
-                # self.bot.change_y = 0
-                self.bot.stop_on_ground = True
+                # self.bot.stop_on_ground = True
+                self.bot.change_y = 0
                 # get past ground collisions
                 self.bot.on_rope = True
                 self.bot.rect.y = self.bot.left_tile.rect.y
@@ -87,10 +86,9 @@ class State(object):
                 self.bot.walk_left = True
             elif self.bot.right_tile and self.bot.right_tile.is_rope and bx < x:
                 '''climb on ropes which are connected to ladders etc. right of the player'''
-                print("climb right")
-                # self.bot.change_y = 0
+                # self.bot.stop_on_ground = True
+                self.bot.change_y = 0
                 # get past ground collisions
-                self.bot.stop_on_ground = True
                 self.bot.on_rope = True
                 self.bot.rect.y = self.bot.right_tile.rect.y
                 self.bot.rect.x += self.bot.speed
@@ -218,7 +216,7 @@ class State(object):
 
             if bx == self.bot.level.cols - 1:
                 self.bot.walk_left = True
-            elif bx == 0:
+            elif bx == 1:
                 self.bot.walk_left = False
 
             self.bot.go_left() if self.bot.walk_left else self.bot.go_right()
@@ -356,7 +354,6 @@ class Hunting(Exploring):
                 bx, by = self.bot.on_tile
 
                 if self.bot.on_tile is not self.old_pos:
-                    self.old_pos = self.bot.on_tile
                     self.check_sp = True
 
                 if by == y:
@@ -372,21 +369,23 @@ class Hunting(Exploring):
                     '''make the bot walk into the other direction if he is stuck at the level borders'''
                     self.check_world_borders()
 
+                self.old_pos = self.bot.on_tile
+
     def check_conditions(self):
         """if there's no path switch to exploring mode"""
         '''make sure the player still exists'''
         if not self.closest_player:
             '''else wander along until you find a new one'''
             return "exploring"
-        if self.check_sp and (datetime.now() - self.switch_time).seconds > 1:
+        if self.check_sp and (datetime.now() - self.switch_time).seconds >= 1:
             '''check if there's a shortest path to the target'''
             return "shortest path"
 
     def entry_actions(self):
         """look up the closest player when entering this state"""
         self.closest_player = self.check_closest_player()
+        self.switch_time = datetime.now()
 
     def exit_actions(self):
         """perform these when leaving this state"""
         self.check_sp = False
-        self.switch_time = datetime.now()
