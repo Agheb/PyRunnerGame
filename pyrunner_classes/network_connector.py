@@ -240,6 +240,7 @@ class ZeroConfListener(threading.Thread):
     def start_browser(self):
         """browse for games"""
         self.browser = ServiceBrowser(self.listener, "_pyrunner._tcp.local.", handlers=[self.on_service_state_change])
+        self.menu.network.flush_all_items()
         self.menu.set_current_menu(self.menu.network)
 
     def on_service_state_change(self, zeroconf, service_type, name, state_change):
