@@ -36,7 +36,7 @@ class NetworkConnector(object):
         self.server = None
 
     def start_server_prompt(self, port=START_PORT):
-        """starting the network server"""
+        """starting a network server from the main menu"""
 
         self.port = port if port else START_PORT
 
@@ -83,6 +83,7 @@ class NetworkConnector(object):
             self.join_server_prompt()
 
     def join_server_prompt(self):
+        """join a server from the main menu"""
 
         def init_new_client():
             """start a new client thread"""
