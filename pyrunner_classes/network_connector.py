@@ -11,6 +11,7 @@ from datetime import datetime
 from time import sleep
 import json
 import socket
+import textwrap
 from Mastermind import *
 from zeroconf import ServiceBrowser, ServiceStateChange, ServiceInfo, Zeroconf
 from zeroconf import NonUniqueNameException, BadTypeInNameException
@@ -283,8 +284,15 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def network_error_menu(self, error_string):
         """show errors in the menu"""
+
+        if not isinstance(error_string, list):
+            '''split longer text into multiple items'''
+            len_per_line = 40
+            textwrap.wrap(error_string, len_per_line, break_long_words=False)
+
         self.main.menu.network.flush_all_items()
-        self.main.menu.network.add_item(MenuItem(error_string, None))
+        for text in error_string:
+            self.main.menu.network.add_item(MenuItem(text, None))
         self.main.menu.set_current_menu(self.main.menu.network)
         self.main.menu.show_menu(True)
 
@@ -301,7 +309,7 @@ class Client(threading.Thread, MastermindClientTCP):
             self.connected = True
             self.wait_for_init_data()
         except (OSError, MastermindErrorSocket):
-            self.network_error_menu("An error occurred connecting to the server! Please try again later")
+            self.network_error_menu("An error occurred connecting to the server. Please try again later.")
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
