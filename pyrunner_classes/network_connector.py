@@ -12,8 +12,8 @@ from time import sleep
 import json
 import socket
 from Mastermind import *
-from zeroconf import ServiceBrowser, ServiceStateChange, ServiceInfo, Zeroconf, NonUniqueNameException, \
-    BadTypeInNameException
+from zeroconf import ServiceBrowser, ServiceStateChange, ServiceInfo, Zeroconf
+from zeroconf import NonUniqueNameException, BadTypeInNameException
 from .level_objecs import WorldObject
 from .menu import MenuItem
 
@@ -32,20 +32,23 @@ class NetworkConnector(object):
     COMPRESSION = None
 
     def __init__(self, main, level):
-        self.ip = socket.gethostbyname(socket.gethostname())
+        self.ip = "127.0.0.1"
+        self.external_ip = socket.gethostbyname(socket.getfqdn())   # (socket.gethostname())
         self.main = main
         self.level = level
         self.port = START_PORT
         self.client = None
         self.server = None
-        self.zeroconf = None
+        self.browser = None
+        self.advertiser = None
 
     def quit(self):
         """shutdown all threads"""
         try:
             self.server.kill()
             self.client.kill()
-            self.zeroconf.kill()
+            self.browser.kill()
+            self.advertiser.shutdown()
         except AttributeError:
             pass
 
@@ -72,7 +75,7 @@ class NetworkConnector(object):
 
                 while not self.server.connected:
                     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-                    sleep(0.25)
+                    sleep(1)
 
                     if not self.server.connected:
                         '''if it fails (e.g. port still in use) switch the port up to 5 times'''
@@ -85,30 +88,28 @@ class NetworkConnector(object):
                             self.server.kill()
                             break
             else:
-                self.join_server_prompt()
+                self.join_server_prompt((self.ip, self.port))
                 # self.main.load_level(self.main.START_LEVEL)
 
         print("starting server")
         start_server()
 
         if self.server and self.server.connected:
-
             self.join_server_prompt((self.ip, self.port))
             '''propagate server over zeroconf'''
-            self.zeroconf = ZeroConfListener(self.main.menu, self.main.network_connector,
-                                             self.ip, self.port)
-            self.zeroconf.start()
-            self.zeroconf.server()
+            self.advertiser = ZeroConfAdvertiser(self.external_ip, self.port)
 
     def join_server_menu(self):
         """browse for games and then join"""
-        self.zeroconf = ZeroConfListener(self.main.menu, self, self.ip, self.port)
-        self.zeroconf.start()
-        self.zeroconf.start_browser()
+        self.browser = ZeroConfListener(self.main.menu, self, self.ip, self.port)
+        self.browser.start()
+        self.browser.start_browser()
 
     def join_server_prompt(self, ip_and_port):
         """join a server from the main menu"""
-        self.ip, self.port = ip_and_port
+        ip, self.port = ip_and_port
+        '''change to localhost ip if we are on the same computer'''
+        self.ip = "127.0.0.1" if self.ip == self.external_ip else ip
 
         def init_new_client():
             """start a new client thread"""
@@ -124,25 +125,25 @@ class NetworkConnector(object):
 
             init_new_client()
 
-            while not self.client.connected:
-                '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-                sleep(0.25)
-
-                if not self.client.connected:
-                    '''if it fails (e.g. no server running on this port) switch the port up to 5 times'''
-                    if self.port < START_PORT + 5:
-                        self.port += 1
-                        self.client.port = self.port
-                        print("changing client and port to ", str(self.port))
-                    else:
-                        '''if it still fails give up'''
-                        self.client.kill()
-                        break
-                    # init_new_client()
+            # while not self.client.connected:
+            #     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
+            #     sleep(0.5)
+            #
+            #     if not self.client.connected:
+            #         '''if it fails (e.g. no server running on this port) switch the port up to 5 times'''
+            #         if self.port < START_PORT + 5:
+            #             self.port += 1
+            #             self.client.port = self.port
+            #             print("changing client and port to ", str(self.port))
+            #         else:
+            #             '''if it still fails give up'''
+            #             self.client.kill()
+            #             break
+            #         # init_new_client()
 
             # self.ip = input("Please enter an ip to connect to: ")
 
-        if self.client:
+        if self.client and not self.server:
             '''disconnect from other servers first'''
             self.client.disconnect()
 
@@ -158,35 +159,21 @@ class NetworkConnector(object):
             pass
 
 
-class ZeroConfListener(threading.Thread):
+class ZeroConfAdvertiser(object):
     """propagate network server via zeroconf multicast"""
 
-    def __init__(self, menu, network_connector, ip, port):
-        threading.Thread.__init__(self, daemon=True)
-        self.menu = menu
-        self.network_connector = network_connector
+    def __init__(self, ip, port):
         self.id = 0
         self.ip = ip
         self.port = port
         self.listener = Zeroconf()
-        self.browser = None
         self.hostname = socket.gethostname()
         self.gamename = self.hostname + "_pyrunner._tcp.local."
         self.desc = {'game': 'pyRunner v1.0'}
-
-        print(str(self.ip))
         self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
                                 self.port, 0, 0, self.desc, self.hostname)
-
-    def shutdown(self):
-        """stop service advertisement"""
-        print("shutting down zeroconf")
-        self.listener.unregister_service(self.info)
-        self.listener.close()
-
-    def kill(self):
-        """quit this process"""
-        self.shutdown()
+        '''propagate the server'''
+        self.server()
 
     def server(self):
         """propagate your own server"""
@@ -201,7 +188,39 @@ class ZeroConfListener(threading.Thread):
                                         self.port, 0, 0, self.desc, self.hostname)
                 self.listener.register_service(self.info)
             except BadTypeInNameException:
-                self.kill()
+                pass
+
+    def shutdown(self):
+        """stop service advertisement"""
+        self.listener.unregister_service(self.info)
+        self.listener.close()
+
+
+class ZeroConfListener(threading.Thread):
+    """browse for network servers via zeroconf multicast"""
+
+    def __init__(self, menu, network_connector, ip, port):
+        threading.Thread.__init__(self, daemon=True)
+        self.menu = menu
+        self.network_connector = network_connector
+        self.id = 0
+        self.ip = ip
+        self.port = port
+        self.listener = Zeroconf()
+        self.browser = None
+        self.hostname = socket.gethostname()
+        self.gamename = self.hostname + "_pyrunner._tcp.local."
+        self.desc = {'game': 'pyRunner v1.0'}
+        self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
+                                self.port, 0, 0, self.desc, self.hostname)
+
+    def shutdown(self):
+        """stop service advertisement"""
+        self.listener.close()
+
+    def kill(self):
+        """quit this process"""
+        self.shutdown()
 
     def run(self):
         """main function"""
@@ -266,7 +285,7 @@ class Client(threading.Thread, MastermindClientTCP):
             self.connected = True
             self.wait_for_init_data()
         except (OSError, MastermindErrorSocket):
-            pass
+            raise
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
     def get_last_command(self):
