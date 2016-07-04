@@ -92,7 +92,7 @@ class Menu(object):
         menu_item.rect.centerx = self.surface.get_rect().centerx
         if margin_top:
             menu_item.rect.centery = margin_top
-        menu_item.hovered = True if index is 0 or index is pos else False
+        menu_item.hovered = True if (index is 0 or index is pos) and menu_item.action else False
         # overwrite the old rendering
         pygame.draw.rect(self.surface, BACKGROUND, menu_item.get_rect())
         # draw the new rendering
@@ -100,7 +100,7 @@ class Menu(object):
 
         return menu_item.get_rect()
 
-    def print_menu(self, new_pos=1, old_pos=1, complete=True, start_pos=1):
+    def print_menu(self, new_pos=1, old_pos=1, complete=True, start_pos=1, rects=list()):
         """Print the whole menu or individual menu items
 
         Args:
@@ -108,11 +108,12 @@ class Menu(object):
             old_pos (int): previous selected menu item
             complete (bool): render the whole menu
             start_pos (int): offset at which to start rendering the menu (scrolling)
+            rects (list): rects if the menu already partially changed before calling this function
 
         Returns: list(pygame.Rect) for pygame to update the screen parts
         """
         length = self.length
-        rects = []
+        rects = rects
         max_items_view = MAX_ITEMS_NO_SCROLL - 2  # including 2 for the header
 
         # limit the cursor - is done in pyRunner.py
@@ -168,8 +169,13 @@ class Menu(object):
             # update the changed items
             rects.append(self._draw_item(new_option, new_pos, new_pos))
             rects.append(self._draw_item(old_option, old_pos, new_pos))
+
+        if not self.menu_items[new_pos].action:
+            changed_pos = new_pos + 1 if old_pos <= new_pos else new_pos - 1
+            new_old_pos = old_pos + 1 if old_pos <= new_pos else old_pos - 1
+            return self.print_menu(changed_pos, new_old_pos, False, start_pos, rects)
         '''bug fix the rects positions and pass the changed rects to the render thread / pygame'''
-        return rects
+        return rects, new_pos
 
     def _draw_background(self, bg_color):
         """draws a custom shaped background to the main surface"""

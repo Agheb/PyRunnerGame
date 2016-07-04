@@ -163,7 +163,7 @@ class MainMenu(object):
         if boolean:
             self.in_menu = True
             self.render_thread.blit(self.main.level.background, None, True)
-            self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
+            rects, self.menu_pos = self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
             self.render_thread.blit(self.current_menu.surface, None, True)
             # render_thread.add_rect_to_update(rects)
         else:
@@ -175,7 +175,7 @@ class MainMenu(object):
 
     def navigate_menu(self, old_pos, complete=False):
         """helps rerendering the changed menu items for partial screen updates"""
-        rects = self.current_menu.print_menu(self.menu_pos, old_pos, complete)
+        rects, self.menu_pos = self.current_menu.print_menu(self.menu_pos, old_pos, complete)
         self.render_thread.blit(self.current_menu.surface, None, True)
         self.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
 
