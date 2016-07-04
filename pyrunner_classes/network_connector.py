@@ -287,8 +287,8 @@ class Client(threading.Thread, MastermindClientTCP):
 
         if not isinstance(error_string, list):
             '''split longer text into multiple items'''
-            len_per_line = 40
-            textwrap.wrap(error_string, len_per_line, break_long_words=False)
+            len_per_line = 45
+            error_string = textwrap.wrap(error_string, len_per_line, break_long_words=False)
 
         self.main.menu.network.flush_all_items()
         for text in error_string:
