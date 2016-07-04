@@ -70,10 +70,11 @@ class State(object):
         if self.bot.direction == "Trapped":
             return
 
-        # print("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
+        print("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
 
         if self.bot.on_ladder or self.bot.can_go_down:
-            if self.bot.left_tile and self.bot.left_tile.climbable_horizontal and x < bx:
+            if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
+                print("climb left")
                 '''climb on ropes which are connected to ladders etc. left of the player'''
                 self.bot.change_y = 0
                 # get past ground collisions
@@ -83,8 +84,9 @@ class State(object):
                 # go left
                 self.bot.go_left()
                 self.bot.walk_left = True
-            elif self.bot.right_tile and self.bot.right_tile.climbable_horizontal and bx < x:
+            elif self.bot.right_tile and self.bot.right_tile.is_rope and bx < x:
                 '''climb on ropes which are connected to ladders etc. right of the player'''
+                print("climb right")
                 self.bot.change_y = 0
                 # get past ground collisions
                 self.bot.on_rope = True
@@ -97,9 +99,7 @@ class State(object):
                 '''use ladders solid top spots to climb down'''
                 if self.bot.can_go_down:
                     self.bot.stop_on_ground = True
-                if self.bot.can_jump_off:
                     self.bot.go_down()
-                print("DOWWWWN", str(self.bot.can_go_down), str(self.bot.on_ladder))
             elif y < by and self.bot.on_ladder:
                 '''or simply climb up'''
                 self.bot.change_x = 0
@@ -208,10 +208,10 @@ class State(object):
                 note that all sprites that shouldn't collide with the bot are excluded in game_physics.py
             '''
             if self.bot.left_tile:
-                print("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.climbable_horizontal))
+                print("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = False
             elif self.bot.right_tile:
-                print("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.right_tile))
+                print("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = True
 
             if bx == self.bot.level.cols - 1:
@@ -357,14 +357,15 @@ class Hunting(Exploring):
                     self.old_pos = self.bot.on_tile
                     self.check_sp = True
 
-                if by is y:
+                if by == y:
                     self.change_layer = False
                     self.bot.walk_left = True if x < bx else False
                 else:
                     self.change_layer = True
 
-                if self.change_layer and (self.bot.on_rope or self.bot.on_ladder or self.bot.can_go_down):
-                    self.walk_the_line(x, y, bx, by)
+                if self.change_layer:
+                    if self.bot.on_rope or self.bot.on_ladder or self.bot.can_go_down:
+                        self.walk_the_line(x, y, bx, by)
                 else:
                     '''make the bot walk into the other direction if he is stuck at the level borders'''
                     self.check_world_borders()
