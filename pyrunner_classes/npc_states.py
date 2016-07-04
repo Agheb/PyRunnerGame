@@ -70,13 +70,14 @@ class State(object):
         if self.bot.direction == "Trapped":
             return
 
-        print("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
+        # print("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
 
         if self.bot.on_ladder or self.bot.can_go_down:
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
                 print("climb left")
                 '''climb on ropes which are connected to ladders etc. left of the player'''
-                self.bot.change_y = 0
+                # self.bot.change_y = 0
+                self.bot.stop_on_ground = True
                 # get past ground collisions
                 self.bot.on_rope = True
                 self.bot.rect.y = self.bot.left_tile.rect.y
@@ -87,8 +88,9 @@ class State(object):
             elif self.bot.right_tile and self.bot.right_tile.is_rope and bx < x:
                 '''climb on ropes which are connected to ladders etc. right of the player'''
                 print("climb right")
-                self.bot.change_y = 0
+                # self.bot.change_y = 0
                 # get past ground collisions
+                self.bot.stop_on_ground = True
                 self.bot.on_rope = True
                 self.bot.rect.y = self.bot.right_tile.rect.y
                 self.bot.rect.x += self.bot.speed
@@ -207,11 +209,11 @@ class State(object):
                 check for collisions with other sprites:
                 note that all sprites that shouldn't collide with the bot are excluded in game_physics.py
             '''
-            if self.bot.left_tile:
-                print("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.is_rope))
+            if self.bot.left_tile and not self.bot.left_tile.is_rope:
+                # print("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = False
-            elif self.bot.right_tile:
-                print("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.is_rope))
+            elif self.bot.right_tile and not self.bot.right_tile.is_rope:
+                # print("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = True
 
             if bx == self.bot.level.cols - 1:

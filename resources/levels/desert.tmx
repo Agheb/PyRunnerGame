@@ -33,6 +33,7 @@
  </layer>
  <layer name="Vertical Wall" width="40" height="23">
   <properties>
+   <property name="solid" type="bool" value="true"/>
    <property name="vertical_wall" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">

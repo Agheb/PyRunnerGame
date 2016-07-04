@@ -74,13 +74,13 @@ class Physics(object):
             if not player.is_human:
                 '''add sprites left and right of the bot for collision detection'''
                 right_tile = self.find_collision(player.rect.centerx + half_size, player.rect.y, WorldObject.group)
-                if right_tile and not (right_tile.collectible or right_tile.climbable or right_tile.is_rope):
+                if right_tile and not (right_tile.collectible or right_tile.climbable):
                     player.right_tile = right_tile
                 else:
                     player.right_tile = None
 
                 left_tile = self.find_collision(player.rect.centerx - half_size, player.rect.y, WorldObject.group)
-                if left_tile and not (left_tile.collectible or left_tile.climbable or left_tile.is_rope):
+                if left_tile and not (left_tile.collectible or left_tile.climbable):
                     player.left_tile = left_tile
                 else:
                     player.left_tile = None
