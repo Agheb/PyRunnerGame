@@ -32,7 +32,7 @@ class NetworkConnector(object):
     COMPRESSION = None
 
     def __init__(self, main, level):
-        self.ip = "127.0.0.1"
+        self.ip = socket.gethostbyname(socket.gethostname())
         self.main = main
         self.level = level
         self.port = START_PORT
