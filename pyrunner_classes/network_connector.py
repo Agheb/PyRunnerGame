@@ -110,7 +110,9 @@ class NetworkConnector(object):
         """join a server from the main menu"""
         ip, self.port = ip_and_port
         print(str(ip))
+
         if isinstance(ip, str):
+            '''let the computer resolve the hostname to an ip'''
             ip = socket.gethostbyname(ip)
         '''change to localhost ip if we are on the same computer'''
         self.ip = ip    # "127.0.0.1" if self.ip == self.external_ip else ip
@@ -188,8 +190,8 @@ class ZeroConfAdvertiser(object):
         except NonUniqueNameException:
             try:
                 self.id += 1
-                self.gamename = "%s %s" % (self.gamename, self.id)
-                self.hostname = "%s %s" % (self.hostname, self.id)
+                self.gamename = "%s.%s" % (self.id, self.gamename)
+                self.hostname = "%s.%s" % (self.id, self.hostname)
                 self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
                                         self.port, 0, 0, self.desc, self.hostname)
                 self.listener.register_service(self.info)
