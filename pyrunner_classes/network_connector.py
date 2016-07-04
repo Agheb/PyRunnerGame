@@ -76,7 +76,7 @@ class NetworkConnector(object):
 
                 while not self.server.connected:
                     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-                    sleep(1)
+                    sleep(0.25)
 
                     if not self.server.connected:
                         '''if it fails (e.g. port still in use) switch the port up to 5 times'''
@@ -281,6 +281,13 @@ class Client(threading.Thread, MastermindClientTCP):
         self.player_id = 0
         self.connected = False
 
+    def network_error_menu(self, error_string):
+        """show errors in the menu"""
+        self.main.menu.network.flush_all_items()
+        self.main.menu.network.add_item(MenuItem(error_string, None))
+        self.main.menu.set_current_menu(self.main.menu.network)
+        self.main.menu.show_menu(True)
+
     def send_key(self, key):
         clientlog.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update', 'data': str(key)})
@@ -294,6 +301,7 @@ class Client(threading.Thread, MastermindClientTCP):
             self.connected = True
             self.wait_for_init_data()
         except (OSError, MastermindErrorSocket):
+            self.network_error_menu("An error occurred connecting to the server! Please try again later")
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
