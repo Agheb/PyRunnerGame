@@ -92,7 +92,8 @@ class NetworkConnector(object):
         start_server()
 
         if self.server and self.server.connected:
-            self.join_server_prompt()
+
+            self.join_server_prompt((self.ip, self.port))
             '''propagate server over zeroconf'''
             self.zeroconf = ZeroConfListener(self.main.menu, self.main.network_connector,
                                              self.ip, self.port)
@@ -105,7 +106,7 @@ class NetworkConnector(object):
         self.zeroconf.start()
         self.zeroconf.start_browser()
 
-    def join_server_prompt(self, ip_and_port=("127.0.0.1", START_PORT)):
+    def join_server_prompt(self, ip_and_port):
         """join a server from the main menu"""
         self.ip, self.port = ip_and_port
 
@@ -173,6 +174,7 @@ class ZeroConfListener(threading.Thread):
         self.gamename = self.hostname + "_pyrunner._tcp.local."
         self.desc = {'game': 'pyRunner v1.0'}
 
+        print(str(self.ip))
         self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
                                 self.port, 0, 0, self.desc, self.hostname)
 
@@ -195,7 +197,7 @@ class ZeroConfListener(threading.Thread):
                 self.id += 1
                 self.gamename = "%s %s" % (self.gamename, self.id)
                 self.hostname = "%s %s" % (self.hostname, self.id)
-                self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton("127.0.0.1"),
+                self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
                                         self.port, 0, 0, self.desc, self.hostname)
                 self.listener.register_service(self.info)
             except BadTypeInNameException:
