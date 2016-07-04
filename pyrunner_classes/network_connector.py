@@ -12,6 +12,7 @@ from datetime import datetime
 import json
 from Mastermind import *
 from .level_objecs import WorldObject
+import pygame
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parentdir)
@@ -31,48 +32,96 @@ class NetworkConnector(object):
         self.ip = "localhost"
         self.main = main
         self.level = level
-        self.port = 6799
+        self.port = START_PORT
         self.client = None
         self.server = None
+        self.clock = pygame.time.Clock()
+        self.timer = datetime.now()
 
-    def start_server_prompt(self):
+    def start_server_prompt(self, port=START_PORT):
         """starting the network server"""
+
+        self.port = port if port else START_PORT
+
+        def init_new_server():
+            """start a new server thread"""
+            if self.server:
+                self.server.kill()
+
+            self.server = Server(self.port, self.level, self.main)
+            self.master = True
+            self.server.start()
 
         def start_server():
             """try to start a server"""
-            try:
-                if not self.server:
-                    self.server = Server(self.port, self.level, self.main)
-                    self.master = True
-                    self.server.start()
-                else:
-                    self.main.load_level(self.main.START_LEVEL)
-            except (OSError, Mastermind._mm_errors.MastermindErrorSocket):
-                print(str(self.port))
-                self.server.kill()
-                self.server = None
-                self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
-                self.start_server_prompt()
 
+            if not self.server:
+
+                init_new_server()
+
+                while not self.server.connected:
+
+                    if (datetime.now() - self.timer).seconds >= 2:
+                        if not self.server.connected:
+                            self.timer = datetime.now()
+                            if self.port < START_PORT + 5:
+                                self.port += 1
+                                init_new_server()
+                                print("changing server and port to ", str(self.port))
+                            else:
+                                self.server.kill()
+                                break
+
+                    self.clock.tick(25)
+            else:
+                self.join_server_prompt()
+                # self.main.load_level(self.main.START_LEVEL)
+
+        print("starting server")
         start_server()
-        self.join_server_prompt()
+
+        if self.server and self.server.connected:
+            print("success")
+            print("connecting to own host")
+            self.join_server_prompt()
 
     def join_server_prompt(self):
 
-        def join_server():
-            try:
-                #self.ip = input("Please enter an ip to connect to: ")
-                self.client = Client("localhost", self.port, self.level, self.main)
-                self.master = False
-                self.client.start()
-            except (OSError, ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
-                print(str(self.port))
+        def init_new_client():
+            """start a new server thread"""
+            if self.client:
                 self.client.kill()
-                self.client = None
-                self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
-                self.join_server_prompt()
+
+            self.client = Client("localhost", self.port, self.level, self.main)
+            self.master = False
+            self.client.start()
+
+        def join_server():
+
+            init_new_client()
+
+            while not self.client.connected:
+
+                if (datetime.now() - self.timer).seconds >= 1:
+                    if not self.client.connected:
+                        self.timer = datetime.now()
+
+                        if self.port < START_PORT + 5:
+                            self.port += 1
+                            self.client.port = self.port
+                            print("changing client and port to ", str(self.port))
+                        else:
+                            self.client.kill()
+                            break
+                        # init_new_client()
+
+                self.clock.tick(25)
+            #self.ip = input("Please enter an ip to connect to: ")
 
         join_server()
+
+        if self.client and self.client.connected:
+            print("connected to localhost")
 
     def update(self):
         try:
@@ -102,10 +151,14 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def run(self):
         clientlog.info("Connecting to ip %s" % str(self.target_ip))
-        self.connect(self.target_ip, self.port)
-        clientlog.info("Client connecting, waiting for initData")
-        self.connected = True
-        self.wait_for_init_data()
+        try:
+            self.connect(self.target_ip, self.port)
+            clientlog.info("Client connecting, waiting for initData")
+            self.connected = True
+            self.wait_for_init_data()
+        except (OSError, Mastermind._mm_errors.MastermindErrorSocket):
+            pass
+            # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
     def get_last_command(self):
         # for now, maybe we need non blocking later
@@ -198,6 +251,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self._level = level
         self.main = main
         self.known_clients = []
+        self.connected = False
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -262,13 +316,27 @@ class Server(threading.Thread, MastermindServerTCP):
             self.callback_client_send(client, data)
 
     def kill(self):
-        self.accepting_disallow()
-        self.disconnect_clients()
-        self.disconnect()
+        try:
+            self.accepting_disallow()
+        except AttributeError:
+            pass
+        try:
+            self.disconnect_clients()
+        except AttributeError:
+            pass
+        try:
+            self.disconnect()
+        except AttributeError:
+            pass
 
     def run(self):
-        self.connect("localhost", self.port)
-        self.accepting_allow()
+        try:
+            self.connect("localhost", self.port)
+            self.accepting_allow()
+            self.connected = True
+        except (OSError, Mastermind._mm_errors.MastermindErrorSocket):
+            pass
+            # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
         srvlog.info("server started and accepting connections on port %s" % self.port)
 
     def callback_disconnect(self):
