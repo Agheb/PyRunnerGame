@@ -245,6 +245,11 @@ class Exploring(State):
 
                         if not self.bot.change_y and not self.bot.change_x and self.climbed_ladder:
                             self.climbed_ladder = False
+                            '''make sure the bot doesn't fall off ladders when they have an empty gap next to them'''
+                            if not self.bot.left_bottom:
+                                self.bot.walk_left = False
+                            elif not self.bot.right_bottom:
+                                self.bot.walk_left = True
                     else:
                         x = bx - 1 if self.bot.walk_left else bx + 1
 
