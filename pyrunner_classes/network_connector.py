@@ -6,13 +6,12 @@ import threading
 import logging
 from pprint import pprint
 import pdb
-import Mastermind
 from .controller import Controller
 from datetime import datetime
+import time
 import json
 from Mastermind import *
 from .level_objecs import WorldObject
-import pygame
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parentdir)
@@ -35,8 +34,6 @@ class NetworkConnector(object):
         self.port = START_PORT
         self.client = None
         self.server = None
-        self.clock = pygame.time.Clock()
-        self.timer = datetime.now()
 
     def start_server_prompt(self, port=START_PORT):
         """starting the network server"""
@@ -60,19 +57,16 @@ class NetworkConnector(object):
                 init_new_server()
 
                 while not self.server.connected:
+                    time.sleep(0.25)
 
-                    if (datetime.now() - self.timer).seconds >= 1:
-                        if not self.server.connected:
-                            self.timer = datetime.now()
-                            if self.port < START_PORT + 5:
-                                self.port += 1
-                                init_new_server()
-                                print("changing server and port to ", str(self.port))
-                            else:
-                                self.server.kill()
-                                break
-
-                    self.clock.tick(25)
+                    if not self.server.connected:
+                        if self.port < START_PORT + 5:
+                            self.port += 1
+                            init_new_server()
+                            print("changing server and port to ", str(self.port))
+                        else:
+                            self.server.kill()
+                            break
             else:
                 self.join_server_prompt()
                 # self.main.load_level(self.main.START_LEVEL)
@@ -101,22 +95,19 @@ class NetworkConnector(object):
             init_new_client()
 
             while not self.client.connected:
+                time.sleep(0.25)
 
-                if (datetime.now() - self.timer).seconds >= 1:
-                    if not self.client.connected:
-                        self.timer = datetime.now()
+                if not self.client.connected:
+                    if self.port < START_PORT + 5:
+                        self.port += 1
+                        self.client.port = self.port
+                        print("changing client and port to ", str(self.port))
+                    else:
+                        self.client.kill()
+                        break
+                    # init_new_client()
 
-                        if self.port < START_PORT + 5:
-                            self.port += 1
-                            self.client.port = self.port
-                            print("changing client and port to ", str(self.port))
-                        else:
-                            self.client.kill()
-                            break
-                        # init_new_client()
-
-                self.clock.tick(25)
-            #self.ip = input("Please enter an ip to connect to: ")
+            # self.ip = input("Please enter an ip to connect to: ")
 
         join_server()
 
