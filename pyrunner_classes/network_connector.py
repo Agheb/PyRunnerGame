@@ -6,11 +6,12 @@ import threading
 import logging
 from pprint import pprint
 import pdb
+import Mastermind
 from .controller import Controller
 from datetime import datetime
 import json
 from Mastermind import *
-from Mastermind import MastermindErrorSocket
+from .level_objecs import WorldObject
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parentdir)
@@ -18,18 +19,19 @@ netlog = logging.getLogger("Network")
 srvlog = netlog.getChild("Server")
 clientlog = netlog.getChild("Client")
 
+START_PORT = 6799
+
 
 class NetworkConnector(object):
     """the main network class"""
 
     COMPRESSION = None
-    START_PORT = 6799
 
     def __init__(self, main, level):
         self.ip = "localhost"
         self.main = main
         self.level = level
-        self.port = self.START_PORT
+        self.port = 6799
         self.client = None
         self.server = None
 
@@ -45,13 +47,12 @@ class NetworkConnector(object):
                     self.server.start()
                 else:
                     self.main.load_level(self.main.START_LEVEL)
-            except MastermindErrorSocket:
+            except (OSError, Mastermind._mm_errors.MastermindErrorSocket):
+                print(str(self.port))
                 self.server.kill()
                 self.server = None
-
-                if self.port < self.START_PORT + 10:
-                    self.port += 1
-                    self.start_server_prompt()
+                self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
+                self.start_server_prompt()
 
         start_server()
         self.join_server_prompt()
@@ -64,13 +65,12 @@ class NetworkConnector(object):
                 self.client = Client("localhost", self.port, self.level, self.main)
                 self.master = False
                 self.client.start()
-            except ConnectionRefusedError:
+            except (OSError, ConnectionRefusedError, Mastermind._mm_errors.MastermindErrorSocket):
+                print(str(self.port))
                 self.client.kill()
                 self.client = None
-
-                if self.port < self.START_PORT + 10:
-                    self.port += 1
-                    self.join_server_prompt()
+                self.port = self.port + 1 if self.port < START_PORT + 10 else START_PORT
+                self.join_server_prompt()
 
         join_server()
 
@@ -156,6 +156,16 @@ class Client(threading.Thread, MastermindClientTCP):
         self.send_keep_alive()
         raw_data = self.receive(False)
 
+        # TODO sync world object state over network
+        # .pop(0) removes the first item in a list (FIFO with .append)
+        # and automatically empties the list
+        if WorldObject.network_kill_list:
+            for index in WorldObject.network_kill_list.pop(0):
+                pass
+                # TODO send index (list) to all clients
+                # TODO all clients should then call
+                # WorldObject.kill_world_object(index)
+
         if raw_data:
             data = json.loads(raw_data)
             clientlog.info("Got data from server: {}".format(str(data)))
@@ -185,7 +195,7 @@ class Server(threading.Thread, MastermindServerTCP):
     """main network server"""
     def __init__(self, port, level, main):
         self.port = port
-        self.level = level
+        self._level = level
         self.main = main
         self.known_clients = []
         threading.Thread.__init__(self, daemon=True)
@@ -264,3 +274,18 @@ class Server(threading.Thread, MastermindServerTCP):
     def callback_disconnect(self):
         srvlog.info("Server disconnected from network")
         return super(MastermindServerTCP, self).callback_disconnect()
+
+    @property
+    def level(self):
+        """return the current level"""
+        return self._level
+
+    @level.setter
+    def level(self, level):
+        self._level = level
+
+        for client_id in range(len(self.known_clients)):
+            self.level.add_player(client_id)
+
+        # TODO
+        # re-add players for each client on level change

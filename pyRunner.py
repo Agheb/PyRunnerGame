@@ -31,7 +31,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/scifi.tmx"
+    START_LEVEL = "./resources/levels/desert.tmx"
 
     def __init__(self):
         """initialize the game"""
@@ -68,6 +68,7 @@ class PyRunner(object):
         """load another level"""
         '''clear all sprites from an old level if present'''
         if self.level:
+            self.bg_surface.fill(GRAY)
             self.level_exit = False
             Player.group.empty()
             WorldObject.group.empty()
