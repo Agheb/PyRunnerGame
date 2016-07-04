@@ -51,6 +51,7 @@ class Level(object):
         self.path = path
         self.fps = fps
         self.graph = None
+        self.climbable_list = []
         self.walkable_list = []
         self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
@@ -153,10 +154,11 @@ class Level(object):
             if isinstance(layer, pytmx.TiledTileLayer):
                 '''first check all layer properties'''
                 ladder = check_property(layer, 'climbable')
-                rope = check_property(layer, 'climbable_horizontal')
+                rope = check_property(layer, 'rope')
                 gold = check_property(layer, 'collectible')
                 removable = check_property(layer, 'removable')
                 solid = check_property(layer, 'solid')
+                wall = check_property(layer, 'vertical_wall')
                 width, height = self.tile_width, self.tile_height
                 fps = self.fps
 
@@ -185,23 +187,26 @@ class Level(object):
                         Collectible(a, size, tile_id, fps)
                     elif removable:
                         WorldObject(a, size, tile_id, fps, solid, removable)
-                    elif solid:
+                    elif solid or wall:
                         WorldObject(a, size, tile_id, fps, solid)
 
                     if layer.name == "Background":
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
-                    elif not gold:
-                        '''add all tiles that a player can walk on to this list'''
+                    elif not gold and not wall:
+                        '''
+                            add all tiles that a player can walk on to this list
+                            to generate paths for the shortest path algorithm
+                        '''
                         x, y = tile_id
                         # ignore the last row because it gets cut by 16 pixels
-                        if y is self.rows - 1:
-                            continue
-                        # if rope:    # treat ropes as a layer below
-                        #    y += 1
-                        '''only add walkable tiles'''
-                        self.walkable_list.append(tile_id)
+                        if y is not self.rows - 1:
+                            '''only add walkable tiles'''
+                            if ladder:
+                                '''add ladders separately'''
+                                self.climbable_list.append(tile_id)
+                            self.walkable_list.append(tile_id)
 
     def generate_paths(self):
         """create paths by id for bots"""
@@ -213,23 +218,18 @@ class Level(object):
         self.walkable_list.sort(key=itemgetter(0))
         self.walkable_list.sort(key=itemgetter(1))
 
-        self.add_paths(self.walkable_list, True)  # horizontals =
+        horizontals = self.add_paths(self.walkable_list, True)    # horizontals =
 
         '''find all ladders'''
-        ladders = []
-        for tile in WorldObject.group:
-            if tile.climbable:
-                ladders.append(tile.tile_id)
-        '''sort them by x value'''
         # remove duplicate entries
-        ladders = list(set(ladders))
+        self.climbable_list = list(set(self.climbable_list))
         # sort list by x, then by y
-        ladders.sort()
+        self.climbable_list.sort()
 
         '''add the bottom below the ladder as well'''
-        ladder_plus = [tile_id for tile_id in ladders]
+        ladder_plus = [tile_id for tile_id in self.climbable_list]
         old_y = 0
-        for tile_id in ladders:
+        for tile_id in self.climbable_list:
             x, y = tile_id
             if not old_y:
                 old_y = y
@@ -244,14 +244,30 @@ class Level(object):
 
         self.add_paths(ladders, False)
 
-        # intersections = [tile_id for tile_id in horizontals if tile_id in ladder_plus]
+        # '''initialize the graph'''
+        # for tile_a in self.walkable_list:
+        #     for tile_b in self.walkable_list:
+        #         if tile_a is not tile_b:
+        #             try:
+        #                 self.graph.shortest_path(tile_a, tile_b)
+        #                 # print("Success: %s and %s" % (tile_a, tile_b))
+        #             except KeyError:
+        #                 # print("Error %s and %s" % (tile_a, tile_b))
+        #                 pass
+        #
+        # intersections = [tile_id for tile_id in horizontals if tile_id in ladders]
         # intersections.sort()
-
-        # print("adding intersections")
-        # self.add_intersections(horizontals, intersections)
-        # print(str(self.walkable_list))
-        # print(str(ladders))
-        # print(str(intersections))
+        #
+        # '''partially initialize the graph'''
+        # for tile in self.walkable_list:
+        #     for ladder in intersections:
+        #         if tile is not ladder:
+        #             try:
+        #                 self.graph.shortest_path(tile, ladder)
+        #                 print("Success: %s and %s" % (tile, ladder))
+        #             except KeyError:
+        #                 # print("Error %s and %s" % (tile, ladder))
+        #                 pass
 
     def get_is_path(self, a, b):
         """returns if a target is reachable"""
@@ -282,11 +298,8 @@ class Level(object):
                 stop_a, stop_b = cur_stop, cur_locked_x_y
             else:
                 '''connect the ladder to the next bottom horizontal row'''
-                # cur_stop += 1
-                # length += 2
                 start_a, start_b = cur_locked_x_y, cur_start
                 stop_a, stop_b = cur_locked_x_y, cur_stop
-                # print(str(stop_a), "/", str(stop_b))
                 tuple_list.append((stop_a, stop_b))
             '''name the nodes'''
             start_node = start_a, start_b
@@ -295,6 +308,15 @@ class Level(object):
             self.graph.add_edge(start_node, stop_node, length)
             self.graph.add_edge(stop_node, start_node, length)
             print("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
+
+            # for node_a in range(stop_a, stop_b):
+            #         for node_b in range(stop_a, stop_b):
+            #             if node_a is not node_b:
+            #                 length = node_b - node_a if node_b > node_a else node_a - node_b
+            #                 length += 1
+            #                 self.graph.add_edge(node_a, node_b, length)
+            #                 # self.graph.add_edge(stop_node, start_node, length)
+            #                 print("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
 
     def add_paths(self, node_list, horizontal=True):
         """find intersections between different levels"""

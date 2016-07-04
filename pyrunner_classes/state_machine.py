@@ -23,7 +23,7 @@ class StateMachine(object):
             # print("actions for state " + str(self.active_state) + " performed")
 
             new_state_name = self.active_state.check_conditions()
-            if new_state_name is not None:
+            if new_state_name:
                 self.set_state(new_state_name)
                 # print("new state " + new_state_name + " set")
 
@@ -34,4 +34,4 @@ class StateMachine(object):
 
         self.active_state = self.stateslist[new_state_name]
         self.active_state.entry_actions()
-        print("state " + str(self.active_state) + "set")
+        print("state " + str(self.active_state) + " set")

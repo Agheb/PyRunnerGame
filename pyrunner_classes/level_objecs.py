@@ -31,7 +31,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.solid = solid
         self.removable = removable
         self.climbable = False
-        self.climbable_horizontal = False
+        self.is_rope = False
         self.collectible = False
         self.killed = False
         self.restoring = restoring
@@ -120,7 +120,7 @@ class Rope(WorldObject):
     """hangable rope"""
     def __init__(self, tile, size, tile_id, fps):
         WorldObject.__init__(self, tile, size, tile_id, fps)
-        self.climbable_horizontal = True
+        self.is_rope = True
 
 
 class Collectible(WorldObject):

@@ -6,8 +6,8 @@
  <tileset firstgid="806" name="background2" tilewidth="32" tileheight="32" tilecount="880" columns="40">
   <image source="background2.png" width="1280" height="728"/>
  </tileset>
- <tileset firstgid="1686" name="Background_1280x736" tilewidth="32" tileheight="32" tilecount="920" columns="40">
-  <image source="Background_1280x736.png" width="1280" height="736"/>
+ <tileset firstgid="1686" name="bg_star" tilewidth="32" tileheight="32" tilecount="920" columns="40">
+  <image source="bg_star.png" width="1280" height="736"/>
  </tileset>
  <layer name="Background" width="40" height="23">
   <data encoding="base64" compression="zlib">
@@ -19,7 +19,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJzt1DEOACAIA0B+zJd9iosmDgLFCbWXsEHjIIgQ1aaj0F5kJpNJb1CjvB4x+qJ89A1EOyd/JPO3oj2gP1g3cb19mSwvn+hm6M30dsqbzfROrXh1SblCOQ==
+   eJxjYBgFo2BwA3dGCCZWLTF6YPKE8CgY3gA9jrHFP7FpgZh0Q2waG01/IxuQUwYN97JruPtvIAA16z5sesgpE3GZNQpGAb0BtrRLTn6hpJ1JbFt1MGIAL6siUQ==
   </data>
  </layer>
  <layer name="Block_Removable" width="40" height="23">
@@ -28,7 +28,16 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2DwAU0kTC1zqGXmKBhegJJ0gUvvaJobBdQCuMqw0fQ1CugBKEl/+Uh4NM2OgqEGCKVVStI0KfrQ1cLy1GAHAIHPC/E=
+   eJxjYBgFo2DwASVGVEwtcyg1bxQMP0BJusCll9g05z4E0udgd99QBsSEJa4ybKTEyXD332AGxKY9ctPxKBgFQwEQk2apnTeGQx4BAJOACtA=
+  </data>
+ </layer>
+ <layer name="Vertical Wall" width="40" height="23">
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+   <property name="vertical_wall" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt0bkNACAMBEGojv47QuQ8Eg7sYCa8aKVrDSDX6NkF7Jx+WXuFz24N+t70xeiLqd4H/JspLgUR
   </data>
  </layer>
  <layer name="Coins" width="40" height="23">
@@ -36,7 +45,7 @@
    <property name="collectible" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFIxnkDLD+UTD8wGiaGAVDFYym3VFAS0Bq+iKkfjS9joJRMAoGKwAAwkkC9Q==
+   eJxjYBgFIxl4otHk6qfEjFEwMgCu9EFJuhlNc6OAmoCY9DRc05wnEh4FtAGkhi0h9aSYNxqvo2AwAlqny9E8MnAAAJ5uBWw=
   </data>
  </layer>
  <layer name="Leiter" width="40" height="23">
@@ -44,7 +53,7 @@
    <property name="climbable" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUkALUB1g/IeA1wPoJgdwB1j8YAblpgpppyZsG9lAzLeXhkSPXfdRMSxPxyNE6zxMDqOVXfOmEEjDQ7iOkj4VMc0m1BxcgFD6DIY3REwx2/9K6HqUUDPZ6dLCH3yggDACMEAhH
+   eJztlMsNwCAMQ2G/dpYyS5mlzNcrN7exIz7KuztK5AcpBUHwh5K5/EnmEZWcz96HaOR89r6dUHbl4aWyKw8vWRd7ZvdS1a/X/6Caa+3hBjlVv1bnHpBTurwCx6B7v76ja/L9kO9e7LJfgHkBl4IOSQ==
   </data>
  </layer>
  <layer name="Leiter_Top" width="40" height="23">
@@ -53,12 +62,12 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJzt0rEJADAIAEHb7L+wK0giKOGu/+4jYJcz3POf2yc6X/IlFT5hAx8CLxI9MgBA
+   eJzt0qENADAIAEG6TvcfEFWPaAIhd/7dR8As9/T28Px8yZdU+IQJuj70P+yQiFgBLg==
   </data>
  </layer>
  <layer name="Seil" width="40" height="23">
   <properties>
-   <property name="climbable_horizontal" type="bool" value="true"/>
+   <property name="rope" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
    eJzt1bENACAMA0Fn/4FgPJgApYlo7qTv3TmBZN2q0f41EAAGvb4PgL4DOBYBgA==
@@ -82,4 +91,9 @@
    </properties>
   </object>
  </objectgroup>
+ <layer name="Background B" width="40" height="23" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJztwTEBAAAAwqD1T20IX6AAAADgNw5gAAE=
+  </data>
+ </layer>
 </map>
