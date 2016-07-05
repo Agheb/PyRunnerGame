@@ -239,18 +239,18 @@ class Menu(object):
             width = self.width
             height = self.height
             '''corner rect position and size'''
-            size = 24
-            pos_right = width - size
-            pos_bottom = height - size
-            bg_surface = pygame.Surface((width, height), SRCALPHA)
+            # size = 24
+            # pos_right = width - size
+            # pos_bottom = height - size
+            bg_surface = pygame.Surface((width, height))
 
             background_rect = pygame.Rect(0, 0, width, height)
             background_rect.union_ip(pygame.draw.rect(bg_surface, bg_color, background_rect))
             background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, background_rect, 8))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, 0, size, size)))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, 0, size, size)))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, pos_bottom, size, size)))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, pos_bottom, size, size)))
+            # background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, 0, size, size)))
+            # background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, 0, size, size)))
+            # background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, pos_bottom, size, size)))
+            # background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, pos_bottom, size, size)))
             '''and save the result for later use'''
             self.background = bg_surface
 
