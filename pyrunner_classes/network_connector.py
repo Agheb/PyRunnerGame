@@ -52,18 +52,22 @@ class NetworkConnector(object):
         except AttributeError:
             pass
 
-    def init_new_server(self):
+    def init_new_server(self, local_only=False):
         """start a new server thread"""
         if self.server:
             self.server.kill()
 
-        self.server = Server(self.ip, self.port, self.level, self.main)
+        self.server = Server(self.ip, self.port, self.level, self.main, local_only)
         self.master = True
         self.server.start()
 
-    def start_server_prompt(self, port=START_PORT):
-        """starting a network server from the main menu"""
+    def start_local_game(self):
+        """run a single player game"""
+        self.start_server_prompt(START_PORT - 10, True)
 
+    def start_server_prompt(self, port=START_PORT, local_only=False):
+        """starting a network server from the main menu"""
+        self.ip = "0.0.0.0" if not local_only else "127.0.0.1"
         self.port = port if port else START_PORT
 
         def start_server():
@@ -71,7 +75,7 @@ class NetworkConnector(object):
 
             if not self.server:
 
-                self.init_new_server()
+                self.init_new_server(local_only)
 
                 while not self.server.connected:
                     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
@@ -88,6 +92,8 @@ class NetworkConnector(object):
                             self.server.kill()
                             break
             else:
+                if local_only:
+                    self.server.kill()
                 self.join_server_prompt((self.ip, self.port))
                 # self.main.load_level(self.main.START_LEVEL)
 
@@ -96,8 +102,9 @@ class NetworkConnector(object):
 
         if self.server and self.server.connected:
             self.join_server_prompt((self.ip, self.port))
-            '''propagate server over zeroconf'''
-            self.advertiser = ZeroConfAdvertiser(self.external_ip, self.port)
+            if not local_only:
+                '''propagate server over zeroconf'''
+                self.advertiser = ZeroConfAdvertiser(self.external_ip, self.port)
 
     def join_server_menu(self):
         """browse for games and then join"""
@@ -160,7 +167,7 @@ class Client(threading.Thread, MastermindClientTCP):
             clientlog.info("Client connecting, waiting for initData")
             self.connected = True
             self.wait_for_init_data()
-        except (OSError, MastermindErrorSocket):
+        except (OSError, MastermindErrorSocket, MastermindErrorClient):
             error = "An error occurred connecting to the server."
             error += "%s:%s Please try again later." % (self.target_ip, self.port)
             self.main.menu.network.print_error(error)
@@ -256,11 +263,12 @@ class Client(threading.Thread, MastermindClientTCP):
 class Server(threading.Thread, MastermindServerTCP):
 
     """main network server"""
-    def __init__(self, ip, port, level, main):
+    def __init__(self, ip, port, level, main, local_only=False):
         self.ip = ip
         self.port = port
         self._level = level
         self.main = main
+        self.local_only = local_only
         self.known_clients = []
         self.connected = False
         threading.Thread.__init__(self, daemon=True)

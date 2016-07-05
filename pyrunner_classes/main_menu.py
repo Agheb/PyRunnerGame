@@ -94,7 +94,7 @@ class MainMenu(object):
 
         '''New Game / Single Player'''
         m_game_sp = m_game.add_submenu("Singleplayer")
-        m_game_sp.add_item(MenuItem("Start Game", None))
+        m_game_sp.add_item(MenuItem("Start Game", self.network_connector.start_local_game))
         m_game_sp.add_item(MenuItem("Select Level", None))
         m_game_sp.add_item(MenuItem("Game Settings", None))
 
