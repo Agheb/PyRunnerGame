@@ -46,10 +46,11 @@ class Level(object):
         self.path = path
         self.fps = fps
         self.graph = None
-        self.bot_count = 0
         self.climbable_list = []
         self.walkable_list = []
         self.bots_respawn = []
+        self.bot_count = 0
+        self.fps_counter = 0
         self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         '''
@@ -132,12 +133,18 @@ class Level(object):
 
     def check_respawn_bot(self):
         """respawn a bot after a specified amount of time"""
-        if self.bots_respawn:
-            for bid, time in self.bots_respawn:
-                if (datetime.now() - time).seconds >= 10:
-                    self.bots_respawn.remove((bid, time))
-                    pos = self.spawn_enemies_1_pos if bid & 1 else self.spawn_enemies_2_pos
-                    self.create_bot(bid, pos)
+        if self.fps_counter < self.fps:
+            self.fps_counter += 1
+        else:
+            self.fps_counter = 0
+
+            '''only check once per second if there are bots to respawn'''
+            if self.bots_respawn:
+                for bid, time in self.bots_respawn:
+                    if (datetime.now() - time).seconds >= 10:
+                        self.bots_respawn.remove((bid, time))
+                        pos = self.spawn_enemies_1_pos if bid & 1 else self.spawn_enemies_2_pos
+                        self.create_bot(bid, pos)
 
     def spawn_bots(self):
         """spawn the specified amount of bots in the level"""
