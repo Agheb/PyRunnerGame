@@ -167,7 +167,7 @@ class PyRunner(object):
         '''check if all gold got collected and spawn a exit gate if there's none left'''
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
             try:
-                self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32,
+                self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
             except AttributeError:
                 self.game_over = True

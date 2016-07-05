@@ -22,6 +22,8 @@ class Bots(Player):
         # give humans a chance
         self.speed -= 1
         self.frame_counter = 0
+        self.spawning = True
+        self.spawn_frame = 0
 
         # STATEMACHINE RELATED
         # Create instances of each state
