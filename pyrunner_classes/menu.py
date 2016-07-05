@@ -116,7 +116,7 @@ class Menu(object):
                 self.error_menu.add_item(MenuItem(text, None))
             '''show the new Menu on the screen'''
             self.init.set_current_menu(self.error_menu)
-            self.init.main.menu.show_menu(True)
+            self.init.show_menu(True)
         else:
             self.error_menu = Menu(self.init, "Error", self.surface, self, self.header_size, self.font_size)
             self.print_error(error_string)
