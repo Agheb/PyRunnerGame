@@ -108,6 +108,7 @@ class Menu(object):
         """remove all items except for the header and back button"""
         self.menu_items = []
         self.length = 0
+
         self.add_structure()
 
     def print_error(self, error_string):
@@ -122,6 +123,7 @@ class Menu(object):
             error_string = textwrap.wrap(error_string, len_per_line, break_long_words=False)
 
             self.error_menu.flush_all_items()
+
             for text in error_string:
                 self.error_menu.add_item(MenuItem(text, None))
             '''show the new Menu on the screen'''
@@ -193,7 +195,7 @@ class Menu(object):
                 # arrow positions
                 font_size = self.font_text_size
                 size_2 = font_size + font_size  # faster then * 2
-                arrow_pos_x = self.width - font_size * 2.25
+                arrow_pos_x = int(self.width - font_size * 2.25)
                 arrow_pos_y = self.height - size_2
 
                 if start_pos is not 1:

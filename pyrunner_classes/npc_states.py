@@ -216,7 +216,7 @@ class State(object):
 
             if bx == self.bot.level.cols - 1:
                 self.bot.walk_left = True
-            elif bx == 1:
+            elif bx == 0 and not self.bot.on_ladder:
                 self.bot.walk_left = False
 
             self.bot.go_left() if self.bot.walk_left else self.bot.go_right()
