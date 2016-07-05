@@ -15,4 +15,4 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 
-MENU_FONT = "./resources/fonts/Mikodacs.otf"
+MENU_FONT = "./resources/fonts/8-bit_wonder.ttf"
