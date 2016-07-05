@@ -138,11 +138,11 @@ class MainMenu(object):
         '''Exit'''
         menu_main.add_item(MenuItem("Exit", self.main.quit_game))
 
-        '''special purpose menus'''
+        '''special purpose (hidden) menus'''
         '''game over menu'''
-        menu_game_over = Menu(self, "Game Over", surface, menu_main, font_size)
+        menu_game_over = m_game.add_submenu("Game Over", True)
         '''network related menu'''
-        menu_network_browser = Menu(self, "Join Server", surface, m_game_mp, font_size)
+        menu_network_browser = m_game_mp.add_submenu("Join Server", True)
 
         '''save the menus'''
         self.game_over = menu_game_over
