@@ -5,6 +5,7 @@
 from __future__ import division
 # universal imports
 import pygame
+import textwrap
 from pygame.locals import *
 from .constants import *
 
@@ -39,6 +40,7 @@ class Menu(object):
         self.menu_items = []
         self.length = 0
         self.background = None
+        self.error_menu = None
         '''init the basic menu structure'''
         self.add_structure()
 
@@ -97,6 +99,27 @@ class Menu(object):
         self.menu_items = []
         self.length = 0
         self.add_structure()
+
+    def print_error(self, error_string):
+        """show errors in the menu"""
+        '''split longer text into multiple items'''
+        len_per_line = 30
+
+        if len(error_string) > len_per_line * 4:
+            return print(error_string)
+
+        if self.error_menu:
+            error_string = textwrap.wrap(error_string, len_per_line, break_long_words=False)
+
+            self.error_menu.flush_all_items()
+            for text in error_string:
+                self.error_menu.add_item(MenuItem(text, None))
+            '''show the new Menu on the screen'''
+            self.init.set_current_menu(self.error_menu)
+            self.init.main.menu.show_menu(True)
+        else:
+            self.error_menu = Menu(self.init, "Error", self.surface, self, self.header_size, self.font_size)
+            self.print_error(error_string)
 
     def _draw_item(self, menu_item, index, pos, margin_top=None):
         """draw a specific MenuItem
