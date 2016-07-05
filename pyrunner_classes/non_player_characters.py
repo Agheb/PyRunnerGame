@@ -4,14 +4,11 @@ from .npc_states import *
 import pygame
 
 SPRITE_SHEET_PATH = "./resources/sprites/"
-# TODO: Bots should not collect gold
 
 
 class Bots(Player):
 
     def __init__(self, pos, sheet, level):
-        # TODO: Spawn the Bot on other side of map
-        # TODO: have spawn points in tilemap set for the bots in each level
         Player.__init__(self, pos, sheet, None, 32, level, 25, True)
 
         # POSITIONAL RELATED
@@ -22,6 +19,7 @@ class Bots(Player):
         self.right_tile = None
         self.right_bottom = None
         self.walk_left = True
+        self.robbed_gold = 0
         # give humans a chance
         self.speed -= 1
         self.frame_counter = 0
@@ -69,6 +67,13 @@ class Bots(Player):
         self.rect = self.image.get_rect()
         # spawn the player at the desired location
         self.rect.topleft = pos
+
+    def collect_gold(self, sprite):
+        """remove one gold object and drop it on death"""
+        self.robbed_gold = sprite
+        '''hide the sprite from the screen'''
+        self.robbed_gold.rect.topleft = (-200, -200)
+        self.robbed_gold.dirty = 1
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""

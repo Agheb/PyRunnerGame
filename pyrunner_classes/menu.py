@@ -180,7 +180,7 @@ class Menu(object):
             # draw the fancy background
             rects.append(self._draw_background(BACKGROUND))
             # don't overwrite the header
-            margin_top = self.font_h2_size + 4
+            margin_top = self.font_h1_size + 4
             # always draw the first item (header)
             rects.append(self._draw_item(self.menu_items[0], 0, new_pos, margin_top))
             margin_top += self.font_text_size
@@ -399,7 +399,7 @@ class MenuItem(object):
         if self.hovered:
             return WHITE
         else:
-            return RED
+            return GRAY
 
     def set_rect(self):
         """draw the pygame.Rect containing this menu item"""
