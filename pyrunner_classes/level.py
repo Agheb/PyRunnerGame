@@ -403,6 +403,13 @@ class Level(object):
         Level.players.append(new_player)
         log.info("Added Player. Players {}".format(Level.players))
 
+    def remove_player(self, pid):
+        for player in Level.players:
+            if player.pid == pid:
+                Level.players.remove(player)
+                return True
+        return False
+
     @staticmethod
     def get_level_info_json():
         # TODO: finish me

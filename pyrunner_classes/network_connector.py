@@ -23,6 +23,11 @@ clientlog = netlog.getChild("Client")
 
 START_PORT = 6799
 
+class Message():
+    """just a wrapper object to store messages in one place"""
+    client_dc = "client_disconnected"
+    key_update = "key_update"
+    init = 'init_succ'
 
 class NetworkConnector(object):
     """the main network class"""
@@ -159,7 +164,6 @@ class Client(threading.Thread, MastermindClientTCP):
         clientlog.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update', 'data': str(key)})
         self.send(data, compression=NetworkConnector.COMPRESSION)
-
     def run(self):
         clientlog.info("Connecting to ip %s" % str(self.target_ip))
         try:
@@ -173,15 +177,6 @@ class Client(threading.Thread, MastermindClientTCP):
             self.main.menu.network.print_error(error)
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
-
-    def get_last_command(self):
-        # for now, maybe we need non blocking later
-        raw_data = self.receive(True)
-        data = json.loads(raw_data)
-        clientlog.info("Got data from server: {}".format(str(data)))
-        if data['type'] == 'key_update':
-            clientlog.info("got key_update from server")
-            return data['data'], data['player_id']
 
     def wait_for_init_data(self):
         """start the server and wait for players to connect"""
@@ -239,10 +234,10 @@ class Client(threading.Thread, MastermindClientTCP):
         if raw_data:
             data = json.loads(raw_data)
             clientlog.info("Got data from server: {}".format(str(data)))
-            if data['type'] == 'key_update':
+            if data['type'] == Message.key_update:
                 clientlog.info("got key_update from server")
-                Controller.do_action(data['data'], data['player_id'])
-            if data['type'] == 'init_succ':
+                Controller.do_action(data['data']['key'], data['data']['player_id'])
+            if data['type'] == Message.init:
                 clientlog.info("got init succ")
                 try:
                     self.level.players[int(data['player_id'])]
@@ -250,6 +245,14 @@ class Client(threading.Thread, MastermindClientTCP):
                     pid = len(self.level.players)
                     self.level.add_player(pid)
                 self.main.menu.show_menu(False)
+            if data['type'] == Message.client_dc:
+                clientlog.info("A client disconnected, removing from game")
+                pid = data['data']['client_id']
+                if not self.level.remove_player(pid):
+                    clientlog.error("Could not remove player form player list!")
+                else:
+                    clientlog.info("removed player form playerlist")
+                
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
@@ -327,12 +330,24 @@ class Server(threading.Thread, MastermindServerTCP):
         
         return super(MastermindServerTCP, self).callback_connect_client(connection_object)
 
+    def callback_disconnect_client(self, connection_object):
+        """gets called if a client disconnects"""
+        srvlog.info("Client disconnected, sending to other clients")
+        disconnected_client = self.known_clients.index(connection_object)
+
+        #kill the player of the disconnected client on all other clients
+        self.send_to_all_clients(Message.client_dc, {'client_id': disconnected_client}) 
+        return super(MastermindServerTCP,self).callback_disconnect_client(connection_object)
+
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
-        data = json.dumps({'type': 'key_update', 'data': str(key), 'player_id': str(player_id)})
+        self.send_to_all_clients(Message.key_update, {'key' : str(key), 'player_id' : str(player_id)})
+
+    def send_to_all_clients(self, message, data):
+        json_data = json.dumps({'type': message, 'data': data})
         for client in self.known_clients:
-            self.callback_client_send(client, data)
+            self.callback_client_send(client, json_data)
 
     def kill(self):
         try:
