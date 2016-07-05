@@ -57,7 +57,6 @@ class Player(pygame.sprite.DirtySprite):
         self.killed = False
         self.killed_frame = 0
         self.digging_frame = 0
-        self.robbed_gold = None
         # position to aim for
         self.stop_at_x = 0
         self.stop_at_y = 0
@@ -270,10 +269,8 @@ class Player(pygame.sprite.DirtySprite):
             self.killed_frame += 1
 
             if self.killed_frame is len(self.death_frames) * 2:
-                if not self.is_human and self.robbed_gold:
-                    '''restore robbed gold'''
-                    self.robbed_gold.rect.bottomleft = self.rect.topleft
-                    self.robbed_gold.dirty = 1
+                if not self.is_human:
+                    self.restore_gold()
                 pygame.sprite.DirtySprite.kill(self)
 
 

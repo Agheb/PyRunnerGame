@@ -19,7 +19,7 @@ class Bots(Player):
         self.right_tile = None
         self.right_bottom = None
         self.walk_left = True
-        self.robbed_gold = 0
+        self.robbed_gold = None
         # give humans a chance
         self.speed -= 1
         self.frame_counter = 0
@@ -72,8 +72,15 @@ class Bots(Player):
         """remove one gold object and drop it on death"""
         self.robbed_gold = sprite
         '''hide the sprite from the screen'''
-        self.robbed_gold.rect.topleft = (-200, -200)
+        self.robbed_gold.rect.topleft = (-1000, -1000)
         self.robbed_gold.dirty = 1
+
+    def restore_gold(self):
+        """restore gold above the bot on death"""
+        if self.robbed_gold:
+            '''restore robbed gold'''
+            self.robbed_gold.rect.bottomleft = self.rect.topleft
+            self.robbed_gold.dirty = 1
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
