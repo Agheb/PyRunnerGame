@@ -32,7 +32,7 @@
    <property name="vertical_wall" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2B4AndG+ughFwyU+4g1gxh16GoGu/uoAUbdRxkYdR9lYCS5jxZg1H2UAVLdB6IHY72KrG4wuo9SPeSCUfdRBga7++gJAKrMDTk=
+   eJxjYBgFo2B4AndG+ughFwyU+4g1gxh16GoGu/uoAUbdRxkYdR9lYCS5jxZgsLuPWDBUwg9ED8Z6FVndYHQfpXrIBaPuowwMdvfREwAAUV4M8Q==
   </data>
  </layer>
  <layer name="Block" width="40" height="23">
@@ -40,7 +40,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2DkAndGVAwTQ6YHO6DUndj8TYqZ6OE3CkbBcAK0TN/Yyp6BykfobhjNz6OAGIAt3RCbdijROwpGAb0AJWmTlnrR881gwwA+GRfp
+   eJxjYBgFo2DkAndGVAwTQ6YHM6CGW7H5mxTz0MNvFIyC4QRomb6xlT0DlY/Q3TCan0cBMQBbuiE27VCidxSMAnoBStImLfWi55vBhgE6JRgx
   </data>
  </layer>
  <layer name="Block_Removable" width="40" height="23">
@@ -49,7 +49,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUDHWgxIiJiVWPLj4KRsEogABs+YOY/EUNe0nJz9SwaxSMAmIBKfUMJeaPglEwkABXGwkfRldDjF5ccoT0DnYAADv7B4Y=
+   eJxjYBgFo2AUDAegxIiKiVWLLj4KRsEogABs+YOY/EUNe0nJz9SwaxSMAmIBKfUMJeaPglEwkABXGwkfRldDjF5ccoT0DnYAAMkWB2M=
   </data>
  </layer>
  <layer name="Coins" width="40" height="23">
@@ -65,7 +65,7 @@
    <property name="climbable" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlcsNwCAMQ2G/dhY6C52lzMelkXqyqth8Dnl3J44SQ0pBEMzmzJz+IPWjKa8/dk5DVceoYn+X2J/tV1X3Fvuz/arqPoP22zbNiXreGagz6KEAD+oMeqjAgzqDHtDd7bBfBOOP0f79a5kezO2iTKh6MLeLMvGFeRNXaQNMB5gBETI=
+   eJztlLERgDAMA8N+MAvMArOwX/oUOp/1hBT+XrYTyW6tKIrZHJun303915zwfO5/jdxwvQuuR/v7wPVof9/F/aWh3zsDegczqNzRO5hB5Y7ewQwqdyv4q3Dmc7TRW+z0cLIbvcVODye70Vvs3MS/tIWmA8PaDto=
   </data>
  </layer>
  <layer name="Leiter_Top" width="40" height="23">
@@ -74,7 +74,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2D4AV9GyvRrUaifXoBa7tQcIv4dBaNguILBUOYMBjeMgqEHKEk3o2luFIyC4QkAfewBew==
+   eJxjYBgFo2D4AV9GyvRrUaifnoAabtWkoX8pjQtag1H3UQYGu/sKBrn7YGAwlDmDwQ2jYOgBStLNaJobBaNgeAIA0mkDJA==
   </data>
  </layer>
  <layer name="Seil" width="40" height="23">
@@ -86,17 +86,17 @@
   </data>
  </layer>
  <objectgroup name="Spawn_Locations">
-  <object id="20" name="Player_1" x="210.667" y="629.333" width="37.3333" height="34.6667">
+  <object id="20" name="Player_1" x="224" y="640" width="32" height="32">
    <properties>
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="24" name="Enemies" x="1081.17" y="113.583">
+  <object id="24" name="Enemies" x="1120" y="96" width="32" height="32">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="25" name="Exit_Gate" type="jungle" x="1171" y="105.333"/>
+  <object id="25" name="Exit_Gate" type="jungle" x="1200" y="64" width="64" height="64"/>
  </objectgroup>
  <layer name="Background B" width="40" height="23" visible="0">
   <data encoding="base64" compression="zlib">
