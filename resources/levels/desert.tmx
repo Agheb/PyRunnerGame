@@ -19,7 +19,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2DwAXdGVDYynxh9hPTA5AnhUTC8AXocY4t/YtMCvnSDbhahNDaa/kY2IKcMGu5l13D330AAQnUfKfUurnKPULxRYu8oGAW0BNjSLDltRUramcS2VQcjBgCXGyQB
+   eJxjYBgFo2DwAXdGVDYynxh9hPTA5AnhUTC8AXocY4t/YtMCvnSDbhahNDaa/kY2IKccGu5l13D330AAQnUfqWmPGPMJqSHF3lEwCmgJsKVZctqKlLQziW2rDkYMAHwYJEk=
   </data>
  </layer>
  <layer name="Block_Removable" width="40" height="23">
@@ -28,7 +28,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2BwAiVGCKaGGeh4FIwCGKAkXeDS605kekNXNxjT52B331AGxIQlrjJspMTJcPffYAfUTnsjIc2OguEFiEmzlOSP4VquAwA4PAoA
+   eJxjYBgFo2BwAiVGCKaGGeh4FIwCGKAkXeDS605kekNXNxjT52B331AGxIYlrnJsJMTJcPffYAfUTnsjIc2OguEFiEmzlOSP4VquAwBMegnd
   </data>
  </layer>
  <layer name="Vertical Wall" width="40" height="23">

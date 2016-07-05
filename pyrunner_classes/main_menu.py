@@ -84,8 +84,9 @@ class MainMenu(object):
         h1_size = int(h1_size * ratio)
         h2_size = int(h2_size * ratio)
         item_size = int(item_size * ratio)
+        font_size = h1_size, h2_size, item_size
         '''first create the root menu'''
-        menu_main = Menu(self, self.config.name, surface, None, h1_size, h2_size, item_size)
+        menu_main = Menu(self, self.config.name, surface, None, font_size)
 
         '''New Game Menu'''
         m_game = menu_main.add_submenu("Start Game")
@@ -138,9 +139,9 @@ class MainMenu(object):
 
         '''special purpose menus'''
         '''game over menu'''
-        menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, h2_size, item_size)
+        menu_game_over = Menu(self, "Game Over", surface, menu_main, font_size)
         '''network related menu'''
-        menu_network_browser = Menu(self, "Browse Games", surface, m_game_mp, h1_size, h2_size, item_size)
+        menu_network_browser = Menu(self, "Join Server", surface, m_game_mp, font_size)
 
         '''save the menus'''
         self.game_over = menu_game_over

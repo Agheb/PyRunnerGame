@@ -161,7 +161,8 @@ class Client(threading.Thread, MastermindClientTCP):
             self.connected = True
             self.wait_for_init_data()
         except (OSError, MastermindErrorSocket):
-            error = "An error occurred connecting to the server. Please try again later."
+            error = "An error occurred connecting to the server."
+            error += "%s:%s Please try again later." % (self.target_ip, self.port)
             self.main.menu.network.print_error(error)
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT

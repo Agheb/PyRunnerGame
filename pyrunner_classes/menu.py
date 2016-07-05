@@ -23,21 +23,19 @@ class Menu(object):
         init (class): the class calling this to use the set_current_menu function for the back item
         name (str): name of this Menu
         surface (pygame.Surface): the surface this menu is drawn to
-        parent (Menu): the parent menu if existent
-        header_size (int): font size for the first menu item / header
-        font_size (int): font size for all other items
+        parent (Menu or None): the parent menu if existent
+        font_size (int, int, int): font size for all items (header 1, 2 and text)
     """
 
-    def __init__(self, init, name, surface, parent=None, header_big=72, header_size=48, font_size=36):
+    def __init__(self, init, name, surface, parent=None, font_size=(72, 48, 36)):
         self.init = init
         self.name = name
         self.surface = surface
         self.width = surface.get_width()
         self.height = surface.get_height()
-        self.header_big = header_big
-        self.header_size = header_size
-        self.font_size = font_size
         self.parent = parent
+        self.font_h1_size, self.font_h2_size, self.font_text_size = font_size
+        self.font_size = font_size
         self.menu_items = []
         self.sub_menus = []
         self.length = 0
@@ -49,11 +47,12 @@ class Menu(object):
         # initialize the pygame font rendering engine
         pygame.font.init()
 
-    def add_submenu(self, name):
+    def add_submenu(self, name, hidden=False):
         """add a sub menu to this menu"""
-        submenu = Menu(self.init, name, self.surface, self, self.header_big, self.header_size, self.font_size)
+        submenu = Menu(self.init, name, self.surface, self, self.font_size)
         self.sub_menus.append(submenu)
-        self.add_item(MenuItem(name, self.init.set_current_menu, vars=submenu))
+        if not hidden:
+            self.add_item(MenuItem(name, self.init.set_current_menu, vars=submenu))
         return submenu
 
     def add_structure(self):
@@ -72,11 +71,11 @@ class Menu(object):
         """
         # finish MenuItem initialization / make the MenuItem aware to which Menu it belongs
         if self.length is 0 and not self.parent:
-            menu_item.size = self.header_big
+            menu_item.size = self.font_h1_size
         elif self.length is 1 and self.parent:
-            menu_item.size = self.header_size
+            menu_item.size = self.font_h2_size
         else:
-            menu_item.size = self.font_size
+            menu_item.size = self.font_text_size
         menu_item.menu = self
         menu_item.finish_init()
 
@@ -129,8 +128,7 @@ class Menu(object):
             self.init.set_current_menu(self.error_menu)
             self.init.show_menu(True)
         else:
-            self.error_menu = Menu(self.init, "Error", self.surface, self, self.header_big,
-                                   self.header_size, self.font_size)
+            self.error_menu = self.add_submenu("Error", True)
             self.print_error(error_string)
 
     def _draw_item(self, menu_item, index, pos, margin_top=None):
@@ -180,10 +178,10 @@ class Menu(object):
             # draw the fancy background
             rects.append(self._draw_background(BACKGROUND))
             # don't overwrite the header
-            margin_top = self.header_size + 4
+            margin_top = self.font_h2_size + 4
             # always draw the first item (header)
             rects.append(self._draw_item(self.menu_items[0], 0, new_pos, margin_top))
-            margin_top += self.font_size
+            margin_top += self.font_text_size
 
             '''draw all menu items that are in the current view'''
             for index, item in enumerate(self.menu_items[start_pos:stop_pos], start_pos):
@@ -193,7 +191,7 @@ class Menu(object):
             '''draw arrows if the menu is too long to notify about that'''
             if length > MAX_ITEMS_NO_SCROLL:
                 # arrow positions
-                font_size = self.font_size
+                font_size = self.font_text_size
                 size_2 = font_size + font_size  # faster then * 2
                 arrow_pos_x = self.width - font_size * 2.25
                 arrow_pos_y = self.height - size_2
