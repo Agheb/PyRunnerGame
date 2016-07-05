@@ -86,11 +86,12 @@ class Menu(object):
                 return self.menu_items.remove(item)
 
     def flush_all_items(self):
-        """remove all items except for the back button"""
+        """remove all items except for the header and back button"""
         if self.length > 2:
-            for i in range(1, self.length - 1):
-                self.length -= 1
-                self.menu_items.remove(self.menu_items[i])
+            for index, item in enumerate(self.menu_items):
+                if item.size is not self.header_size and index < self.length - 1:
+                    self.menu_items.remove(item)
+                    self.length -= 1
 
     def _draw_item(self, menu_item, index, pos, margin_top=None):
         """draw a specific MenuItem

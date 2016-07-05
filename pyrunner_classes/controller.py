@@ -28,14 +28,14 @@ class Controller(object):
         '''
         self.player_1 = level.player_1
         self.player_2 = level.player_2
+        '''
+        self.config = config
+        self.network_connector = network_connector
         self.player_1_movements = []
         self.player_2_movements = []
-        '''
-        self.network_connector = network_connector
-        self.config = config
         self.current_action = None
+
         '''only stop player if movement key got released'''
-        '''
         self.player_1_movements.append(self.config.p1_left)
         self.player_1_movements.append(self.config.p1_right)
         self.player_1_movements.append(self.config.p1_up)
@@ -44,7 +44,6 @@ class Controller(object):
         self.player_2_movements.append(self.config.p2_right)
         self.player_2_movements.append(self.config.p2_up)
         self.player_2_movements.append(self.config.p2_down)
-        '''
 
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
@@ -103,6 +102,7 @@ class Controller(object):
             self.player_2.stop_on_ground = True
         '''
         try:
+            # if player.pid == 0 and key in self.player_1_movements:
             self.network_connector.client.send_key(Action.STOP)
         except MastermindErrorClient:
             for player in Level.players:

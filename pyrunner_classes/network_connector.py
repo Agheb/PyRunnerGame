@@ -33,8 +33,8 @@ class NetworkConnector(object):
     COMPRESSION = None
 
     def __init__(self, main, level):
-        self.ip = "0.0.0.0"
-        self.external_ip = socket.gethostbyname(socket.getfqdn())   # (socket.gethostname())
+        self.ip = "127.0.0.1"
+        self.external_ip = socket.gethostbyname(socket.gethostname())   # socket.getfqdn())   # (socket.gethostname())
         self.main = main
         self.level = level
         self.port = START_PORT
@@ -43,6 +43,8 @@ class NetworkConnector(object):
         self.server = None
         self.browser = None
         self.advertiser = None
+
+        print(str(self.ip), str(self.external_ip))
 
     def quit(self):
         """shutdown all threads"""
@@ -252,9 +254,9 @@ class ZeroConfListener(threading.Thread):
         if state_change is ServiceStateChange.Added:
             info = zeroconf.get_service_info(service_type, name)
             if info:
-                # address = socket.inet_ntoa(info.address)
+                address = socket.inet_ntoa(info.address)
                 port = info.port
-                menu_item = MenuItem(info.server, self.network_connector.join_server_prompt, vars=(info.server, port))
+                menu_item = MenuItem(info.server, self.network_connector.join_server_prompt, vars=(address, port))
                 '''add the full name as id so it can be removed if the server goes offline'''
                 menu_item.id = name
                 self.menu.network.add_item(menu_item)
