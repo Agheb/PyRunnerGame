@@ -34,7 +34,8 @@ class NetworkConnector(object):
 
     def __init__(self, main, level):
         self.ip = "127.0.0.1"
-        self.external_ip = socket.gethostbyname(socket.gethostname())   # socket.getfqdn())   # (socket.gethostname())
+        socket_ip = socket.gethostbyname(socket.gethostname())
+        self.external_ip = socket_ip if not socket_ip.startswith("127.") else socket.gethostbyname(socket.getfqdn())
         self.main = main
         self.level = level
         self.port = START_PORT
@@ -254,8 +255,10 @@ class ZeroConfListener(threading.Thread):
         if state_change is ServiceStateChange.Added:
             info = zeroconf.get_service_info(service_type, name)
             if info:
-                address = socket.inet_ntoa(info.address)
+                ip = socket.inet_ntoa(info.address)
+                address = ip if not ip.startswith("127.") else info.server
                 port = info.port
+                print(str(address), ":", str(port))
                 menu_item = MenuItem(info.server, self.network_connector.join_server_prompt, vars=(address, port))
                 '''add the full name as id so it can be removed if the server goes offline'''
                 menu_item.id = name
