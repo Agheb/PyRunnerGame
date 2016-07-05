@@ -11,12 +11,17 @@
    eJzt1LkNQkEMhOEnanrQCtAKUAk39MENfcDjLIM/WWkSSxvZSGzwJSOtg7G1dauq2uhgjAmmqJ3yLnroY4Mtdo75AEOMcMUNjWMe0bnmEZ1rHtG55tpJxB60k4g9aCcReyj3/zv3X/7/8v//8/3PMMfCMddO9jjg6JhrJ3c88HTMrftcYoV1ZrfWnJTpO51t3ecJZ1wyu7XmpEzf6WzrPl9445PZrTUnZfpOZ38BKveqkQ==
   </data>
  </layer>
+ <layer name="copy" width="32" height="24" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFQxHcwIKJVUdIDz0BIffdIFLdKBgFQxEQk/7JzdvkmjsK6AeoEYejcTx8ALXjcjRt4Ac3BxgPNAAAqb9t0Q==
+  </data>
+ </layer>
  <layer name="Block" width="32" height="24">
   <properties>
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztwzENAAAMA6Be9S+5LrYHEhIAAOBKnw89gADB
+   eJxjYBgFQxGwIdFsSHxs6tDl2NDowQSQ3UuMvwajH0bBKCAWYMuLbFgwLr3E5g9c5o+CgQXExAWh8pCYtDIKBjcgVCeTG7fY0sZoWkEA9PDRJAJTYv5gwwAQdwOy
   </data>
  </layer>
  <layer name="Block_Removable" width="32" height="24">
@@ -25,7 +30,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQxFoItGaSHxs6rBhBjx66AlwuQ+bWwmpGQUjCwx0/FPDfmLTOjF6yck/o2BgATXicLRsHD6A2nE5mi7wA3LzFLXwQAMAAYcU0w==
+   eJxjYBgFIwFoIuHBBDQZiHMbPnWDzU+jYBSQA8jNn+h5A5cZgzH/jwIEwBaP2OKLUvlRMLgBsfmZGuaPAtIBrnxK63ijBQAAMFsIpw==
   </data>
  </layer>
  <layer name="Coins" width="32" height="24">
@@ -33,7 +38,7 @@
    <property name="collectible" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztwQEBAAAAgiD/r25IQAEAAC8GDAAAAQ==
+   eJxjYBgF9AKeA+0ACsFQd/8oGAWjYBTgA6Nl3ChABrRKD6PpDAJoEQ6jYUs8AACUUwIA
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
@@ -41,7 +46,7 @@
    <property name="climbable" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlLENwCAQAynYhV2SWcIsyS4ZMD2dsQ8pEq6fs8UbStnamtNpnK2xFHNqwiyR9RBmlawEU8lKMC/AX2HegD/BTMh50wlmB/wV5gv4PwBTUWKnDiOxU4eRuH+nF0SnCK3u6dip1fdE/DV/0weS5QvB
+   eJxjYBgFo4A84E2BXhaquYI8oE5AXpvG9nsRkPejsf2E/F9IY/sJ+Z/W9ucSkJ9KY/sn0Nh8UgCt0zqhcoLWaT2PgPwUGts/kcbmEwKUlNPUMINQ+NPaDGqE/5YB0ktPQI90iq+soUc40bpcH2oAAL7DC+Y=
   </data>
  </layer>
  <layer name="Leiter_Top" width="32" height="24">
@@ -50,7 +55,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQxVoDJBeeoOh5NZRMAooAbRI66P5Z+iD0Tgc/oDecTyapkYBAAUYAUE=
+   eJxjYBgFQxVwDpBeeoDB7r5RMAqoBWid1kfz0tAHo3E4/AE94ng0HY0CZAAA2HcASQ==
   </data>
  </layer>
  <layer name="Seil" width="32" height="24">
@@ -58,7 +63,7 @@
    <property name="climbable_horizontal" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgF1ADbgZgRC94xkI4aBaOASgBb2h5N36NgFIyCUTAKRsHQBABP8wIz
+   eJxjYBgF1ADbgZgRC94xkI4aBaNgFFAMRvP2KBgFo2AUjILhBgB1jwLp
   </data>
  </layer>
  <objectgroup name="Spawn_Locations">
