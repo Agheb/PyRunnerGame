@@ -129,7 +129,8 @@ class Menu(object):
             self.init.set_current_menu(self.error_menu)
             self.init.show_menu(True)
         else:
-            self.error_menu = Menu(self.init, "Error", self.surface, self, self.header_size, self.font_size)
+            self.error_menu = Menu(self.init, "Error", self.surface, self, self.header_big,
+                                   self.header_size, self.font_size)
             self.print_error(error_string)
 
     def _draw_item(self, menu_item, index, pos, margin_top=None):
