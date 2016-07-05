@@ -45,8 +45,6 @@ class NetworkConnector(object):
         self.browser = None
         self.advertiser = None
 
-        print(str(self.ip), str(self.external_ip))
-
     def quit(self):
         """shutdown all threads"""
         try:
@@ -96,7 +94,7 @@ class NetworkConnector(object):
                 self.join_server_prompt((self.ip, self.port))
                 # self.main.load_level(self.main.START_LEVEL)
 
-        print("starting server")
+        '''starting server'''
         start_server()
 
         if self.server and self.server.connected:
@@ -113,7 +111,6 @@ class NetworkConnector(object):
     def join_server_prompt(self, ip_and_port):
         """join a server from the main menu"""
         ip, self.port = ip_and_port
-        print(str(ip))
 
         if isinstance(ip, str):
             '''let the computer resolve the hostname to an ip'''
@@ -121,45 +118,14 @@ class NetworkConnector(object):
         '''change to localhost ip if we are on the same computer'''
         self.ip = ip    # "127.0.0.1" if self.ip == self.external_ip else ip
 
-        print(str(ip))
-
-        def init_new_client():
-            """start a new client thread"""
-            if self.client:
-                self.client.kill()
-
-            self.client = Client(self.ip, self.port, self.level, self.main)
-            self.master = False
-            self.client.start()
-
-        def join_server():
-            """join your own or another server"""
-
-            init_new_client()
-
-            # while not self.client.connected:
-            #     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-            #     sleep(0.5)
-            #
-            #     if not self.client.connected:
-            #         '''if it fails (e.g. no server running on this port) switch the port up to 5 times'''
-            #         if self.port < START_PORT + 5:
-            #             self.port += 1
-            #             self.client.port = self.port
-            #             print("changing client and port to ", str(self.port))
-            #         else:
-            #             '''if it still fails give up'''
-            #             self.client.kill()
-            #             break
-            #         # init_new_client()
-
-            # self.ip = input("Please enter an ip to connect to: ")
-
+        '''start a new client thread'''
         if self.client and self.client.connected:
             '''disconnect from other servers first'''
             self.client.disconnect()
 
-        join_server()
+        self.client = Client(self.ip, self.port, self.level, self.main)
+        self.master = False
+        self.client.start()
 
         if self.client and self.client.connected:
             print("connected to %s" % self.ip)
