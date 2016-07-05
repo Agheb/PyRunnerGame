@@ -34,8 +34,7 @@ class Level(object):
     2. load all tilesheet image
     3. draw layer by layer
     """
-    PLAYER1 = "LRCharacters32.png"
-    PLAYER2 = "LRCharacters32_p2.png"
+    PLAYERS = ["LRCharacters32_p1.png", "LRCharacters32_p2.png", "LRCharacters32_p3.png", "LRCharacters32_p4.png"]
     SM_SIZE = 32
 
     levels = []
@@ -103,7 +102,7 @@ class Level(object):
             x, y = p1_pos
             p2_pos = x + 32, y
         try:
-            bot1_obj = self.tm.get_object_by_name("Enemies")
+            bot1_obj = self.tm.get_object_by_name("Enemies_1")
             bot1_pos = self.calc_object_pos((bot1_obj.x, bot1_obj.y))
             self.bot_count += int(bot1_obj.type) if bot1_obj.type else 1
         except ValueError:
@@ -150,7 +149,7 @@ class Level(object):
 
     def create_bot(self, bid, location):
         """create a bot at location (x, y)"""
-        Bots(bid, location, "LRCharacters32.png", self)
+        Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -421,12 +420,12 @@ class Level(object):
         """add a new player"""
         pid = int(pid)
 
+        sheet = self.PLAYERS[pid % len(self.PLAYERS)]
+
         if pid % 2 is 0:
             pos = self.spawn_player_1_pos if not pos else pos
-            sheet = self.PLAYER1
         else:
             pos = self.spawn_player_2_pos if not pos else pos
-            sheet = self.PLAYER2
 
         new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
         Level.players.append(new_player)

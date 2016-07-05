@@ -79,7 +79,7 @@
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="24" name="Enemies" type="1" x="960" y="100">
+  <object id="24" name="Enemies_1" type="2" x="960" y="100">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
@@ -90,7 +90,7 @@
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="27" name="Enemies_2" type="1" x="960" y="480">
+  <object id="27" name="Enemies_2" type="1" x="928" y="480">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
