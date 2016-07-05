@@ -154,6 +154,8 @@ class Physics(object):
                         # self.level.clean_sprite(sprite)
                         # and remove it
                         sprite.kill()
+                    elif not player.robbed_gold:
+                        player.collect_gold(sprite)
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:

@@ -269,7 +269,10 @@ class Player(pygame.sprite.DirtySprite):
             self.killed_frame += 1
 
             if self.killed_frame is len(self.death_frames) * 2:
+                if not self.is_human:
+                    self.death_actions()
                 pygame.sprite.DirtySprite.kill(self)
+
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """

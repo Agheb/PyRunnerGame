@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="32" tileheight="32" nextobjectid="27">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="32" tileheight="32" nextobjectid="28">
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
  </tileset>
@@ -79,7 +79,7 @@
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="24" name="Enemies" x="960" y="100">
+  <object id="24" name="Enemies" type="1" x="960" y="100">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
@@ -88,6 +88,11 @@
   <object id="26" name="Player_2" x="512" y="640">
    <properties>
     <property name="players" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="27" name="Enemies_2" type="1" x="960" y="480">
+   <properties>
+    <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
  </objectgroup>

@@ -77,9 +77,9 @@ class MainMenu(object):
         s_height = (self.render_thread.screen.get_height() // 9) * 5
         surface = pygame.Surface((s_width, s_height))
         # regular font sizes
-        h1_size = 72
-        h2_size = 48
-        item_size = 36
+        h1_size = self.h1_size
+        h2_size = self.h2_size
+        item_size = self.item_size
         '''calculate the ratio to adjust font sizes accordingly'''
         ratio = Menu.calc_font_size(surface, h1_size, item_size)
         h1_size = int(h1_size * ratio)

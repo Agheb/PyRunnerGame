@@ -180,7 +180,7 @@ class Menu(object):
             # draw the fancy background
             rects.append(self._draw_background(BACKGROUND))
             # don't overwrite the header
-            margin_top = self.font_h2_size + 4
+            margin_top = self.font_h1_size + 4
             # always draw the first item (header)
             rects.append(self._draw_item(self.menu_items[0], 0, new_pos, margin_top))
             margin_top += self.font_text_size
@@ -239,18 +239,18 @@ class Menu(object):
             width = self.width
             height = self.height
             '''corner rect position and size'''
-            size = 24
-            pos_right = width - size
-            pos_bottom = height - size
-            bg_surface = pygame.Surface((width, height), SRCALPHA)
+            # size = 24
+            # pos_right = width - size
+            # pos_bottom = height - size
+            bg_surface = pygame.Surface((width, height))
 
             background_rect = pygame.Rect(0, 0, width, height)
             background_rect.union_ip(pygame.draw.rect(bg_surface, bg_color, background_rect))
             background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, background_rect, 8))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, 0, size, size)))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, 0, size, size)))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, pos_bottom, size, size)))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, pos_bottom, size, size)))
+            # background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, 0, size, size)))
+            # background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, 0, size, size)))
+            # background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, pos_bottom, size, size)))
+            # background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, pos_bottom, size, size)))
             '''and save the result for later use'''
             self.background = bg_surface
 
@@ -399,7 +399,7 @@ class MenuItem(object):
         if self.hovered:
             return WHITE
         else:
-            return RED
+            return GRAY
 
     def set_rect(self):
         """draw the pygame.Rect containing this menu item"""

@@ -3,7 +3,7 @@
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
  </tileset>
- <tileset firstgid="806" name="scifi_platform_BG1" tilewidth="32" tileheight="32" tilecount="897" columns="39">
+ <tileset firstgid="806" name="scifi_platform_BG1" tilewidth="32" tileheight="32" tilecount="0" columns="39">
   <image source="../../../Downloads/scifi_platform_BG1.jpg" width="1279" height="742"/>
  </tileset>
  <layer name="Background" width="32" height="24">
@@ -60,7 +60,7 @@
  </layer>
  <layer name="Seil" width="32" height="24">
   <properties>
-   <property name="climbable_horizontal" type="bool" value="true"/>
+   <property name="rope" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
    eJxjYBgF1ADbgZgRC94xkI4aBaNgFFAMRvP2KBgFo2AUjILhBgB1jwLp

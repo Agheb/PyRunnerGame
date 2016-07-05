@@ -31,7 +31,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/level2.tmx"
+    START_LEVEL = "./resources/levels/desert.tmx"
 
     def __init__(self):
         """initialize the game"""
@@ -160,6 +160,9 @@ class PyRunner(object):
 
         '''check for sprite collisions'''
         self.physics.check_collisions()
+
+        '''check if there are bots to respawn'''
+        self.level.check_respawn_bot()
 
         '''check if all gold got collected and spawn a exit gate if there's none left'''
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
