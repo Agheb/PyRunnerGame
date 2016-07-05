@@ -25,9 +25,16 @@ START_PORT = 6799
 
 class Message():
     """just a wrapper object to store messages in one place"""
-    client_dc = "client_disconnected"
-    key_update = "key_update"
-    init = 'init_succ'
+
+    #types
+    type_client_dc = "client_disconnected"
+    type_key_update = "key_update"
+    type_init = 'init_succ'
+    type_comp_update = 'update_all'
+
+
+    #data fields
+    field_player_locations = "player_locations"
 
 class NetworkConnector(object):
     """the main network class"""
@@ -142,6 +149,7 @@ class NetworkConnector(object):
     def update(self):
         try:
             self.client.update()
+            self.server.update()
         except (MastermindErrorClient, AttributeError):
             pass
 
@@ -234,10 +242,12 @@ class Client(threading.Thread, MastermindClientTCP):
         if raw_data:
             data = json.loads(raw_data)
             clientlog.info("Got data from server: {}".format(str(data)))
-            if data['type'] == Message.key_update:
+            if data['type'] == Message.type_key_update:
                 clientlog.info("got key_update from server")
                 Controller.do_action(data['data']['key'], data['data']['player_id'])
-            if data['type'] == Message.init:
+                return
+            
+            if data['type'] == Message.type_init:
                 clientlog.info("got init succ")
                 try:
                     self.level.players[int(data['player_id'])]
@@ -245,13 +255,20 @@ class Client(threading.Thread, MastermindClientTCP):
                     pid = len(self.level.players)
                     self.level.add_player(pid)
                 self.main.menu.show_menu(False)
-            if data['type'] == Message.client_dc:
+                return
+
+            if data['type'] == Message.type_client_dc:
                 clientlog.info("A client disconnected, removing from game")
                 pid = data['data']['client_id']
                 if not self.level.remove_player(pid):
                     clientlog.error("Could not remove player form player list!")
                 else:
                     clientlog.info("removed player form playerlist")
+                return
+
+            if data['type'] == Message.type_comp_update:
+                clientlog.info("Setting player location")
+                self.level.set_players_pos(data['data'][Message.field_player_locations])
                 
 
     def send_keep_alive(self):
@@ -336,13 +353,13 @@ class Server(threading.Thread, MastermindServerTCP):
         disconnected_client = self.known_clients.index(connection_object)
 
         #kill the player of the disconnected client on all other clients
-        self.send_to_all_clients(Message.client_dc, {'client_id': disconnected_client}) 
+        self.send_to_all_clients(Message.type_client_dc, {'client_id': disconnected_client}) 
         return super(MastermindServerTCP,self).callback_disconnect_client(connection_object)
 
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
-        self.send_to_all_clients(Message.key_update, {'key' : str(key), 'player_id' : str(player_id)})
+        self.send_to_all_clients(Message.type_key_update, {'key' : str(key), 'player_id' : str(player_id)})
 
     def send_to_all_clients(self, message, data):
         json_data = json.dumps({'type': message, 'data': data})
@@ -368,6 +385,7 @@ class Server(threading.Thread, MastermindServerTCP):
             self.connect(self.ip, self.port)
             self.accepting_allow()
             self.connected = True
+            self.lastUpdate = datetime.now()
         except (OSError, MastermindErrorSocket):
             print(str(OSError))
             print(str(MastermindErrorSocket))
@@ -379,6 +397,17 @@ class Server(threading.Thread, MastermindServerTCP):
         srvlog.info("Server disconnected from network")
         return super(MastermindServerTCP, self).callback_disconnect()
 
+    def update(self):
+        if (datetime.now() - self.lastUpdate).seconds > 4:
+            srvlog.info("sending update data to clients")
+            self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
+            self.lastUpdate = datetime.now()
+
+    def get_collected_data(self):
+        collectedData = {}
+        collectedData[Message.field_player_locations] = self.level.get_all_player_pos()
+        return collectedData
+        
     @property
     def level(self):
         """return the current level"""

@@ -9,6 +9,7 @@ from .level_objecs import *
 from .player import Player
 from .non_player_characters import Bots
 from random import randint
+import pdb
 from operator import itemgetter
 from .dijkstra import Graph
 import logging
@@ -410,6 +411,16 @@ class Level(object):
                 return True
         return False
 
+    def get_all_player_pos(self):
+        players_pos = {}
+        for player in Level.players:
+            players_pos[Level.players.index(player)] = player.on_tile
+        return players_pos
+
+    def set_players_pos(self, playerPos):
+        for player in Level.players:
+            player.on_tile = playerPos[str(player.pid)]
+    
     @staticmethod
     def get_level_info_json():
         # TODO: finish me
