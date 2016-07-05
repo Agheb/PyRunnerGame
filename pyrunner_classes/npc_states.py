@@ -214,9 +214,9 @@ class State(object):
                 # print("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = True
 
-            if bx == self.bot.level.cols - 1:
+            if bx == self.bot.level.cols - 1 and not self.bot.change_x:
                 self.bot.walk_left = True
-            elif bx == 1:
+            elif bx == 0 and not self.bot.change_x:
                 self.bot.walk_left = False
 
             self.bot.go_left() if self.bot.walk_left else self.bot.go_right()
