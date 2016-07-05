@@ -33,7 +33,7 @@ class NetworkConnector(object):
     COMPRESSION = None
 
     def __init__(self, main, level):
-        self.ip = "127.0.0.1"
+        self.ip = "0.0.0.0"
         socket_ip = socket.gethostbyname(socket.gethostname())
         self.external_ip = socket_ip if not socket_ip.startswith("127.") else socket.gethostbyname(socket.getfqdn())
         self.main = main
