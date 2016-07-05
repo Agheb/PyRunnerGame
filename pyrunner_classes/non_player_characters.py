@@ -1,17 +1,16 @@
-from .player import Player
 from .state_machine import StateMachine
 from .npc_states import *
-import pygame
 
 SPRITE_SHEET_PATH = "./resources/sprites/"
 
 
 class Bots(Player):
 
-    def __init__(self, pos, sheet, level):
+    def __init__(self, bid, pos, sheet, level):
         Player.__init__(self, pos, sheet, None, 32, level, 25, True)
 
         # POSITIONAL RELATED
+        self.bid = bid
         self.destination = (0, 0)
         self.last_pos = (0, 0)
         self.left_tile = None
@@ -81,6 +80,11 @@ class Bots(Player):
             '''restore robbed gold'''
             self.robbed_gold.rect.bottomleft = self.rect.topleft
             self.robbed_gold.dirty = 1
+
+    def death_actions(self):
+        """special actions to execute on death which aren't needed for human players"""
+        self.restore_gold()
+        self.level.bots_respawn.append((self.bid, datetime.now()))
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""

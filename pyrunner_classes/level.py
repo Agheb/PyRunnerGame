@@ -26,10 +26,6 @@ TMX- Specification:
 """
 
 
-# TODO TMX Specification:
-# TODO make collidable Rects from ObjectLayers
-
-
 class Level(object):
     """
     Level object loads tmx-file for game and draws each tile to screen
@@ -51,8 +47,10 @@ class Level(object):
         self.path = path
         self.fps = fps
         self.graph = None
+        self.bot_count = 0
         self.climbable_list = []
         self.walkable_list = []
+        self.bots_respawn = []
         self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         '''
@@ -105,11 +103,20 @@ class Level(object):
             x, y = p1_pos
             p2_pos = x + 32, y
         try:
-            bot_obj = self.tm.get_object_by_name("Enemies")
-            bot_pos = self.calc_object_pos((bot_obj.x, bot_obj.y))
+            bot1_obj = self.tm.get_object_by_name("Enemies")
+            bot1_pos = self.calc_object_pos((bot1_obj.x, bot1_obj.y))
+            self.bot_count += int(bot1_obj.type) if bot1_obj.type else 1
         except ValueError:
             '''enemies fall from the sky'''
-            bot_pos = randint(0, self.width), 0
+            bot1_pos = randint(0, self.width), 0
+
+        try:
+            bot2_obj = self.tm.get_object_by_name("Enemies_2")
+            bot2_pos = self.calc_object_pos((bot2_obj.x, bot2_obj.y))
+            self.bot_count += int(bot2_obj.type) if bot2_obj.type else 1
+        except ValueError:
+            '''enemies fall from the sky'''
+            bot2_pos = randint(0, self.width), 0
         try:
             next_level = self.tm.get_object_by_name("Exit_Gate")
             self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
@@ -119,9 +126,31 @@ class Level(object):
 
         self.spawn_player_1_pos = p1_pos
         self.spawn_player_2_pos = p2_pos
-        self.spawn_enemies_pos = bot_pos
+        self.spawn_enemies_1_pos = bot1_pos
+        self.spawn_enemies_2_pos = bot2_pos
 
-        self.bot_1 = Bots(self.spawn_enemies_pos, "LRCharacters32.png", self)
+        self.spawn_bots()
+
+    def check_respawn_bot(self):
+        """respawn a bot after a specified amount of time"""
+        if self.bots_respawn:
+            for bid, time in self.bots_respawn:
+                if (datetime.now() - time).seconds >= 10:
+                    self.bots_respawn.remove((bid, time))
+                    pos = self.spawn_enemies_1_pos if bid & 1 else self.spawn_enemies_2_pos
+                    self.create_bot(bid, pos)
+
+    def spawn_bots(self):
+        """spawn the specified amount of bots in the level"""
+        for i in range(self.bot_count):
+            x, y = self.spawn_enemies_1_pos if i & 1 else self.spawn_enemies_2_pos
+            '''create as many bots as specified in Object Type field'''
+            x += self.tile_width * i
+            self.create_bot(i, (x, y))
+
+    def create_bot(self, bid, location):
+        """create a bot at location (x, y)"""
+        Bots(bid, location, "LRCharacters32.png", self)
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
