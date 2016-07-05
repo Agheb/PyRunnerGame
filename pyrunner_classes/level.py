@@ -3,16 +3,19 @@
 """main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
-import pygame
 import pytmx
 from pytmx.util_pygame import load_pygame
-from pygame.locals import *
-from .spritesheet_handling import *
+from .level_objecs import *
+from .player import Player
+from .non_player_characters import Bots
+from random import randint
+from operator import itemgetter
+from .dijkstra import Graph
+import logging
 
+log = logging.getLogger("Level")
 LEVEL_PATH = "./resources/levels/"
 LEVEL_EXT = ".tmx"
-LEVEL_LIST = ["./resources/levels/scifi.tmx", "./resources/levels/level2.tmx",
-                           "./resources/levels/level3.tmx"]
 
 """
 Level Builder for PyRunner game
@@ -35,36 +38,60 @@ class Level(object):
     2. load all tilesheet image
     3. draw layer by layer
     """
+    PLAYER1 = "LRCharacters32.png"
+    PLAYER2 = "LRCharacters32_p2.png"
+    SM_SIZE = 32
 
-    def __init__(self, surface, level_number=0):
-        self.level_id = level_number
-        self.tm = load_pygame(LEVEL_LIST[level_number], pixelalpha=True)
+    levels = []
+    players = []
+
+    def __init__(self, surface, path, fps=25):
+        self.surface = surface
+        self.background = self.surface.copy()
+        self.path = path
+        self.fps = fps
+        self.graph = None
+        self.climbable_list = []
+        self.walkable_list = []
+        self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
-        self.tm_width = self.tm.width * self.tile_width
-        self.tm_height = self.tm.height * self.tile_height
-        self.width, self.height = self.tm_width, self.tm_height
+        '''
+            we have 32x32 pixel tiles and 40x23 pixels resulting in a resolution of 1280x736
+            because we want 720p (1280x720) and 16:9 we have to get rid of half of the pixels in the last row
+        '''
+        self.cols = self.tm.width
+        self.rows = self.tm.height
+        tm_width = self.cols * self.tile_width
+        tm_height = self.rows * self.tile_height - 16
+        self.width, self.height = tm_width, tm_height
         self.pixel_diff = 0
         self.margin_left = 0
         self.margin_top = 0
         s_width, s_height = surface.get_size()
 
-        if self.tm_height is not s_height or self.tm_width is not s_width:
+        if path not in Level.levels:
+            Level.levels.append(path)
+
+        if tm_height != s_height or tm_width != s_width:
             '''automatically scale the tilemap'''
-            diff_h = (s_height - self.tm_height) // self.tm.height
-            diff_w = (s_width - self.tm_width) // self.tm.width
+            diff_h = (s_height - tm_height) // self.tm.height
+            diff_w = (s_width - tm_width) // self.tm.width
 
             self.pixel_diff = diff_h if diff_h < diff_w else diff_w
             self.tile_width += self.pixel_diff
             self.tile_height += self.pixel_diff
-            self.width = self.tm.width * self.tile_width
-            self.height = self.tm.height * self.tile_height
+            self.width = self.cols * self.tile_width
+            self.height = self.rows * self.tile_height
             self.margin_left = (s_width - self.width) // 2
             self.margin_top = (s_height - self.height) // 2
-            # print(str(self.width), " ", str(self.height), " ", str(self.margin_left), " ", str(self.margin_top))
 
-        self.surface = surface
-        self.background = self.surface.copy()
+        self.last_row = self.margin_top + self.height - self.tile_height
+
+        '''draw the complete level'''
         self.render()
+
+        '''calculate walking paths'''
+        self.generate_paths()
 
         try:
             p1_obj = self.tm.get_object_by_name("Player_1")
@@ -78,14 +105,23 @@ class Level(object):
             x, y = p1_pos
             p2_pos = x + 32, y
         try:
+            bot_obj = self.tm.get_object_by_name("Enemies")
+            bot_pos = self.calc_object_pos((bot_obj.x, bot_obj.y))
+        except ValueError:
+            '''enemies fall from the sky'''
+            bot_pos = randint(0, self.width), 0
+        try:
             next_level = self.tm.get_object_by_name("Exit_Gate")
             self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
             self.next_level = LEVEL_PATH + next_level.type + LEVEL_EXT
         except ValueError:
             pass
 
-        self.player_1_pos = p1_pos
-        self.player_2_pos = p2_pos
+        self.spawn_player_1_pos = p1_pos
+        self.spawn_player_2_pos = p2_pos
+        self.spawn_enemies_pos = bot_pos
+
+        self.bot_1 = Bots(self.spawn_enemies_pos, "LRCharacters32.png", self)
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -118,38 +154,225 @@ class Level(object):
             if isinstance(layer, pytmx.TiledTileLayer):
                 '''first check all layer properties'''
                 ladder = check_property(layer, 'climbable')
-                rope = check_property(layer, 'climbable_horizontal')
+                rope = check_property(layer, 'rope')
                 gold = check_property(layer, 'collectible')
                 removable = check_property(layer, 'removable')
                 solid = check_property(layer, 'solid')
+                wall = check_property(layer, 'vertical_wall')
                 width, height = self.tile_width, self.tile_height
+                fps = self.fps
 
                 '''create the sprites'''
                 for a in layer.tiles():
                     pos_x, pos_y, image = a
                     size = width, height
+                    tile_id = pos_x, pos_y
 
                     pos_x = self.margin_left + (width * pos_x)
                     pos_y = self.margin_top + (height * pos_y)
+
                     image = pygame.transform.scale(image, size)
+
+                    '''chop off the bottom half in the last row to fit 720p'''
+                    if pos_y == self.last_row:
+                        image = self.squeeze_half_image(image)
 
                     a = pos_x, pos_y, image
 
                     if ladder:
-                        Ladder(a, size, solid)
+                        Ladder(a, size, tile_id, fps, solid)
                     elif rope:
-                        Rope(a, size)
+                        Rope(a, size, tile_id, fps)
                     elif gold:
-                        Collectible(a, size)
+                        Collectible(a, size, tile_id, fps)
                     elif removable:
-                        WorldObject(a, size, solid, removable)
-                    elif solid:
-                        WorldObject(a, size, solid)
+                        WorldObject(a, size, tile_id, fps, solid, removable)
+                    elif solid or wall:
+                        WorldObject(a, size, tile_id, fps, solid)
 
                     if layer.name == "Background":
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
+                    elif not gold and not wall:
+                        '''
+                            add all tiles that a player can walk on to this list
+                            to generate paths for the shortest path algorithm
+                        '''
+                        x, y = tile_id
+                        # ignore the last row because it gets cut by 16 pixels
+                        if y is not self.rows - 1:
+                            '''only add walkable tiles'''
+                            if ladder:
+                                '''add ladders separately'''
+                                self.climbable_list.append(tile_id)
+                            self.walkable_list.append(tile_id)
+
+    def generate_paths(self):
+        """create paths by id for bots"""
+        # graph to use with dijkstra's shortest path algorithm
+        self.graph = Graph()
+        # remove duplicate entries (e.g. ropes that count one row deeper)
+        self.walkable_list = list(set(self.walkable_list))
+        # sort list by x, then by y
+        self.walkable_list.sort(key=itemgetter(0))
+        self.walkable_list.sort(key=itemgetter(1))
+
+        horizontals = self.add_paths(self.walkable_list, True)    # horizontals =
+
+        '''find all ladders'''
+        # remove duplicate entries
+        self.climbable_list = list(set(self.climbable_list))
+        # sort list by x, then by y
+        self.climbable_list.sort()
+
+        '''add the bottom below the ladder as well'''
+        ladder_plus = [tile_id for tile_id in self.climbable_list]
+        old_y = 0
+        for tile_id in self.climbable_list:
+            x, y = tile_id
+            if not old_y:
+                old_y = y
+            elif y is not old_y:
+                ladder_plus.append((x, y + 1))
+                old_y = y
+
+        # remove duplicate entries
+        ladders = list(set(ladder_plus))
+        # sort list by x, then by y
+        ladders.sort()
+
+        self.add_paths(ladders, False)
+
+        # '''initialize the graph'''
+        # for tile_a in self.walkable_list:
+        #     for tile_b in self.walkable_list:
+        #         if tile_a is not tile_b:
+        #             try:
+        #                 self.graph.shortest_path(tile_a, tile_b)
+        #                 # print("Success: %s and %s" % (tile_a, tile_b))
+        #             except KeyError:
+        #                 # print("Error %s and %s" % (tile_a, tile_b))
+        #                 pass
+        #
+        # intersections = [tile_id for tile_id in horizontals if tile_id in ladders]
+        # intersections.sort()
+        #
+        # '''partially initialize the graph'''
+        # for tile in self.walkable_list:
+        #     for ladder in intersections:
+        #         if tile is not ladder:
+        #             try:
+        #                 self.graph.shortest_path(tile, ladder)
+        #                 print("Success: %s and %s" % (tile, ladder))
+        #             except KeyError:
+        #                 # print("Error %s and %s" % (tile, ladder))
+        #                 pass
+
+    def get_is_path(self, a, b):
+        """returns if a target is reachable"""
+        try:
+            return True if self.graph.shortest_path(a, b) else False
+        except KeyError:
+            return False
+
+    def add_intersections(self, horizontals, intersections):
+        """find all important intersections between layers and connect them"""
+        for ladder_id in intersections:
+            for tile_id in horizontals:
+                if self.get_is_path(tile_id, ladder_id):
+                    x, y = tile_id
+                    lx, ly = ladder_id
+                    length = x - lx if x > lx else lx - x
+                    length += 1
+                    self.graph.add_edge(tile_id, ladder_id, length)
+
+    def add_long_path(self, cur_start, cur_stop, cur_locked_x_y, horizontal, tuple_list):
+        """add a path that is longer than 1 tile"""
+        length = cur_stop - cur_start
+        if length:
+            length += 1
+            if horizontal:
+                '''the length is + 1 because tiles start with index 0'''
+                start_a, start_b = cur_start, cur_locked_x_y
+                stop_a, stop_b = cur_stop, cur_locked_x_y
+            else:
+                '''connect the ladder to the next bottom horizontal row'''
+                start_a, start_b = cur_locked_x_y, cur_start
+                stop_a, stop_b = cur_locked_x_y, cur_stop
+                tuple_list.append((stop_a, stop_b))
+            '''name the nodes'''
+            start_node = start_a, start_b
+            stop_node = stop_a, stop_b
+            '''add the edges'''
+            self.graph.add_edge(start_node, stop_node, length)
+            self.graph.add_edge(stop_node, start_node, length)
+            print("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
+
+            # for node_a in range(stop_a, stop_b):
+            #         for node_b in range(stop_a, stop_b):
+            #             if node_a is not node_b:
+            #                 length = node_b - node_a if node_b > node_a else node_a - node_b
+            #                 length += 1
+            #                 self.graph.add_edge(node_a, node_b, length)
+            #                 # self.graph.add_edge(stop_node, start_node, length)
+            #                 print("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
+
+    def add_paths(self, node_list, horizontal=True):
+        """find intersections between different levels"""
+
+        def add_node(cur_x, cur_y, cur_x_y):
+            """add a node and a short path between two neighboring tiles"""
+            tuple_list.append((cur_x, cur_y))
+            node = (cur_x, cur_y)
+            self.graph.add_node(node)
+            '''if it's not the first tile in a row or column add a path to the previous one'''
+            if cur_x_y is not 0:
+                prev_x, prev_y = (cur_x - 1, cur_y) if horizontal else (cur_x, cur_y - 1)
+                prev_node = (prev_x, prev_y)
+                self.graph.add_edge(node, prev_node, 1)
+                self.graph.add_edge(prev_node, node, 1)
+
+        '''variables to store the start and stop in a path'''
+        tuple_list = []
+        start = 0
+        stop = 0
+        locked_x_y = 0
+        not_set = True
+
+        for x, y in node_list:
+            '''jump to the next item if this is the first'''
+            if not_set:
+                start = stop = x if horizontal else y
+                locked_x_y = y if horizontal else x
+                not_set = False
+                continue
+
+            '''make this function universal for horizontal and vertical lookups'''
+            current_x_y = x if horizontal else y
+            cur_row_col = y if horizontal else x
+
+            if current_x_y == stop + 1 and locked_x_y is cur_row_col:
+                add_node(x, y, current_x_y)
+                stop = current_x_y
+            else:
+                self.add_long_path(start, stop, locked_x_y, horizontal, tuple_list)  # add_long_path does the sanity check
+                '''continue next loop with the current values'''
+                start = stop = x if horizontal else y
+                locked_x_y = y if horizontal else x
+
+        '''final check after the loop went through'''
+        self.add_long_path(start, stop, locked_x_y, horizontal, tuple_list)
+
+        return tuple_list
+
+    @staticmethod
+    def squeeze_half_image(image):
+        """remove the bottom half of an image"""
+        w, h = image.get_size()
+        h //= 2
+        size = w, h
+        return pygame.transform.scale(image, size)
 
     @staticmethod
     def render_tile(surface, tile):
@@ -165,278 +388,30 @@ class Level(object):
         self.surface.blit(dirty_rect, sprite.rect)
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
 
+    def add_player(self, pid, pos=None, fps=25):
+        """add a new player"""
+        pid = int(pid)
 
-class WorldObject(pygame.sprite.DirtySprite):
-    """hello world"""
-
-    group = pygame.sprite.LayeredDirty(default_layer=0)
-    removed = pygame.sprite.LayeredDirty(default_layer=0)
-    scores = pygame.sprite.LayeredDirty(default_layer=1)
-
-    def __init__(self, tile, size, solid=True, removable=False, restoring=False):
-        """world object item"""
-        pygame.sprite.DirtySprite.__init__(self, WorldObject.group)
-        self.tile = tile
-        self.size = size
-        self.width, self.height = self.size
-        self.pos_x, self.pos_y, self.image_backup = self.tile
-        self.rect = self.image_backup.get_rect()
-        self.rect.x = self.pos_x
-        self.rect.y = self.pos_y
-        self.solid = solid
-        self.removable = removable
-        self.climbable = False
-        self.climbable_horizontal = False
-        self.collectible = False
-        self.killed = False
-        self.restoring = restoring
-        self.exit = False
-
-        if restoring:
-            self.image = pygame.Surface((self.width, self.height), SRCALPHA)
-            self.rect.y += self.height
-            self.rect.height = 0
+        if pid % 2 is 0:
+            pos = self.spawn_player_1_pos if not pos else pos
+            sheet = self.PLAYER1
         else:
-            self.image = self.image_backup
+            pos = self.spawn_player_2_pos if not pos else pos
+            sheet = self.PLAYER2
 
-    def update(self):
-        """update world objects"""
-        if self.killed or self.restoring:
-            x, y = self.rect.topleft
-            w, h = self.rect.size
-            if self.restoring:
-                y -= 2
-                h += 2
-            elif self.removable:
-                y += 2
-                h -= 2
-            elif self.collectible:
-                x += 4
-                y += 4
-                w -= 8
-                h -= 8
+        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+        Level.players.append(new_player)
+        log.info("Added Player. Players {}".format(Level.players))
 
-            if (h <= 0 or w <= 0) and self.killed:
-                self.super_kill()
-            elif h >= self.height and self.restoring:
-                self.image = self.image_backup
-                self.rect.x = self.pos_x
-                self.rect.y = self.pos_y
-                self.restoring = False
-            else:
-                rect = pygame.Rect(x, y, w, h)
-                self.image = pygame.transform.scale(self.image_backup, (w, h)).convert_alpha()
-                self.rect = rect
+    @staticmethod
+    def get_level_info_json():
+        # TODO: finish me
+        a = []
+        for d in Level.players:
+            a.append(d.rect.topleft)
+        data = {'players': a}
+        return data
 
-            self.dirty = 1
-
-    def kill(self):
-        """remove this sprite"""
-        if self.removable or self.collectible:
-            if not self.killed and self.removable:
-                RemovedBlock(self.tile, self.rect.size, 4)
-            self.killed = True
-        else:
-            self.super_kill()
-
-    def super_kill(self):
-        """call the parent class kill function"""
-        pygame.sprite.DirtySprite.kill(self)
-
-
-class Ladder(WorldObject):
-    """climbable ladder"""
-
-    def __init__(self, tile, size, solid=False):
-        WorldObject.__init__(self, tile, size, solid)
-        self.climbable = True
-
-
-class Rope(WorldObject):
-    """hangable rope"""
-    def __init__(self, tile, size):
-        WorldObject.__init__(self, tile, size)
-        self.climbable_horizontal = True
-
-
-class Collectible(WorldObject):
-    """collectible gold"""
-    def __init__(self, tile, size):
-        WorldObject.__init__(self, tile, size)
-        self.collectible = True
-
-
-class RemovedBlock(pygame.sprite.DirtySprite):
-    """store values of removed blocks to restore them later on"""
-    def __init__(self, tile, size, time_out, fps=25):
-        pygame.sprite.DirtySprite.__init__(self, WorldObject.removed)
-        self.tile = tile
-        self.size = size
-        self.width, self.height = self.size
-        self.pos_x, self.pos_y, self.restore_image = self.tile
-        self.image = pygame.Surface(size, SRCALPHA)
-        self.rect = self.image.get_rect()
-        self.rect.x = self.pos_x
-        self.rect.y = self.pos_y
-        self.time_out = time_out
-        self.fps = fps
-        self.counter = 0
-        self.trapped = False
-
-    def update(self):
-        """countdown on each update until the object get's restored"""
-        self.counter += 1
-
-        if self.counter is self.fps * self.time_out:
-            self.restore()
-            self.kill()
-
-    def restore(self):
-        """recreate a sprite with the same values"""
-        return WorldObject(self.tile, self.size, True, True, True)
-
-
-class ExitGate(WorldObject):
-    """let's the player return to the next level"""
-    def __init__(self, pos, sheet, size, pixel_diff=0, fps=25):
-        self.sprite_sheet = SpriteSheet(sheet, size, pixel_diff * 2 + size, fps)
-        self.animation = self.sprite_sheet.add_animation(8, 4, 4)
-        self.counter = 0
-        self.fps = fps
-        self.image = self.sprite_sheet.get_frame(0, self.animation)
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = pos
-        tile = self.rect.x, self.rect.y, self.image
-        WorldObject.__init__(self, tile, (size, size), True)
-        self.exit = True
-        self.spawned = False
-        self.killed = False
-        self.count_fps = 0
-
-    def update(self):
-        """play glowing animation"""
-        length = len(self.animation) - 1
-
-        if not self.spawned:
-            self.image = self.animation[self.counter // 5]
-
-            if self.counter is length * 5:
-                self.spawned = True
-
-            self.counter += 1
-            self.dirty = 1
-        else:
-            self.count_fps = self.count_fps + 1 if self.count_fps < self.fps else 0
-            '''pulsate the exit gate'''
-            if (self.count_fps % self.fps) // 2 is 0 and self.count_fps is not 0:
-                self.counter = length - 1 if self.counter is length else length
-                self.image = self.animation[self.counter]
-                self.dirty = 1
-
-
-class GoldScore(pygame.sprite.DirtySprite):
-    """store and show the gold of each player"""
-    def __init__(self, player, pos, left=True):
-        pygame.sprite.DirtySprite.__init__(self, WorldObject.scores)
-        self.player = player
-        self.pixel_diff = self.player.pixel_diff
-        self.fps = self.player.fps
-        self.pos = pos
-        self.gold = self.player.gold_count
-        self.sprite_sheet = SpriteSheet("gold.png", 32, self.pixel_diff - 6, self.fps, False)
-        self.gold_rotation = self.sprite_sheet.add_animation(0, 0, 8)
-        self.image = self.gold_rotation[0]
-        self.rect = self.image.get_rect()
-        self.rect.topleft = pos
-        self.rect.x += 3
-        self.rect.y += 3
-        self.left = left
-        self.frame_counter = 0
-        self.fps = self.player.fps
-        self.fps_counter = 0
-        self.children = []
-
-    def update(self):
-        """show rotating gold coin"""
-        if self.frame_counter < len(self.gold_rotation):
-            # count the frames
-            if self.fps_counter is self.fps:
-                self.fps_counter = 0
-            else:
-                self.fps_counter += 1
-
-            # only change animation every second frame
-            if self.fps_counter & 1:
-                self.image = self.gold_rotation[self.frame_counter]
-                self.frame_counter += 1
-        else:
-            '''update gold counter only once per second'''
-            if self.player.gold_count is not self.gold:
-                self.gold = self.player.gold_count
-            self.frame_counter = 0
-
-            '''convert the number to single numbers in a list'''
-            num = [int(i) for i in str(self.gold)]
-            length = len(num)
-            children = len(self.children)
-
-            if children < length:
-                '''if the number is greater then our current sprites we need to add another one'''
-                self.children.append(ScoreNumber(self, 0, children + 1))
-            elif children > length:
-                '''if there's more numbers then we need we can remove the last one (at a time)'''
-                self.children.pop().kill()
-
-            for i, child in enumerate(self.children):
-                '''the number on the right side are in reverse order'''
-                pos = i if self.left else length - i - 1
-                child.set_number(num[pos])
-
-        # this frame should be rendered permanently
-        self.dirty = 1
-
-
-class ScoreNumber(pygame.sprite.DirtySprite):
-    """show the current amount of gold a player has collected"""
-
-    def __init__(self, gold_score, number=0, child_num=1):
-        pygame.sprite.DirtySprite.__init__(self, WorldObject.scores)
-        self.gs = gold_score
-        self.pixel_diff = self.gs.pixel_diff
-        self.fps = self.gs.fps
-        self.pos = self.gs.pos
-        self.sprite_sheet = SpriteSheet("numbers_gold_320x32.png", 32, self.pixel_diff, self.fps, False)
-        self.number = number
-        self.numbers = self.sprite_sheet.add_animation(0, 0, 10)
-        self.changed = True
-        self.image = self.numbers[self.number]
-        self.rect = self.image.get_rect()
-        self.rect.topleft = self.gs.pos
-        self.left = self.gs.left
-        self.child_num = child_num
-
-        width = self.image.get_width()
-        width *= self.child_num
-
-        if self.left:
-            self.rect.x += width
-        else:
-            self.rect.x -= width
-
-    def set_number(self, number):
-        """set the number to a certain value"""
-        if number is not self.number:
-            self.number = number
-            self.changed = True
-
-    def update(self):
-        """show number"""
-        if self.changed:
-            if self.number < 10:
-                self.image = self.numbers[self.number]
-
-            self.changed = False
-
-        # this frame should be rendered permanently
-        self.dirty = 1
-
+    @staticmethod
+    def set_level_info_via_json(self, json):
+        pass

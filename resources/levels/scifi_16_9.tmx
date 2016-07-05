@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="32" tileheight="32" nextobjectid="26">
+ <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
+  <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
+ </tileset>
+ <layer name="Background" width="40" height="23">
+  <data encoding="base64" compression="zlib">
+   eJzt1ElOAlEUheHyLQAF0ZUoWxG2ImxA2YHYAGNhB3Q2Y3UHtGKCCsoG+JOa3LxUcge8V6RCneSb3JzZTc7iIAi+8YNfLLHCH/6xxsJjR0vGBMEhjpBFDsfI4wSnxm9Hy5UJXaOKezxYtzvHd3nT8mhCLbQxwJN16zu+y5uWNxN6xwemmFm3ieO7vGm5oVPDrfWXOhpoGnedM5yjIDpaOnS66Fl/ecYLXo27zgWKKImOliGdEcbWXz4xx5dx17lEGRXR0eJz2/Zl/3ztnKv987VzrvbP184lbf+iOlri3L+ojpY49y+qoyXdv+Ttn7xr2cX+ybuWXeyfvGtJ92+7/dsAv2LqvQ==
+  </data>
+ </layer>
+ <layer name="Block" width="40" height="23">
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt1D0KACAMg9EcsPc/j4tTUGycRL4H3fqzhErA22pWt7czk+zEvzwDZSX1s+Jzpx7yh52bjJAtpDwzq9+X7EpvAfjXACETDHk=
+  </data>
+ </layer>
+ <layer name="Block_Removable" width="40" height="23">
+  <properties>
+   <property name="removable" type="bool" value="true"/>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt1CEOACAMBMH+mP87LOYCDXcBsZNUUsNCFfCfsYxrj2sn/F7eyU0X6izNwUX9YfSFtNP2VH/0CeR03mdidiZISCFk
+  </data>
+ </layer>
+ <layer name="Coins" width="40" height="23">
+  <properties>
+   <property name="collectible" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt1bsNACAIAFEGZv/aAQiRb6P3aqQ6ogh+poPvu7vwNq+PTjc0h0mRnmgOVdl2bvO0COyK3hh/h3UAb4cF6Q==
+  </data>
+ </layer>
+ <layer name="Leiter" width="40" height="23">
+  <properties>
+   <property name="climbable" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUkALUB1g/IeA1wPoJgdwB1j+cADXTkjcVzYIBaqalPCqaBQPUTEsTqWgWLQC1/EqLdAICA+0+QvpYyDSXVHtwAULhQ+t6ZbCBwe5fWtejlILBXo+Oht/QBwA2yAgY
+  </data>
+ </layer>
+ <layer name="Leiter_Top" width="40" height="23">
+  <properties>
+   <property name="climbable" type="bool" value="true"/>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt0qENAEAIwEAs+y/8Ck/CJyDufF0j4JZc7qH8fMmXdPiEC3wITDzn6wA3
+  </data>
+ </layer>
+ <layer name="Seil" width="40" height="23">
+  <properties>
+   <property name="climbable_horizontal" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt1FEGACAQRdFp/wuq5dUCKhOROIf7PwwvAiLqqCRqrw7kSOaXq4C92V7yP7sIcEcHDtQCSg==
+  </data>
+ </layer>
+ <objectgroup name="Spawn_Locations" visible="0">
+  <object id="20" name="Player_1" x="64" y="220">
+   <properties>
+    <property name="players" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="24" name="Enemies" x="960" y="100">
+   <properties>
+    <property name="enemies" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="25" name="Exit_Gate" type="jungle" x="975" y="220"/>
+ </objectgroup>
+</map>

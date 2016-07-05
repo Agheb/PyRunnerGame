@@ -31,37 +31,65 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
+    START_LEVEL = "./resources/levels/desert.tmx"
+
     def __init__(self):
         """initialize the game"""
         '''important settings'''
         self.game_is_running = True
         # initialize the settings
         self.config = MainConfig()
+        self.fps = self.config.fps
         '''init the audio subsystem prior to anything else'''
         self.music_thread = MusicMixer(self.config.play_music, self.config.vol_music,
-                                       self.config.play_sfx, self.config.vol_sfx, self.config.fps)
+                                       self.config.play_sfx, self.config.vol_sfx, self.fps)
         self.music_thread.background_music = ('time_delay.wav', 1)
         self.music_thread.start()
         '''init the main screen'''
-        self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.config.fps,
+        self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.fps,
                                           self.config.fullscreen, self.config.switch_resolution)
         self.render_thread.fill_screen(BACKGROUND)
         self.bg_surface = pygame.Surface((self.config.screen_x, self.config.screen_y))
         self.render_thread.bg_surface = self.bg_surface
         self.render_thread.start()
+        self.surface = self.render_thread.screen
         '''init the level and main game physics'''
+        self.network_connector = None
+        self.menu = None
         self.level = None
         self.physics = None
-        self.load_level(0)
+        self.controller = None
+        self.load_level(self.START_LEVEL)
         '''init the main menu'''
-        self.network_connector = NetworkConnector()
-        self.menu = MainMenu(self, self.network_connector)
-        self.controller = Controller(self.physics, self.config, self.network_connector)
+        self.level_exit = False
+        self.game_over = False
 
-    def load_level(self, levelnumber):
+    def load_level(self, path):
         """load another level"""
-        self.level = Level(self.bg_surface, levelnumber)
-        self.physics = Physics(self.render_thread, self.level)
+        '''clear all sprites from an old level if present'''
+        if self.level:
+            self.bg_surface.fill(GRAY)
+            self.level_exit = False
+            Player.group.empty()
+            WorldObject.group.empty()
+            WorldObject.removed.empty()
+        # don't remove the GoldScore.scores as they should stay for a level switch
+        '''load the new level'''
+        self.level = Level(self.bg_surface, path, self.fps)
+
+        if not self.network_connector:
+            self.network_connector = NetworkConnector(self, self.level)
+            self.menu = MainMenu(self, self.network_connector)
+        else:
+            self.network_connector.level = self.level
+
+        if self.physics:
+            self.physics.level = self.level
+        else:
+            self.physics = Physics(self.level, self.surface)
+        '''and the controller instance'''
+        self.controller = Controller(self.config, self.network_connector)
+        self.game_over = False
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -69,6 +97,7 @@ class PyRunner(object):
         self.config.write_settings()
         self.render_thread.stop_thread()
         self.music_thread.stop_thread()
+        self.network_connector.quit()
         pygame.quit()
         if shutdown:
             exit()
@@ -109,12 +138,87 @@ class PyRunner(object):
                         self.controller.release_key(event.key)
             # save cpu resources
             if not self.menu.in_menu:
-                self.render_thread.add_rect_to_update(self.physics.update())
+                self.render_thread.add_rect_to_update(self.render_game())
 
-                if self.physics.game_over:
+                if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
-            clock.tick(self.config.fps)
 
+            self.network_connector.update()
+
+            clock.tick(self.fps)
+
+    def render_game(self):
+        """render all game related content"""
+        # update all sprite groups
+        WorldObject.group.update()
+        WorldObject.removed.update()
+        GoldScore.scores.update()
+        Player.group.update()
+
+        '''store all screen changes'''
+        rects = []
+
+        '''check for sprite collisions'''
+        self.physics.check_collisions()
+
+        '''check if all gold got collected and spawn a exit gate if there's none left'''
+        if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
+            try:
+                self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32,
+                                           self.level.pixel_diff, self.fps)
+            except AttributeError:
+                self.game_over = True
+
+                for player in Player.group:
+                    if player.is_human:
+                        player.reached_exit = True
+
+                self.level_exit = True
+
+        '''check if all players are still alive'''
+        if not any(player.is_human for player in Player.group):
+            if not self.level_exit:
+                '''show the game over menu with player gold scores'''
+                self.game_over = True
+                self.game_over_menu()
+            else:
+                '''load the next level, recreate the players and bots etc.'''
+                self.load_level(self.level.next_level)
+
+        # if not self.level_exit and self.game_over:
+        #    self.game_over_menu()
+
+        '''draw the level'''
+        rects.append(WorldObject.group.draw(self.level.surface))
+        self.render_thread.blit(self.level.surface, None, True)
+        '''
+            only dirty Sprites return their rect
+            because we are using dirty rects instead we need to manually find them
+        '''
+        # the rotating coin is a dirty sprite
+        rects.append(GoldScore.scores.draw(self.surface))
+        '''draw the player'''
+        rects.append(Player.group.draw(self.surface))
+        # rects.append(WorldObject.removed.draw(self.level.surface))
+
+        '''clean up the dirty background'''
+        Player.group.clear(self.surface, self.level.surface)
+        WorldObject.group.clear(self.surface, self.level.background)
+        # WorldObject.removed.clear(self.surface, self.level.background)
+        GoldScore.scores.clear(self.surface, self.level.surface)
+
+        return rects
+
+    def game_over_menu(self):
+        """create the game over menu"""
+        found_one = False
+        for score in GoldScore.scores:
+            if not score.child_num:
+                if not found_one:
+                    found_one = True
+                    self.menu.game_over.add_item(MenuItem("Collected Gold"))
+                score_str = "Player %s: %s coins" % (score.gid, score.gold)
+                self.menu.game_over.add_item(MenuItem(score_str))
 
 if __name__ == "__main__":
     pyrunner = PyRunner()

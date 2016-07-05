@@ -4,89 +4,41 @@
 from __future__ import division
 from .level import *
 from .player import *
+from .non_player_characters import Bots
 import pygame
+import logging
+import pdb
 
-GRAVITY = 1
+log = logging.getLogger("Physics")
 
 
 class Physics(object):
     """physics"""
 
-    def __init__(self, render_thread, level):
-        self.gravity = GRAVITY
-        self.render_thread = render_thread
-        self.surface = self.render_thread.screen
+    def __init__(self, level, screen):
         self.level = level
-        self.player_1 = Player(self.level.player_1_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
-        self.player_2 = Player(self.level.player_2_pos, "LRCharacters32_p2.png", 32, self.level.pixel_diff)
-        gold_y = self.level.height - self.level.tile_height + self.level.margin_top
-        margin = self.level.margin_left
-        self.player_1_gold = GoldScore(self.player_1, (0 + margin, gold_y))
-        self.player_2_gold = GoldScore(self.player_2, (self.level.width - self.level.tile_width + margin, gold_y), False)
-        self.level_exit = False
-        self.game_over = False
-        return
+        self.surface = screen
 
-    def update(self):
-        """updates all physics components"""
-        # pass all changed sprites to the render thread
-        rects = []
-
-        WorldObject.group.update()
-        WorldObject.removed.update()
-        WorldObject.scores.update()
-        Player.group.update()
-
-        '''check if all gold got collected and spawn a exit gate if there's none left'''
-        if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
-            self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32, self.level.pixel_diff)
-            self.level_exit = True
-        '''check if all players are still alive'''
-        if not any(player.is_human for player in Player.group):
-            if self.level.next_level is None or not self.level_exit:
-                '''show the game over menu with player gold scores'''
-                self.game_over = True
-            else:
-                '''load the next level, recreate the players and bots etc.'''
-                # next level full path = self.level.next_level
-                # TODO load next level, restore players gold if they made it to the exit
-                # TODO respawn second player if he didn't make it with 0 gold
-                # TODO switch music according to level atmosphere/setting
-                pass
-
-        # check for collisions
-        self.collide_rect()
-
-        '''draw the level'''
-        rects.append(WorldObject.group.draw(self.level.surface))
-        self.render_thread.blit(self.level.surface, None, True)
-        rects.append(WorldObject.scores.draw(self.surface))
-        '''draw the player'''
-        rects.append(Player.group.draw(self.surface))
-        # rects.append(WorldObject.removed.draw(self.level.surface))
-
-        '''clean up the dirty background'''
-        Player.group.clear(self.surface, self.level.surface)
-        WorldObject.group.clear(self.surface, self.level.background)
-        # WorldObject.removed.clear(self.surface, self.level.background)
-        WorldObject.scores.clear(self.surface, self.level.surface)
-        # return the changed items
-        return rects
+        # TODO: set level id on level id, via level.py or WorldObjects
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
-        width, height = self.surface.get_size()
-        width -= player.rect.width
-        height -= player.rect.height
+        '''player'''
+        x, y, width, height = player.rect
+        '''boundaries'''
+        left = self.level.margin_left
+        right = left + self.level.width - width
+        top = self.level.margin_top
+        bottom = top + self.level.height - height
 
-        if player.rect.y > self.level.height:
-            player.rect.y = self.level.height
-        elif player.rect.y < self.level.margin_top:
-            player.rect.y = self.level.margin_top
-        if player.rect.x > self.level.width + self.level.margin_left - player.size:
-            player.rect.x = self.level.width + self.level.margin_left - player.size
-        elif player.rect.x < self.level.margin_left:
-            player.rect.x = self.level.margin_left
+        if y > bottom:
+            player.rect.y = bottom
+        elif y < top:
+            player.rect.y = top
+        if x > right:
+            player.rect.x = right
+        elif x < left:
+            player.rect.x = left
 
     @staticmethod
     def find_collision(x, y, group=WorldObject.group):
@@ -96,65 +48,98 @@ class Physics(object):
                 return sprite
         return None
 
-    def collide_rect(self):
+    def check_collisions(self):
         """calculates collision for players and sprites using the rectangles of the sprites"""
         for player in Player.group:
             # check if the player is still on the screen
             self.check_world_boundaries(player)
+            half_size = player.tile_size // 2 + 5
 
             # assume he's flying in the air
             on_rope = False
             on_ladder = False
             on_ground = False
-            go_down = False
+            can_go_down = False
+
+            '''find collisions with removed blocks'''
+            removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
+            if removed_collision:
+                if not removed_collision.trapped:
+                    '''only trap bots'''
+                    if not player.is_human:
+                        self.hit_inner_bottom(player, removed_collision)
+                        removed_collision.trapped = True
+                        on_ground = True
+
+            '''add sprites left and right of the bot for collision detection'''
+            right_tile = self.find_collision(player.rect.centerx + player.size, player.rect.centery, WorldObject.group)
+            right_bottom = self.find_collision(player.rect.centerx + player.tile_size,
+                                               player.rect.bottom + half_size)
+            '''find sprites to the left'''
+            left_tile = self.find_collision(player.rect.centerx - player.size, player.rect.centery, WorldObject.group)
+            left_bottom = self.find_collision(player.rect.centerx - player.tile_size,
+                                              player.rect.bottom + half_size)
+
+            if not player.is_human:
+                if right_tile and not (right_tile.collectible or right_tile.climbable):
+                    player.right_tile = right_tile
+                else:
+                    player.right_tile = None
+
+                player.right_bottom = right_bottom if right_bottom else None
+
+                if left_tile and not (left_tile.collectible or left_tile.climbable):
+                    player.left_tile = left_tile
+                else:
+                    player.left_tile = None
+
+                player.left_bottom = left_bottom if left_bottom else None
+
+            '''important sprites for the bot'''
+            bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + half_size)
+            can_jump_off = True if not bottom_sprite or bottom_sprite.climbable else False
+
+            '''check if there's a ladder below the feet'''
+            bot_go_down = True if bottom_sprite and bottom_sprite.climbable and not player.is_human else False
+            on_tile = bottom_sprite.tile_id if bottom_sprite else None
 
             '''find collisions according to certain actions outside of the direct sprite collision'''
             if player.direction is "DR":
                 '''remove the bottom sprite to the right'''
-                right_sprite = self.find_collision(player.rect.centerx + player.tile_size, player.rect.bottom + 1)
-
-                if right_sprite and right_sprite.removable:
-                    right_sprite.kill()
+                if right_bottom and right_bottom.removable and not right_tile:
+                    right_bottom.kill()
             elif player.direction is "DL":
                 '''remove the bottom sprite to the left'''
-                left_sprite = self.find_collision(player.rect.centerx - player.tile_size, player.rect.bottom + 1)
-
-                if left_sprite and left_sprite.removable:
-                    left_sprite.kill()
+                if left_bottom and left_bottom.removable and not left_tile:
+                    left_bottom.kill()
             elif player.direction is "UD" and not player.on_ladder:
                 '''go down the top part of a solid ladder'''
-                bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + 1)
-
-                if bottom_sprite and bottom_sprite.climbable and player.change_y > 0:
-                    # bottom_sprite.dirty = 1
-                    player.rect.y += 4
-                    on_ladder = True
-                    go_down = True
+                if bottom_sprite and bottom_sprite.climbable or player.on_rope:
+                    if player.change_y > 0:
+                        # bottom_sprite.dirty = 1
+                        can_go_down = True
+                        player.rect.y += half_size
+                        on_ladder = True
             else:
                 '''make sure there's ground below the player'''
-                bottom_sprite = self.find_collision(player.rect.centerx, player.rect.bottom + 1)
-
                 if not bottom_sprite and not player.on_rope:
                     '''if there's no ground below the feet'''
                     on_ground = False
                     on_ladder = False
                     player.stop_on_ground = True
 
-            '''find collisions with removed blocks'''
-            removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
-            if removed_collision:
-                if not removed_collision.trapped:
-                    removed_collision.trapped = True
-                    player.direction = "Trapped"
-                    player.rect.center = removed_collision.rect.center
-                on_ground = True
-                self.hit_inner_bottom(player, removed_collision)
-
             '''if a removed block contains another player we can walk over it'''
             top_collision = self.find_collision(player.rect.centerx, player.rect.bottom, Player.group)
-            if top_collision:
+            if top_collision and top_collision.direction == "Trapped":
                 on_ground = True
+                '''if a bot hits a player from below the player should die'''
                 self.hit_top(player, top_collision)
+
+            '''kill players touched by bots'''
+            if player.is_human:
+                killer = self.find_collision(player.rect.centerx, player.rect.centery, Player.group)
+                if not killer.is_human:
+                    player.kill()
 
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
@@ -162,22 +147,25 @@ class Physics(object):
                 # sprite.dirty = 1
                 # collect gold and remove the sprite
                 if sprite.collectible and not sprite.killed:
-                    player.gold_count += 1
-                    # clear the item
-                    # self.level.clean_sprite(sprite)
-                    # and remove it
-                    sprite.kill()
+                    if player.is_human:
+                        '''only human players can take gold'''
+                        player.add_gold()
+                        # clear the item
+                        # self.level.clean_sprite(sprite)
+                        # and remove it
+                        sprite.kill()
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:
                             player.rect.center = sprite.rect.center
+                            player.reached_exit = True
                             player.kill()
-                            print("Next Level: ", str(self.level.next_level))
                 elif sprite.restoring:
                     player.kill()
                 elif sprite.rect.collidepoint(player.rect.center):
+                    on_tile = sprite.tile_id
                     """check which sprite contains the player"""
-                    if sprite.climbable_horizontal and player.direction is not "Falling":
+                    if sprite.is_rope and player.direction is not "Falling":
                         """player is hanging on the rope"""
                         on_rope = True
                         player.rect.top = sprite.rect.top
@@ -188,31 +176,42 @@ class Physics(object):
                             player.rect.centerx = sprite.rect.centerx
                         if player.change_y is 0:
                             player.rect.y = sprite.rect.y
-                elif sprite.rect.collidepoint(player.rect.midbottom) and not go_down:
+                elif sprite.rect.collidepoint(player.rect.midbottom) and not can_go_down:
                     """if the player hits a solid sprite at his feet"""
-                    if sprite.solid and not sprite.climbable_horizontal:
+                    if sprite.solid and not sprite.is_rope:
                         on_ground = True
                         self.hit_top(player, sprite)
-                elif not go_down:
+                elif not can_go_down and sprite is not bottom_sprite:
                     self.fix_pos(player, sprite)
 
-                # update the player variables
+            # update the player variables
+            player.on_tile = on_tile
             player.on_rope = on_rope
+            player.can_jump_off = can_jump_off
             player.on_ladder = on_ladder
             player.on_ground = on_ground
+            player.can_go_down = can_go_down if player.is_human else bot_go_down
 
     @staticmethod
     def hit_inner_bottom(player, sprite):
         """player hits the inner ground of a sprite"""
-        if player.rect.bottom > sprite.rect.bottom:
-            player.rect.bottom = sprite.rect.bottom + 1  # for permanent ground collision
+        if player.rect.bottom > sprite.rect.bottom - 1 and not player.is_human:
+            player.direction = "Trapped"
+            player.change_x = 0
             player.change_y = 0
+            player.rect.midbottom = sprite.rect.midbottom
 
     @staticmethod
     def hit_top(player, sprite):
         """player hits the ground"""
         if player.rect.bottom > sprite.rect.top:
-            player.rect.bottom = sprite.rect.top + 1    # for permanent ground collision
+            top = sprite.rect.top
+            # the player collides with sprites left and right in the ground of a trapped player
+            if not isinstance(sprite, Player):
+                # so we can only add one on regular sprites for permanent ground collision
+                # if we don't add one the player will lose ground contact every frame and think he falls
+                top += 1
+            player.rect.bottom = top
             player.change_y = 0
             if player.change_x is 0:
                 '''make sure the player stands in a correct position'''
@@ -222,41 +221,34 @@ class Physics(object):
     def hit_bottom(player, sprite):
         """player hits higher level from below"""
         if player.rect.top < sprite.rect.bottom:
-            player.rect.top = sprite.rect.bottom
+            player.rect.top = sprite.rect.bottom + 1
 
     @staticmethod
     def hit_left(player, sprite):
         """player hits left side of a sprite"""
-        if player.rect.right > sprite.rect.left:
+        if player.rect.right > sprite.rect.left and player.rect.centery >= sprite.rect.y:
             player.rect.right = sprite.rect.left
             player.change_x = 0
 
     @staticmethod
     def hit_right(player, sprite):
         """player hits right side of a sprite"""
-        if player.rect.left < sprite.rect.right:
+        if player.rect.left < sprite.rect.right and player.rect.centery >= sprite.rect.y:
             player.rect.left = sprite.rect.right
             player.change_x = 0
 
     def fix_pos(self, player, sprite):
         """Used to place the player nicely"""
-
         if sprite.solid:
-            if sprite.climbable and not player.on_ladder:
-                if player.change_y > 0:
-                    self.hit_top(player, sprite)
-                elif player.change_y < 0:
-                    self.hit_bottom(player, sprite)
-            elif not sprite.climbable_horizontal:
-                if sprite.rect.y < player.rect.y:
-                    """ignore left/right collisions with sprites that are below the player"""
-                    if player.change_x > 0:
-                        self.hit_left(player, sprite)
-                    elif player.change_x < 0:
-                        self.hit_right(player, sprite)
-
-    def get_level_info_json(self):
-        pass
-
-    def set_level_info_via_json(self, json):
-        pass
+            if sprite.climbable:
+                if not player.on_ladder:
+                    if player.change_y > 0:
+                        self.hit_top(player, sprite)
+                    elif player.change_y < 0:
+                        self.hit_bottom(player, sprite)
+            elif not player.on_rope and not sprite.collectible and not sprite.is_rope:
+                """ignore left/right collisions with sprites that are below the player"""
+                if player.change_x > 0:
+                    self.hit_left(player, sprite)
+                elif player.change_x < 0:
+                    self.hit_right(player, sprite)

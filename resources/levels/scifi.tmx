@@ -3,9 +3,12 @@
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
  </tileset>
+ <tileset firstgid="806" name="scifi_platform_BG1" tilewidth="32" tileheight="32" tilecount="897" columns="39">
+  <image source="../../../Downloads/scifi_platform_BG1.jpg" width="1279" height="742"/>
+ </tileset>
  <layer name="Background" width="32" height="24">
   <data encoding="base64" compression="zlib">
-   eJzt00cOAWEAhuHhADr30LmHzj107qFzD5176CQ6F/BuJpnFLOcXiX/x7N7dl+9sUpQLrrjhjgeeeOGNs8DGYlYUK2ywwwEnXHDDYxbbeOGDHwEEEUIYEUQFNzHEkUASKaSRQRY5wU0eBRRRQhkVVFFDXXDTQBMttNFBFz30MTCw0e6iNkOMMMYEU8wwxwJLAxvtLmqzwhobbLHDHgcccTKw0e6iNiK/Lf8v//9L/9drvvl/veab/9dr5P/l/+X///f/H+Jxnao=
+   eJzt1LkNQkEMhOEnanrQCtAKUAk39MENfcDjLIM/WWkSSxvZSGzwJSOtg7G1dauq2uhgjAmmqJ3yLnroY4Mtdo75AEOMcMUNjWMe0bnmEZ1rHtG55tpJxB60k4g9aCcReyj3/zv3X/7/8v//8/3PMMfCMddO9jjg6JhrJ3c88HTMrftcYoV1ZrfWnJTpO51t3ecJZ1wyu7XmpEzf6WzrPl9445PZrTUnZfpOZ38BKveqkQ==
   </data>
  </layer>
  <layer name="Block" width="32" height="24">
@@ -13,7 +16,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztk10KgDAMg8Pufxrn/7yFF7LinsqY7UBUyAd5KUn3kA4gpE7MsnotGc9OAnQP7dUdRCXA3pXO3XnY/3dp6Yjd/g/dWenve3Z53yLkTWq32HKrXv8YgEk0ixbRKtplvqlZCtcsinrREMrZlPMW37nvAGq+PIE=
+   eJxjYBgFowA/YINiYtUSo4cUM0cB7cIK3Vw2NMzAQHxcYdNLjppRMPCAnDgajduhB9DjDFveJ8UsUswfTSOjYKQDQvmD1hgAMQEB2w==
   </data>
  </layer>
  <layer name="Block_Removable" width="32" height="24">
@@ -22,7 +25,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFowATbELC1DKHWmaOAuoCSuIFl97ROB8+AFceHo3fkQEoif/R9DEKhgoglJ5JzQNDocwEABozLTM=
+   eJxjYBgFowATaKJhaplDqXkjFeTT0GxK4gWX3tE4HxqAmHjBlYdH43f4A2LjHlf85yPh0TQzCgYbICV9D0cMAIjCE60=
   </data>
  </layer>
  <layer name="Coins" width="32" height="24">
@@ -30,7 +33,7 @@
    <property name="collectible" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFgxnkUFE/pWaNAtoCXPFDSbyNxvnwAsTE52icD11AatwRUj+aFkbBYAfEptHRso/6AADVzQXp
+   eJxjYBgFgxl4UlE/pWaNAtoCXPFDSbyNxvnwAsTE52icD11AatwRUj+aFkbBYAfEptHRso/6AAA8uAP/
   </data>
  </layer>
  <layer name="Leiter" width="32" height="24">
@@ -47,7 +50,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFowAVaAyw/lEweAA143I0XQwNMBpPowAERtPBKBgFwxsAAA7JAPE=
+   eJxjYBgFowAVcA6w/lEweAA143I0XQwNMBpPowAERtPBKBgFwxsAAJ/LADc=
   </data>
  </layer>
  <layer name="Seil" width="32" height="24">
@@ -55,7 +58,7 @@
    <property name="climbable_horizontal" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQwFsB2JGIvCOgXLgMAPEhDUuPApGwWi6GJlgtFwYBaNgFAwVAADmPQGU
+   eJxjYBgFQwFsB2JGIvCOgXLgMAPEhDUuPApGwUADbOXFKKA9GC0XRsEoGAVDBQAARHgCSg==
   </data>
  </layer>
  <objectgroup name="Spawn_Locations">

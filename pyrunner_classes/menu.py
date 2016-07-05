@@ -5,6 +5,7 @@
 from __future__ import division
 # universal imports
 import pygame
+import textwrap
 from pygame.locals import *
 from .constants import *
 
@@ -27,24 +28,41 @@ class Menu(object):
         font_size (int): font size for all other items
     """
 
-    def __init__(self, init, name, surface, parent=None, header_size=48, font_size=36):
+    def __init__(self, init, name, surface, parent=None, header_big=72, header_size=48, font_size=36):
+        self.init = init
         self.name = name
         self.surface = surface
         self.width = surface.get_width()
         self.height = surface.get_height()
+        self.header_big = header_big
         self.header_size = header_size
         self.font_size = font_size
         self.parent = parent
         self.menu_items = []
+        self.sub_menus = []
         self.length = 0
         self.background = None
-        if self.parent:
-            # always add a back button for sub-menus
-            self.add_item(MenuItem("Back", init.set_current_menu, vars=self.parent))
-        # add the name as first menu item (saves another font render routine)
-        self.add_item(MenuItem(name))
+        self.error_menu = None
+        '''init the basic menu structure'''
+        self.add_structure()
+
         # initialize the pygame font rendering engine
         pygame.font.init()
+
+    def add_submenu(self, name):
+        """add a sub menu to this menu"""
+        submenu = Menu(self.init, name, self.surface, self, self.header_big, self.header_size, self.font_size)
+        self.sub_menus.append(submenu)
+        self.add_item(MenuItem(name, self.init.set_current_menu, vars=submenu))
+        return submenu
+
+    def add_structure(self):
+        """add heading and back button"""
+        if self.parent:
+            # always add a back button for sub-menus
+            self.add_item(MenuItem("Back", self.init.set_current_menu, vars=self.parent))
+        # add the name as first menu item (saves another font render routine)
+        self.add_item(MenuItem(self.name))
 
     def add_item(self, menu_item):
         """add a new MenuItem to this Menu
@@ -53,7 +71,9 @@ class Menu(object):
             menu_item (MenuItem): the new MenuItem to add to the list of menu-items
         """
         # finish MenuItem initialization / make the MenuItem aware to which Menu it belongs
-        if (self.length is 0 and not self.parent) or (self.length is 1 and self.parent):
+        if self.length is 0 and not self.parent:
+            menu_item.size = self.header_big
+        elif self.length is 1 and self.parent:
             menu_item.size = self.header_size
         else:
             menu_item.size = self.font_size
@@ -78,6 +98,41 @@ class Menu(object):
         """
         return self.menu_items[index]
 
+    def delete_item(self, name):
+        """remove a menu item"""
+        for item in self.menu_items:
+            if item.name == name or item.id == name:
+                self.length -= 1
+                return self.menu_items.remove(item)
+
+    def flush_all_items(self):
+        """remove all items except for the header and back button"""
+        self.menu_items = []
+        self.length = 0
+        self.add_structure()
+
+    def print_error(self, error_string):
+        """show errors in the menu"""
+        '''split longer text into multiple items'''
+        len_per_line = 30
+
+        if len(error_string) > len_per_line * 4:
+            return print(error_string)
+
+        if self.error_menu:
+            error_string = textwrap.wrap(error_string, len_per_line, break_long_words=False)
+
+            self.error_menu.flush_all_items()
+            for text in error_string:
+                self.error_menu.add_item(MenuItem(text, None))
+            '''show the new Menu on the screen'''
+            self.init.set_current_menu(self.error_menu)
+            self.init.show_menu(True)
+        else:
+            self.error_menu = Menu(self.init, "Error", self.surface, self, self.header_big,
+                                   self.header_size, self.font_size)
+            self.print_error(error_string)
+
     def _draw_item(self, menu_item, index, pos, margin_top=None):
         """draw a specific MenuItem
 
@@ -92,7 +147,7 @@ class Menu(object):
         menu_item.rect.centerx = self.surface.get_rect().centerx
         if margin_top:
             menu_item.rect.centery = margin_top
-        menu_item.hovered = True if index is 0 or index is pos else False
+        menu_item.hovered = True if (index is 0 or index is pos) and menu_item.action else False
         # overwrite the old rendering
         pygame.draw.rect(self.surface, BACKGROUND, menu_item.get_rect())
         # draw the new rendering
@@ -100,7 +155,7 @@ class Menu(object):
 
         return menu_item.get_rect()
 
-    def print_menu(self, new_pos=1, old_pos=1, complete=True, start_pos=1):
+    def print_menu(self, new_pos=1, old_pos=1, complete=True, start_pos=1, rects=list()):
         """Print the whole menu or individual menu items
 
         Args:
@@ -108,11 +163,12 @@ class Menu(object):
             old_pos (int): previous selected menu item
             complete (bool): render the whole menu
             start_pos (int): offset at which to start rendering the menu (scrolling)
+            rects (list): rects if the menu already partially changed before calling this function
 
         Returns: list(pygame.Rect) for pygame to update the screen parts
         """
         length = self.length
-        rects = []
+        rects = rects
         max_items_view = MAX_ITEMS_NO_SCROLL - 2  # including 2 for the header
 
         # limit the cursor - is done in pyRunner.py
@@ -124,7 +180,7 @@ class Menu(object):
             # draw the fancy background
             rects.append(self._draw_background(BACKGROUND))
             # don't overwrite the header
-            margin_top = self.header_size
+            margin_top = self.header_size + 4
             # always draw the first item (header)
             rects.append(self._draw_item(self.menu_items[0], 0, new_pos, margin_top))
             margin_top += self.font_size
@@ -168,8 +224,13 @@ class Menu(object):
             # update the changed items
             rects.append(self._draw_item(new_option, new_pos, new_pos))
             rects.append(self._draw_item(old_option, old_pos, new_pos))
+
+        if not self.menu_items[new_pos].action:
+            changed_pos = new_pos + 1 if old_pos <= new_pos else new_pos - 1
+            new_old_pos = old_pos + 1 if old_pos <= new_pos else old_pos - 1
+            return self.print_menu(changed_pos, new_old_pos, False, start_pos, rects)
         '''bug fix the rects positions and pass the changed rects to the render thread / pygame'''
-        return rects
+        return rects, new_pos
 
     def _draw_background(self, bg_color):
         """draws a custom shaped background to the main surface"""
@@ -177,18 +238,19 @@ class Menu(object):
             '''only draw it once'''
             width = self.width
             height = self.height
+            '''corner rect position and size'''
+            size = 24
+            pos_right = width - size
+            pos_bottom = height - size
             bg_surface = pygame.Surface((width, height), SRCALPHA)
-            radius = 20
-            width -= radius
-            height -= radius
 
-            background_rect = pygame.Rect(10, 10, width, height)
+            background_rect = pygame.Rect(0, 0, width, height)
             background_rect.union_ip(pygame.draw.rect(bg_surface, bg_color, background_rect))
-            background_rect.union_ip(pygame.draw.rect(bg_surface, RED, background_rect, 5))
-            background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (radius, radius), radius))
-            background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (width, radius), radius))
-            background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (radius, height), radius))
-            background_rect.union_ip(pygame.draw.circle(bg_surface, RED, (width, height), radius))
+            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, background_rect, 8))
+            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, 0, size, size)))
+            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, 0, size, size)))
+            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (0, pos_bottom, size, size)))
+            background_rect.union_ip(pygame.draw.rect(bg_surface, GRAY, (pos_right, pos_bottom, size, size)))
             '''and save the result for later use'''
             self.background = bg_surface
 
@@ -264,6 +326,7 @@ class MenuItem(object):
     def __init__(self, name, action=None, **kwargs):
         self.menu = None
         self.name = name
+        self.id = None
         self.size = None
         self.action = action
         self._action_values = None

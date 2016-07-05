@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-This module is used to hold the Player class. The Player represents the user-
-controlled sprite on the screen.
+This module is used to hold the Player/Bot class. The Player represents the user-
+controlled sprite on the screen. Bots are controlled by the computer inheriting from Player in the non_player_characters
+through the state_machine, npc_states.
 Passing sprite_sheet.getimage(x position in pixels upper left corner, y position in pixels upper left corner,
 widht of image, height of image) to spritesheet_handling to cut the sprite out of the sprite sheet.
 """
@@ -10,31 +11,36 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 from __future__ import division
 import pygame
 from .spritesheet_handling import SpriteSheet
+from .player_objects import GoldScore
 
 
 class Player(pygame.sprite.DirtySprite):
-    """defines the main  player"""
+    """defines the main  player and bots"""
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
 
-    def __init__(self, pos, sheet, tile_size=32, pixel_diff=0, bot=False, fps=25):
+    def __init__(self, pos, sheet, pid=1, tile_size=32, level=None, fps=25, bot=False):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
+        self.pid = pid
         self.tile_size = tile_size
-        self.pixel_diff = pixel_diff
-        self.size = self.tile_size + pixel_diff
+        self.level = level
+        self.pixel_diff = self.level.pixel_diff if self.level else 0
+        self.size = self.tile_size + self.pixel_diff
         self.fps = fps
+        self.is_human = True if not bot else False
         # positional attributes
         self.x, self.y = pos
+        self.on_tile = None
         self.on_ground = False
         self.on_ladder = False
         self.on_rope = False
+        self.can_jump_off = False
+        self.can_go_down = False
         self._stop_on_ground = False
         # movement related
         self.change_x = 0
         self.change_y = 0
         self.speed = self.size // 10 * 2
-        # score related
-        self.gold_count = 0
         # lists holding the image for movement. Up and down movement uses the same sprites.
         self.spawn_frames = []
         self.walking_frames_l = []
@@ -44,17 +50,35 @@ class Player(pygame.sprite.DirtySprite):
         self.hanging_frames_l = []
         self.hanging_frames_r = []
         self.death_frames = []
-        self.sprite_sheet = SpriteSheet(sheet, self.tile_size, pixel_diff, self.fps)
+        self.sprite_sheet = SpriteSheet(sheet, self.tile_size, self.pixel_diff, self.fps)
+        # animation relevant values
         self.spawning = True
         self.spawn_frame = 0
         self.killed = False
         self.killed_frame = 0
         self.digging_frame = 0
+        # position to aim for
         self.stop_at_x = 0
         self.stop_at_y = 0
         self.is_human = False if bot else True
+        self.reached_exit = False
 
-        if not bot:
+        if self.is_human:
+            # score related
+            self.score_left = True if not self.pid % 2 else False
+            self.score_up = True if self.pid <= 2 else False
+            # check for existing scores
+            existing_score = None
+            for score in GoldScore.scores:
+                if not score.child_num and score.gid is self.pid:
+                    existing_score = score
+                    break
+            if existing_score:
+                self.gold_score = existing_score
+                self.gold_score.change_player(self)
+            else:
+                self.gold_score = GoldScore(self)
+            # animations
             self.digging_frames_l = []
             self.digging_frames_r = []
 
@@ -63,7 +87,7 @@ class Player(pygame.sprite.DirtySprite):
             # Load all the left facing images into a list (x, y, height, width)
             self.walking_frames_l = self.sprite_sheet.add_animation(0, 0, 4)
             # Load all the left facing images into a list and flip them to make them face right
-            self.walking_frames_r = self.sprite_sheet.flip_list(self.walking_frames_l)
+            self.walking_frames_r = self.sprite_sheet.flip_frames(self.walking_frames_l)
             # Load all the up / down facing images into a list
             self.walking_frames_ud = self.sprite_sheet.add_animation(0, 1, 4)
             # Load all falling down frames
@@ -71,11 +95,11 @@ class Player(pygame.sprite.DirtySprite):
             # Load all the digging left images
             self.digging_frames_l = self.sprite_sheet.add_animation(0, 2, 3)
             # Load all the digging left images and flip them do digging right
-            self.digging_frames_r = self.sprite_sheet.flip_list(self.digging_frames_l)
+            self.digging_frames_r = self.sprite_sheet.flip_frames(self.digging_frames_l)
             # Load the left hanging images into a list
             self.hanging_frames_l = self.sprite_sheet.add_animation(4, 1, 4)
             # Load the left hanging images into a list and flip them to face right
-            self.hanging_frames_r = self.sprite_sheet.flip_list(self.hanging_frames_l)
+            self.hanging_frames_r = self.sprite_sheet.flip_frames(self.hanging_frames_l)
             # death animation
             self.death_frames = self.sprite_sheet.add_animation(5, 2, 8)
             # Stop Frame: Sprite when player is not moving on ground
@@ -83,13 +107,13 @@ class Player(pygame.sprite.DirtySprite):
             self.stand_right = self.sprite_sheet.add_animation(3, 2)
             self.trapped = self.sprite_sheet.add_animation(5, 0)
 
-        self.direction = "Stop"  # direction the player is facing at the beginning of the game
-        # Set the image the player starts with
-        self.image = self.stand_right
-        # Set a reference to the image rect.
-        self.rect = self.image.get_rect()
-        # spawn the player at the desired location
-        self.rect.topleft = pos
+            self.direction = "Stop"  # direction the player is facing at the beginning of the game
+            # Set the image the player starts with
+            self.image = self.stand_right
+            # Set a reference to the image rect.
+            self.rect = self.image.get_rect()
+            # spawn the player at the desired location
+            self.rect.topleft = pos
 
     # Player-controlled movement:
     def go_left(self):
@@ -125,15 +149,18 @@ class Player(pygame.sprite.DirtySprite):
     def go_down(self):
         """ Called when the user hits the down arrow. Only Possible when Player is on a ladder"""
         if self.direction is not "Trapped":
-            if self.change_y < self.speed:
+            if self.on_rope:
+                '''only let the player jump down if there's no bottom tile below'''
+                if self.can_jump_off:
+                    self.rect.y += self.speed * 2
+                    self.on_rope = False
+                    self.on_ladder = False
+                    self.on_ground = False
+            elif self.change_y < self.speed:
                 '''don't let the player slow down while falling by pressing the down key again'''
                 self.direction = "UD"
+                self.rect.y += self.speed
                 self.change_y = self.speed
-        if self.on_rope:
-            self.rect.y += self.speed * 2
-            self.on_rope = False
-            self.on_ladder = False
-            self.on_ground = False
 
     @property
     def stop_on_ground(self):
@@ -166,9 +193,16 @@ class Player(pygame.sprite.DirtySprite):
             self.direction = "DL"
             # self.player_collide()
 
+    def process(self):
+        """needed for the bots"""
+        pass
+
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
         self.dirty = 1
+
+        if not self.is_human:
+            self.process()
 
         if self.spawning:
             self.image = self.spawn_frames[self.spawn_frame]
@@ -176,6 +210,7 @@ class Player(pygame.sprite.DirtySprite):
 
             if self.spawn_frame is len(self.spawn_frames):
                 self.spawning = False
+                self.image = self.stand_right
         elif not self.killed:
             # Move left/right
             self.rect.x += self.change_x
@@ -239,7 +274,7 @@ class Player(pygame.sprite.DirtySprite):
     def calc_gravity(self):
         """ Calculate effect of gravity. """
         # See if we are on the ground and not on a ladder or rope
-        if not self.on_ground and not self.on_ladder and not self.on_rope:
+        if not self.on_ground and not self.on_ladder and not self.on_rope and self.direction is not "Trapped":
             if self.speed <= self.change_y <= self.speed * 2.5:
                 self.change_y += .35
             else:
@@ -318,4 +353,25 @@ class Player(pygame.sprite.DirtySprite):
 
     def kill(self):
         """kill animation"""
+        if self.is_human and not self.reached_exit:
+            '''if the player dies in the level remove his gold'''
+            self.gold = 0
+            self.gold_score.kill()
         self.killed = True
+
+    @property
+    def gold(self):
+        """returns the players gold"""
+        return self.gold_score.gold
+
+    @gold.setter
+    def gold(self, amount):
+        """set the gold value of this player to amount"""
+        self.gold_score.gold = amount
+
+    def add_gold(self):
+        """increase the gold count by 1"""
+        self.gold_score.gold += 1
+
+    def get_location(self):
+        return self.rect.center

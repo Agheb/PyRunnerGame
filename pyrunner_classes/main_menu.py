@@ -7,8 +7,7 @@ from __future__ import division
 import pygame
 from pygame.locals import *
 from .menu import Menu, MenuItem
-from .constants import *
-from .network_connector import NetworkConnector
+from .level import Level
 
 
 class MainMenu(object):
@@ -26,6 +25,15 @@ class MainMenu(object):
         self.current_menu = None
         self.main_menu = None
         self.game_over = None
+        self.network = None
+        self.surface = None
+        # regular font sizes
+        self.h1_size = 72
+        self.h2_size = 48
+        self.item_size = 36
+        self.ratio = 1
+
+        '''initialize the menu'''
         self.init_menu()
 
     def key_actions(self, key):
@@ -33,7 +41,7 @@ class MainMenu(object):
         if key == K_ESCAPE:
             if self.current_menu.parent:
                 self.set_current_menu(self.current_menu.parent)
-            else:
+            elif not self.main.game_over and Level.players:
                 self.show_menu(False)
         elif key == K_RETURN:
             self.current_menu.get_item(self.menu_pos).do_action()
@@ -64,9 +72,9 @@ class MainMenu(object):
         Cave: menus need to be saved in the reverse order (bottom to top) so that
               the top menus contain all up to date sub-menu objects
         """
-        s_width = (self.render_thread.screen.get_width() // 4) * 3
-        s_height = (self.render_thread.screen.get_height() // 3) * 2
-        surface = pygame.Surface((s_width, s_height), SRCALPHA)
+        s_width = (self.render_thread.screen.get_width() // 16) * 9
+        s_height = (self.render_thread.screen.get_height() // 9) * 5
+        surface = pygame.Surface((s_width, s_height))
         # regular font sizes
         h1_size = 72
         h2_size = 48
@@ -77,65 +85,69 @@ class MainMenu(object):
         h2_size = int(h2_size * ratio)
         item_size = int(item_size * ratio)
         '''first create the root menu'''
-        # noinspection PyTypeChecker
-        menu_main = Menu(self, self.config.name, surface, None, h1_size, item_size)
-        '''then begin adding items and pass them the font sizes'''
-        # new game menu
-        menu_new_game = Menu(self, "Start Game", surface, menu_main, h2_size, item_size)
-        #   single player
-        menu_ng_singleplayer = Menu(self, "Singleplayer", surface, menu_new_game, h2_size, item_size)
-        menu_ng_singleplayer.add_item(MenuItem("New Game", None))
-        menu_ng_singleplayer.add_item(MenuItem("Resume", None))
-        menu_ng_singleplayer.add_item(MenuItem("Difficulty", None))
-        #   multiplayer
-        menu_ng_multiplayer = Menu(self, "Multiplayer", surface, menu_new_game, h2_size, item_size)
-        menu_ng_multiplayer.add_item(MenuItem("Local Game", None))
-        #TODO: Add nice ip input
-        menu_ng_multiplayer.add_item(MenuItem("Start Server",self.network_connector.start_server_prompt))
-        menu_ng_multiplayer.add_item(MenuItem("Network Game", None))
-        menu_ng_multiplayer.add_item(MenuItem("Game Settings", None))
-        # finish top menu with sub menus
-        menu_new_game.add_item(MenuItem("Singleplayer", self.set_current_menu, vars=menu_ng_singleplayer))
-        menu_new_game.add_item(MenuItem("Multiplayer", self.set_current_menu, vars=menu_ng_multiplayer))
-        # settings menu
-        menu_settings = Menu(self, "Settings", surface, menu_main, h2_size, item_size)
-        menu_s_audio = Menu(self, "Audio Settings", surface, menu_settings, h2_size, item_size)
-        menu_s_audio.add_item(MenuItem("Music", self.switch_audio_volume, vars=(1, 0),
-                                       val=self.music_thread.play_music, bar=self.music_thread.music_volume))
-        menu_s_audio.add_item(MenuItem("Sounds", self.switch_audio_volume, vars=(2, 0),
-                                       val=self.music_thread.play_sfx, bar=self.music_thread.sfx_volume))
-        #   video settings
-        menu_s_video = Menu(self, "Video Settings", surface, menu_settings, h2_size, item_size)
-        menu_s_video.add_item(MenuItem("Fullscreen", self.switch_fullscreen, val=self.config.fullscreen))
-        menu_s_video.add_item(MenuItem("Switch Resolution", self.switch_fs_resolution,
-                                       val=self.config.switch_resolution))
-        # resolutions
-        menu_s_v_resolution = Menu(self, "Video Resolution", surface, menu_s_video, h2_size, item_size)
+        menu_main = Menu(self, self.config.name, surface, None, h1_size, h2_size, item_size)
+
+        '''New Game Menu'''
+        m_game = menu_main.add_submenu("Start Game")
+
+        '''New Game / Single Player'''
+        m_game_sp = m_game.add_submenu("Singleplayer")
+        m_game_sp.add_item(MenuItem("Start Game", None))
+        m_game_sp.add_item(MenuItem("Select Level", None))
+        m_game_sp.add_item(MenuItem("Game Settings", None))
+
+        '''New Game / Multiplayer'''
+        m_game_mp = m_game.add_submenu("Multiplayer")
+        m_game_mp.add_item(MenuItem("Local Game", None))
+        m_game_mp.add_item(MenuItem("Start Server", self.network_connector.start_server_prompt))
+        m_game_mp.add_item(MenuItem("Join Server", self.network_connector.join_server_menu))
+        m_game_mp.add_item(MenuItem("Game Settings", None))
+
+        '''Settings'''
+        m_settings = menu_main.add_submenu("Settings")
+
+        '''Settings / Audio'''
+        m_settings_audio = m_settings.add_submenu("Audio Settings")
+        m_settings_audio.add_item(MenuItem("Music", self.switch_audio_volume, vars=(1, 0),
+                                           val=self.music_thread.play_music, bar=self.music_thread.music_volume))
+        m_settings_audio.add_item(MenuItem("Sounds", self.switch_audio_volume, vars=(2, 0),
+                                           val=self.music_thread.play_sfx, bar=self.music_thread.sfx_volume))
+
+        '''Settings / Video'''
+        m_settings_video = m_settings.add_submenu("Video Settings")
+        m_settings_video.add_item(MenuItem("Fullscreen", self.switch_fullscreen, val=self.config.fullscreen))
+        m_settings_video.add_item(MenuItem("Switch Resolution", self.switch_fs_resolution,
+                                           val=self.config.switch_resolution))
+        res_name = "%sx%s" % (self.config.screen_x, self.config.screen_y)
+        m_settings_video_res = m_settings_video.add_submenu('{:<24s} {:>10s}'.format("Resolution", res_name))
+        m_settings_video.add_item(MenuItem("Show FPS", self.switch_show_fps, val=self.render_thread.show_framerate))
+
+        '''Settings / Video / Resolutions'''
         for res in self.render_thread.display_modes:
             width, height = res
             res_name = str(width) + "x" + str(height)
-            menu_s_v_resolution.add_item(MenuItem(res_name, self.set_resolution, vars=(width, height, True)))
-        res_name = str(self.config.screen_x) + "x" + str(self.config.screen_y)
-        menu_s_video.add_item(MenuItem('{:<24s} {:>10s}'.format("Resolution", res_name), self.set_current_menu,
-                                       vars=menu_s_v_resolution))
-        menu_s_video.add_item(MenuItem("Show FPS", self.switch_show_fps, val=self.render_thread.show_framerate))
-        menu_controls = Menu(self, "Controls", surface, menu_settings, h2_size, item_size)
-        menu_controls.add_item(MenuItem("Player 1", None))
-        menu_controls.add_item(MenuItem("Player 2", None))
-        '''complete the settings menu at the end to store the up to date objects'''
-        menu_settings.add_item(MenuItem("Audio", self.set_current_menu, vars=menu_s_audio))
-        menu_settings.add_item(MenuItem("Controls", self.set_current_menu, vars=menu_controls))
-        menu_settings.add_item(MenuItem("Video", self.set_current_menu, vars=menu_s_video))
-        '''complete main menu at the end to store the up to date objects'''
-        menu_main.add_item(MenuItem("Start Game", self.set_current_menu, vars=menu_new_game))
-        menu_main.add_item(MenuItem("Settings", self.set_current_menu, vars=menu_settings))
+            m_settings_video_res.add_item(MenuItem(res_name, self.set_resolution, vars=(width, height, True)))
+
+        '''Settings / Controls'''
+        m_settings_controls = m_settings.add_submenu("Controls")
+        m_settings_controls.add_item(MenuItem("Player 1", None))
+        m_settings_controls.add_item(MenuItem("Player 2", None))
+
+        '''Exit'''
         menu_main.add_item(MenuItem("Exit", self.main.quit_game))
+
+        '''special purpose menus'''
         '''game over menu'''
-        menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, item_size)
-        menu_game_over.add_item(MenuItem("Collected Gold"))
-        '''save the main menu'''
+        menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, h2_size, item_size)
+        '''network related menu'''
+        menu_network_browser = Menu(self, "Browse Games", surface, m_game_mp, h1_size, h2_size, item_size)
+
+        '''save the menus'''
         self.game_over = menu_game_over
+        self.network = menu_network_browser
         self.main_menu = menu_main
+
+        '''show the main menu'''
         self.set_current_menu(self.main_menu)
 
     def set_current_menu(self, new_menu):
@@ -153,7 +165,7 @@ class MainMenu(object):
         if boolean:
             self.in_menu = True
             self.render_thread.blit(self.main.level.background, None, True)
-            self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
+            rects, self.menu_pos = self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
             self.render_thread.blit(self.current_menu.surface, None, True)
             # render_thread.add_rect_to_update(rects)
         else:
@@ -165,7 +177,7 @@ class MainMenu(object):
 
     def navigate_menu(self, old_pos, complete=False):
         """helps rerendering the changed menu items for partial screen updates"""
-        rects = self.current_menu.print_menu(self.menu_pos, old_pos, complete)
+        rects, self.menu_pos = self.current_menu.print_menu(self.menu_pos, old_pos, complete)
         self.render_thread.blit(self.current_menu.surface, None, True)
         self.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
 
