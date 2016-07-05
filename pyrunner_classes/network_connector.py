@@ -8,10 +8,15 @@ from pprint import pprint
 import pdb
 from .controller import Controller
 from datetime import datetime
-import time
+from time import sleep
 import json
+import socket
+import textwrap
 from Mastermind import *
+from zeroconf import ServiceBrowser, ServiceStateChange, ServiceInfo, Zeroconf
+from zeroconf import NonUniqueNameException, BadTypeInNameException
 from .level_objecs import WorldObject
+from .menu import MenuItem
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parentdir)
@@ -28,105 +33,210 @@ class NetworkConnector(object):
     COMPRESSION = None
 
     def __init__(self, main, level):
-        self.ip = "localhost"
+        self.ip = "0.0.0.0"
+        socket_ip = socket.gethostbyname(socket.gethostname())
+        self.external_ip = socket_ip if not socket_ip.startswith("127.") else socket.gethostbyname(socket.getfqdn())
         self.main = main
         self.level = level
         self.port = START_PORT
+        self.master = False
         self.client = None
         self.server = None
+        self.browser = None
+        self.advertiser = None
+
+    def quit(self):
+        """shutdown all threads"""
+        try:
+            self.server.kill()
+            self.client.kill()
+            self.browser.kill()
+            self.advertiser.shutdown()
+        except AttributeError:
+            pass
+
+    def init_new_server(self):
+        """start a new server thread"""
+        if self.server:
+            self.server.kill()
+
+        self.server = Server(self.ip, self.port, self.level, self.main)
+        self.master = True
+        self.server.start()
 
     def start_server_prompt(self, port=START_PORT):
         """starting a network server from the main menu"""
 
         self.port = port if port else START_PORT
 
-        def init_new_server():
-            """start a new server thread"""
-            if self.server:
-                self.server.kill()
-
-            self.server = Server(self.port, self.level, self.main)
-            self.master = True
-            self.server.start()
-
         def start_server():
             """try to start a server"""
 
             if not self.server:
 
-                init_new_server()
+                self.init_new_server()
 
                 while not self.server.connected:
                     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-                    time.sleep(0.25)
+                    sleep(0.25)
 
                     if not self.server.connected:
                         '''if it fails (e.g. port still in use) switch the port up to 5 times'''
                         if self.port < START_PORT + 5:
                             self.port += 1
-                            init_new_server()
+                            self.init_new_server()
                             print("changing server and port to ", str(self.port))
                         else:
                             '''if it still fails give up'''
                             self.server.kill()
                             break
             else:
-                self.join_server_prompt()
+                self.join_server_prompt((self.ip, self.port))
                 # self.main.load_level(self.main.START_LEVEL)
 
-        print("starting server")
+        '''starting server'''
         start_server()
 
         if self.server and self.server.connected:
-            print("success")
-            print("connecting to own host")
-            self.join_server_prompt()
+            self.join_server_prompt((self.ip, self.port))
+            '''propagate server over zeroconf'''
+            self.advertiser = ZeroConfAdvertiser(self.external_ip, self.port)
 
-    def join_server_prompt(self):
+    def join_server_menu(self):
+        """browse for games and then join"""
+        self.browser = ZeroConfListener(self.main.menu, self, self.ip, self.port)
+        self.browser.start()
+        self.browser.start_browser()
+
+    def join_server_prompt(self, ip_and_port):
         """join a server from the main menu"""
+        ip, self.port = ip_and_port
 
-        def init_new_client():
-            """start a new client thread"""
-            if self.client:
-                self.client.kill()
+        if isinstance(ip, str):
+            '''let the computer resolve the hostname to an ip'''
+            ip = socket.gethostbyname(ip)
+        '''change to localhost ip if we are on the same computer'''
+        self.ip = ip    # "127.0.0.1" if self.ip == self.external_ip else ip
 
-            self.client = Client("localhost", self.port, self.level, self.main)
-            self.master = False
-            self.client.start()
+        '''start a new client thread'''
+        if self.client and self.client.connected:
+            '''disconnect from other servers first'''
+            self.client.disconnect()
 
-        def join_server():
-            """join your own or another server"""
-
-            init_new_client()
-
-            while not self.client.connected:
-                '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-                time.sleep(0.25)
-
-                if not self.client.connected:
-                    '''if it fails (e.g. no server running on this port) switch the port up to 5 times'''
-                    if self.port < START_PORT + 5:
-                        self.port += 1
-                        self.client.port = self.port
-                        print("changing client and port to ", str(self.port))
-                    else:
-                        '''if it still fails give up'''
-                        self.client.kill()
-                        break
-                    # init_new_client()
-
-            # self.ip = input("Please enter an ip to connect to: ")
-
-        join_server()
+        self.client = Client(self.ip, self.port, self.level, self.main)
+        self.master = False
+        self.client.start()
 
         if self.client and self.client.connected:
-            print("connected to localhost")
+            print("connected to %s" % self.ip)
 
     def update(self):
         try:
             self.client.update()
         except (MastermindErrorClient, AttributeError):
             pass
+
+
+class ZeroConfAdvertiser(object):
+    """propagate network server via zeroconf multicast"""
+
+    def __init__(self, ip, port):
+        self.id = 0
+        self.ip = ip
+        self.port = port
+        self.listener = Zeroconf()
+        self.hostname = socket.gethostname()
+        self.gamename = self.hostname + "_pyrunner._tcp.local."
+        self.desc = {'game': 'pyRunner v1.0'}
+        self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
+                                self.port, 0, 0, self.desc, self.hostname)
+        '''propagate the server'''
+        self.server()
+
+    def server(self):
+        """propagate your own server"""
+        try:
+            self.listener.register_service(self.info)
+        except NonUniqueNameException:
+            try:
+                self.id += 1
+                self.gamename = "%s.%s" % (self.id, self.gamename)
+                self.hostname = "%s.%s" % (self.id, self.hostname)
+                self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
+                                        self.port, 0, 0, self.desc, self.hostname)
+                self.listener.register_service(self.info)
+            except BadTypeInNameException:
+                pass
+
+    def shutdown(self):
+        """stop service advertisement"""
+        self.listener.unregister_service(self.info)
+        self.listener.close()
+
+
+class ZeroConfListener(threading.Thread):
+    """browse for network servers via zeroconf multicast"""
+
+    def __init__(self, menu, network_connector, ip, port):
+        threading.Thread.__init__(self, daemon=True)
+        self.menu = menu
+        self.network_connector = network_connector
+        self.id = 0
+        self.ip = ip
+        self.port = port
+        self.listener = Zeroconf()
+        self.browser = None
+        self.hostname = socket.gethostname()
+        self.gamename = self.hostname + "_pyrunner._tcp.local."
+        self.desc = {'game': 'pyRunner v1.0'}
+        self.info = ServiceInfo("_pyrunner._tcp.local.", self.gamename, socket.inet_aton(self.ip),
+                                self.port, 0, 0, self.desc, self.hostname)
+
+    def shutdown(self):
+        """stop service advertisement"""
+        self.listener.close()
+
+    def kill(self):
+        """quit this process"""
+        self.shutdown()
+
+    def run(self):
+        """main function"""
+        if self.browser:
+            if self.network_connector.client and self.network_connector.client.connected:
+                '''shutdown the browser if the user is in a game'''
+                self.kill()
+
+        sleep(1)
+
+    def start_browser(self):
+        """browse for games"""
+        self.browser = ServiceBrowser(self.listener, "_pyrunner._tcp.local.", handlers=[self.on_service_state_change])
+        self.menu.network.flush_all_items()
+        self.menu.set_current_menu(self.menu.network)
+
+    def on_service_state_change(self, zeroconf, service_type, name, state_change):
+        """check for new services"""
+
+        if state_change is ServiceStateChange.Added:
+            info = zeroconf.get_service_info(service_type, name)
+            if info:
+                ip = socket.inet_ntoa(info.address)
+                address = ip if not ip.startswith("127.") else info.server
+                port = info.port
+                print(str(address), ":", str(port))
+                menu_item = MenuItem(info.server, self.network_connector.join_server_prompt, vars=(address, port))
+                '''add the full name as id so it can be removed if the server goes offline'''
+                menu_item.id = name
+                self.menu.network.add_item(menu_item)
+                self.menu.show_menu(True)
+
+        if state_change is ServiceStateChange.Removed:
+            '''remove the item from the menu and refresh it if the user still has it open'''
+            self.menu.network.delete_item(name)
+            if self.menu.in_menu:
+                '''refresh the menu'''
+                self.menu.show_menu(True)
 
 
 class Client(threading.Thread, MastermindClientTCP):
@@ -143,6 +253,20 @@ class Client(threading.Thread, MastermindClientTCP):
         self.player_id = 0
         self.connected = False
 
+    def network_error_menu(self, error_string):
+        """show errors in the menu"""
+
+        if not isinstance(error_string, list):
+            '''split longer text into multiple items'''
+            len_per_line = 30
+            error_string = textwrap.wrap(error_string, len_per_line, break_long_words=False)
+
+        self.main.menu.network.flush_all_items()
+        for text in error_string:
+            self.main.menu.network.add_item(MenuItem(text, None))
+        self.main.menu.set_current_menu(self.main.menu.network)
+        self.main.menu.show_menu(True)
+
     def send_key(self, key):
         clientlog.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update', 'data': str(key)})
@@ -156,6 +280,7 @@ class Client(threading.Thread, MastermindClientTCP):
             self.connected = True
             self.wait_for_init_data()
         except (OSError, MastermindErrorSocket):
+            self.network_error_menu("An error occurred connecting to the server. Please try again later.")
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
@@ -248,7 +373,8 @@ class Client(threading.Thread, MastermindClientTCP):
 class Server(threading.Thread, MastermindServerTCP):
 
     """main network server"""
-    def __init__(self, port, level, main):
+    def __init__(self, ip, port, level, main):
+        self.ip = ip
         self.port = port
         self._level = level
         self.main = main
@@ -333,10 +459,12 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def run(self):
         try:
-            self.connect("localhost", self.port)
+            self.connect(self.ip, self.port)
             self.accepting_allow()
             self.connected = True
         except (OSError, MastermindErrorSocket):
+            print(str(OSError))
+            print(str(MastermindErrorSocket))
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
         srvlog.info("server started and accepting connections on port %s" % self.port)

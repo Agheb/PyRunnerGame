@@ -28,6 +28,7 @@ class Menu(object):
     """
 
     def __init__(self, init, name, surface, parent=None, header_size=48, font_size=36):
+        self.init = init
         self.name = name
         self.surface = surface
         self.width = surface.get_width()
@@ -38,13 +39,19 @@ class Menu(object):
         self.menu_items = []
         self.length = 0
         self.background = None
-        if self.parent:
-            # always add a back button for sub-menus
-            self.add_item(MenuItem("Back", init.set_current_menu, vars=self.parent))
-        # add the name as first menu item (saves another font render routine)
-        self.add_item(MenuItem(name))
+        '''init the basic menu structure'''
+        self.add_structure()
+
         # initialize the pygame font rendering engine
         pygame.font.init()
+
+    def add_structure(self):
+        """add heading and back button"""
+        if self.parent:
+            # always add a back button for sub-menus
+            self.add_item(MenuItem("Back", self.init.set_current_menu, vars=self.parent))
+        # add the name as first menu item (saves another font render routine)
+        self.add_item(MenuItem(self.name))
 
     def add_item(self, menu_item):
         """add a new MenuItem to this Menu
@@ -77,6 +84,19 @@ class Menu(object):
         Returns: MenuItem
         """
         return self.menu_items[index]
+
+    def delete_item(self, name):
+        """remove a menu item"""
+        for item in self.menu_items:
+            if item.name == name or item.id == name:
+                self.length -= 1
+                return self.menu_items.remove(item)
+
+    def flush_all_items(self):
+        """remove all items except for the header and back button"""
+        self.menu_items = []
+        self.length = 0
+        self.add_structure()
 
     def _draw_item(self, menu_item, index, pos, margin_top=None):
         """draw a specific MenuItem
@@ -271,6 +291,7 @@ class MenuItem(object):
     def __init__(self, name, action=None, **kwargs):
         self.menu = None
         self.name = name
+        self.id = None
         self.size = None
         self.action = action
         self._action_values = None
