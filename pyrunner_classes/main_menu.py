@@ -6,6 +6,7 @@ from __future__ import division
 # universal imports
 import pygame
 from pygame.locals import *
+from time import sleep
 from .menu import Menu, MenuItem
 from .level import Level
 
@@ -161,29 +162,22 @@ class MainMenu(object):
         self.menu_pos = 1
         self.show_menu()
 
-    def show_menu(self, boolean=True):
+    def show_menu(self, show=True):
         """print the current menu to the screen"""
-        if boolean:
+        self.in_menu = show
+
+        if self.in_menu:
             self.render_thread.blit(self.main.level.background, None, True)
-            '''if the menu is called from another menu only update the changed areas'''
             rects, self.menu_pos = self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
             self.render_thread.blit(self.current_menu.surface, None, True)
-            if not self.in_menu:
-                '''if the menu is called from the game refresh the whole screen'''
-                rects = self.main.level.background.get_rect()
-                self.in_menu = True
         else:
-            self.in_menu = False
             self.menu_pos = 1
             self.render_thread.blit(self.main.level.surface, None, True)
-            '''update the whole screen when switching back to the game'''
-            rects = self.main.level.surface.get_rect()
 
-        # sleep(0.1)
-        # draw the selected surface to the screen
-        # self.render_thread.refresh_screen(True)
         '''avoid screen flickering'''
-        self.render_thread.add_rect_to_update(rects)
+        sleep(0.1)
+        # draw the selected surface to the screen
+        self.render_thread.refresh_screen(True)
 
     def navigate_menu(self, old_pos, complete=False):
         """helps rerendering the changed menu items for partial screen updates"""
