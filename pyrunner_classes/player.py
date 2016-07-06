@@ -29,6 +29,7 @@ class Player(pygame.sprite.DirtySprite):
         self.size = self.tile_size + self.pixel_diff
         self.fps = fps
         self.is_human = True if not bot else False
+        self.dirty = 2  # always repaint this sprite
         # positional attributes
         self.x, self.y = pos
         self.on_tile = None
@@ -200,8 +201,6 @@ class Player(pygame.sprite.DirtySprite):
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
-        self.dirty = 1
-
         if not self.is_human:
             self.process()
 

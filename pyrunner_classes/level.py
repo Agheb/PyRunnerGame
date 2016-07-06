@@ -5,8 +5,10 @@
 from __future__ import division
 import pytmx
 from pytmx.util_pygame import load_pygame
+
+from .game_physics import Physics
 from .level_objecs import *
-from .player import Player
+from .player import Player, GoldScore
 from .non_player_characters import Bots
 from random import randint
 import pdb
@@ -46,6 +48,7 @@ class Level(object):
         self.background = self.surface.copy()
         self.path = path
         self.fps = fps
+        self.physics = Physics(self)
         self.graph = None
         self.climbable_list = []
         self.walkable_list = []
@@ -133,6 +136,30 @@ class Level(object):
         '''add players'''
         self.spawn_bots()
         self.add_network_players()
+
+    def update(self):
+        """update level related things"""
+        '''update all world sprites'''
+        WorldObject.group.update()
+        WorldObject.removed.update()
+
+        '''draw the level'''
+        rects = WorldObject.group.draw(self.surface)
+
+        '''check for sprite collisions'''
+        self.physics.check_collisions()
+
+        '''check if there are bots to respawn'''
+        self.check_respawn_bot()
+
+        return rects
+
+    def clear(self, screen):
+        """clear the sprite backgrounds, call this after blitting the level surface to the screen"""
+        Player.group.clear(screen, self.surface)
+        GoldScore.scores.clear(screen, self.surface)
+        WorldObject.group.clear(self.surface, self.background)
+        # WorldObject.removed.clear(self.surface, self.background)
 
     def check_respawn_bot(self):
         """respawn a bot after a specified amount of time"""

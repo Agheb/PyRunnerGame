@@ -4,8 +4,6 @@
 # Python 2 related fixes
 from __future__ import division
 # universal imports
-from time import sleep
-
 import pygame
 from pygame.locals import *
 import sys
@@ -69,24 +67,19 @@ class PyRunner(object):
 
     def load_level(self, path):
         """load another level"""
+        self.loading_level = True
         '''clear all sprites from an old level if present'''
         if self.level:
-            self.loading_level = True
             '''clear all old sprites'''
             Player.group.empty()
             WorldObject.group.empty()
             WorldObject.removed.empty()
-            # reinitialize
-            Player.group = pygame.sprite.LayeredDirty(default_layer=1)
-            WorldObject.group = pygame.sprite.LayeredDirty(default_layer=0)
-            WorldObject.removed = pygame.sprite.LayeredDirty(default_layer=0)
-            self.bg_surface.fill(GRAY)
             self.level_exit = False
-        # don't remove the GoldScore.scores as they should stay for a level switch
+            # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.fps)
-        sleep(0.5)
-        self.render_thread.refresh_screen(True)
+        '''bug fix for old background appearing on the screen'''
+        WorldObject.group.clear(self.level.surface, self.level.background)
 
         if not self.network_connector:
             self.network_connector = NetworkConnector(self, self.level)
@@ -94,16 +87,12 @@ class PyRunner(object):
         else:
             self.network_connector.level = self.level
 
-        # if self.physics:
-        #     self.physics.level = self.level
-        # else:
-        #
-        self.physics = Physics(self.level, self.surface)
-
         '''and the controller instance'''
         self.controller = Controller(self.config, self.network_connector)
         self.game_over = False
         self.loading_level = False
+        '''refresh the whole screen'''
+        self.render_thread.refresh_screen(True)
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -163,20 +152,18 @@ class PyRunner(object):
 
     def render_game(self):
         """render all game related content"""
-        # update all sprite groups
-        WorldObject.group.update()
-        WorldObject.removed.update()
+        '''update all sprite groups'''
         GoldScore.scores.update()
         Player.group.update()
-
-        '''store all screen changes'''
-        rects = []
-
-        '''check for sprite collisions'''
-        self.physics.check_collisions()
-
-        '''check if there are bots to respawn'''
-        self.level.check_respawn_bot()
+        '''store all screen changes, draw & update the level'''
+        rects = self.level.update()
+        '''blit the level surface to the main screen'''
+        self.render_thread.blit(self.level.surface, None, True)
+        '''draw the player and scores'''
+        rects.append(Player.group.draw(self.surface))
+        rects.append(GoldScore.scores.draw(self.surface))
+        '''clean up the dirty background'''
+        self.level.clear(self.surface)
 
         '''check if all gold got collected and spawn a exit gate if there's none left'''
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
@@ -201,28 +188,6 @@ class PyRunner(object):
             else:
                 '''load the next level, recreate the players and bots etc.'''
                 self.load_level(self.level.next_level)
-
-        # if not self.level_exit and self.game_over:
-        #    self.game_over_menu()
-
-        '''draw the level'''
-        rects.append(WorldObject.group.draw(self.level.surface))
-        self.render_thread.blit(self.level.surface, None, True)
-        '''
-            only dirty Sprites return their rect
-            because we are using dirty rects instead we need to manually find them
-        '''
-        # the rotating coin is a dirty sprite
-        rects.append(GoldScore.scores.draw(self.surface))
-        '''draw the player'''
-        rects.append(Player.group.draw(self.surface))
-        # rects.append(WorldObject.removed.draw(self.level.surface))
-
-        '''clean up the dirty background'''
-        Player.group.clear(self.surface, self.level.surface)
-        WorldObject.group.clear(self.surface, self.level.background)
-        # WorldObject.removed.clear(self.surface, self.level.background)
-        GoldScore.scores.clear(self.surface, self.level.surface)
 
         return rects
 

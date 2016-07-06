@@ -20,6 +20,8 @@ class GoldScore(pygame.sprite.DirtySprite):
         self.level = self.player.level
         self.pixel_diff = self.player.pixel_diff
         self.fps = self.player.fps
+        # this frame should be rendered permanently
+        self.dirty = 2
         self._gold = 0
         self.tile_size = 32
         self.min_pixels = 6
@@ -97,9 +99,6 @@ class GoldScore(pygame.sprite.DirtySprite):
                     '''the number on the right side are in reverse order'''
                     pos = i if self.left else length - i - 1
                     child.set_number(num[pos])
-
-        # this frame should be rendered permanently
-        self.dirty = 1
 
     @property
     def gold(self):

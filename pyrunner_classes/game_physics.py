@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 # Python 2 related fixes
 from __future__ import division
-from .level import *
+from .level_objecs import WorldObject
 from .player import *
-from .non_player_characters import Bots
 import pygame
 import logging
 import pdb
@@ -15,9 +14,8 @@ log = logging.getLogger("Physics")
 class Physics(object):
     """physics"""
 
-    def __init__(self, level, screen):
+    def __init__(self, level):
         self.level = level
-        self.surface = screen
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
