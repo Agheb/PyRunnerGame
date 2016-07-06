@@ -80,6 +80,8 @@ class PyRunner(object):
         self.level = Level(self.bg_surface, path, self.fps)
         '''bug fix for old background appearing on the screen'''
         WorldObject.group.clear(self.level.surface, self.level.background)
+        '''change the dirty rect for fps display'''
+        self.render_thread.clear_fps_rect()
         '''Linux not refreshing the background bug'''
         self.render_thread.blit(self.level.surface, None, True)
         '''refresh the whole screen'''
