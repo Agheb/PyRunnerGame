@@ -468,11 +468,15 @@ class Level(object):
         log.info("Added Player. Players {}".format(Level.players))
 
     def remove_player(self, pid):
-        for player in Level.players:
-            if player.pid == pid:
-                player.kill()
-                return True
-        return False
+
+        try:
+            for player in Level.players:
+                if player.pid == pid:
+                    player.kill()
+                    Level.players.remove(player)
+            return True
+        except:
+            return False
 
     def get_all_player_pos(self):
         players_pos = {}

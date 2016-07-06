@@ -273,8 +273,6 @@ class Player(pygame.sprite.DirtySprite):
                 if not self.is_human:
                     self.death_actions()
                 pygame.sprite.DirtySprite.kill(self)
-                # self.level.players.remove(self)
-
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """
