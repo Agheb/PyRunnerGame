@@ -437,6 +437,8 @@ class Level(object):
             pos = self.spawn_player_1_pos if not pos else pos
         else:
             pos = self.spawn_player_2_pos if not pos else pos
+        
+        sheet = self.PLAYERS[pid % len(self.PLAYERS)]
 
         new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
 
