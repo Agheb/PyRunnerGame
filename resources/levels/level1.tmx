@@ -3,9 +3,6 @@
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
  </tileset>
- <tileset firstgid="806" name="scifi_platform_BG1" tilewidth="32" tileheight="32" tilecount="0" columns="39">
-  <image source="../../../Downloads/scifi_platform_BG1.jpg" width="1279" height="742"/>
- </tileset>
  <layer name="Background" width="32" height="24">
   <data encoding="base64" compression="zlib">
    eJzt1LkNQkEMhOEnanrQCtAKUAk39MENfcDjLIM/WWkSSxvZSGzwJSOtg7G1dauq2uhgjAmmqJ3yLnroY4Mtdo75AEOMcMUNjWMe0bnmEZ1rHtG55tpJxB60k4g9aCcReyj3/zv3X/7/8v//8/3PMMfCMddO9jjg6JhrJ3c88HTMrftcYoV1ZrfWnJTpO51t3ecJZ1wyu7XmpEzf6WzrPl9445PZrTUnZfpOZ38BKveqkQ==
@@ -72,7 +69,7 @@
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="24" name="Enemies" x="689" y="331">
+  <object id="24" name="Enemies_1" type="1" x="689" y="331">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
