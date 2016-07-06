@@ -80,6 +80,10 @@ class PyRunner(object):
         self.level = Level(self.bg_surface, path, self.fps)
         '''bug fix for old background appearing on the screen'''
         WorldObject.group.clear(self.level.surface, self.level.background)
+        '''Linux not refreshing the background bug'''
+        self.render_thread.blit(self.level.surface, None, True)
+        '''refresh the whole screen'''
+        self.render_thread.refresh_screen(True)
 
         if not self.network_connector:
             self.network_connector = NetworkConnector(self, self.level)
@@ -90,6 +94,7 @@ class PyRunner(object):
         '''and the controller instance'''
         self.controller = Controller(self.config, self.network_connector)
         self.game_over = False
+        self.loading_level = False
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -136,14 +141,10 @@ class PyRunner(object):
                     '''key pressing events'''
                     if not self.menu.in_menu:
                         self.controller.release_key(event.key)
+
             # save cpu resources
-            if not self.menu.in_menu:
-                if self.loading_level and self.level.ready:
-                   self.loading_level = False
-                   '''refresh the whole screen'''
-                   self.render_thread.refresh_screen(True)
-                else:
-                    self.render_thread.add_rect_to_update(self.render_game())
+            if not self.menu.in_menu and not self.loading_level:
+                self.render_thread.add_rect_to_update(self.render_game())
 
                 if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
