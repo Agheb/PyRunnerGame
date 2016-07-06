@@ -61,6 +61,12 @@ class Physics(object):
             on_ground = False
             can_go_down = False
 
+            '''kill players touched by bots'''
+            if player.is_human:
+                killer = self.find_collision(player.rect.centerx, player.rect.centery, Player.group)
+                if not killer.is_human:
+                    player.kill()
+
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
             if removed_collision:
@@ -134,12 +140,6 @@ class Physics(object):
                 on_ground = True
                 '''if a bot hits a player from below the player should die'''
                 self.hit_top(player, top_collision)
-
-            '''kill players touched by bots'''
-            if player.is_human:
-                killer = self.find_collision(player.rect.centerx, player.rect.centery, Player.group)
-                if not killer.is_human:
-                    player.kill()
 
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
