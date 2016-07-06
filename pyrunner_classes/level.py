@@ -124,6 +124,8 @@ class Level(object):
 
         self.bot_1 = Bots(self.spawn_enemies_pos, "LRCharacters32.png", self)
 
+        self.add_network_players()
+
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
         x, y = pos_pixel
@@ -389,10 +391,14 @@ class Level(object):
         self.surface.blit(dirty_rect, sprite.rect)
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
 
-    def add_player(self, pid, pos=None, fps=25):
-        """add a new player"""
-        pid = int(pid)
+    def add_network_players(self):
+        """add players on network level change"""
+        for player in Level.players:
+            player = self.add_current_player(player.pid)
+            Level.players[player.pid] = player
 
+    def add_current_player(self, pid, pos=None):
+        """add players to the level only"""
         if pid % 2 is 0:
             pos = self.spawn_player_1_pos if not pos else pos
             sheet = self.PLAYER1
@@ -401,6 +407,14 @@ class Level(object):
             sheet = self.PLAYER2
 
         new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+
+        return new_player
+
+    def add_player(self, pid, pos=None):
+        """add a new player"""
+        pid = int(pid)
+
+        new_player = self.add_current_player(pid, pos)
         Level.players.append(new_player)
         log.info("Added Player. Players {}".format(Level.players))
 
