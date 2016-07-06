@@ -19,8 +19,6 @@ class Physics(object):
         self.level = level
         self.surface = screen
 
-        # TODO: set level id on level id, via level.py or WorldObjects
-
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
         '''player'''

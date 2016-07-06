@@ -23,6 +23,21 @@ clientlog = netlog.getChild("Client")
 
 START_PORT = 6799
 
+class Message():
+    """just a wrapper object to store messages in one place"""
+
+    #types
+    type_client_dc = "client_disconnected"
+    type_key_update = "key_update"
+    type_init = 'init_succ'
+    type_comp_update = 'update_all'
+    type_keep_alive = 'keep_alive'
+    type_level_changed = 'level_changed'
+
+
+    #data fields
+    field_player_locations = "player_locations"
+    field_level_name = "level_name"
 
 class NetworkConnector(object):
     """the main network class"""
@@ -137,6 +152,7 @@ class NetworkConnector(object):
     def update(self):
         try:
             self.client.update()
+            self.server.update()
         except (MastermindErrorClient, AttributeError):
             pass
 
@@ -159,7 +175,6 @@ class Client(threading.Thread, MastermindClientTCP):
         clientlog.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update', 'data': str(key)})
         self.send(data, compression=NetworkConnector.COMPRESSION)
-
     def run(self):
         clientlog.info("Connecting to ip %s" % str(self.target_ip))
         try:
@@ -173,15 +188,6 @@ class Client(threading.Thread, MastermindClientTCP):
             self.main.menu.network.print_error(error)
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
-
-    def get_last_command(self):
-        # for now, maybe we need non blocking later
-        raw_data = self.receive(True)
-        data = json.loads(raw_data)
-        clientlog.info("Got data from server: {}".format(str(data)))
-        if data['type'] == 'key_update':
-            clientlog.info("got key_update from server")
-            return data['data'], data['player_id']
 
     def wait_for_init_data(self):
         """start the server and wait for players to connect"""
@@ -210,8 +216,12 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def send_init_success(self):
         """let the server know the connection succeeded"""
-        data = json.dumps({'type': 'init_succ', 'player_id': self.player_id})
-        self.send(data, compression=NetworkConnector.COMPRESSION)
+        data = {'player_id': self.player_id}
+        self.send_data_to_server(Message.type_init, data)
+
+    def send_data_to_server(self, message_type, py_data):
+        data = json.dumps({'type': message_type, 'data': py_data})
+        self.send(data,compression = NetworkConnector.COMPRESSION)
 
     def kill(self):
         """stop the server"""
@@ -239,22 +249,45 @@ class Client(threading.Thread, MastermindClientTCP):
         if raw_data:
             data = json.loads(raw_data)
             clientlog.info("Got data from server: {}".format(str(data)))
-            if data['type'] == 'key_update':
+            if data['type'] == Message.type_key_update:
                 clientlog.info("got key_update from server")
-                Controller.do_action(data['data'], data['player_id'])
-            if data['type'] == 'init_succ':
+                Controller.do_action(data['data']['key'], data['data']['player_id'])
+                return
+            
+            if data['type'] == Message.type_init:
                 clientlog.info("got init succ")
                 try:
-                    self.level.players[int(data['player_id'])]
+                    self.level.players[int(data['data']['player_id'])]
                 except IndexError:
                     pid = len(self.level.players)
                     self.level.add_player(pid)
                 self.main.menu.show_menu(False)
+                return
+
+            if data['type'] == Message.type_client_dc:
+                clientlog.info("A client disconnected, removing from game")
+                pid = data['data']['client_id']
+                if not self.level.remove_player(pid):
+                    clientlog.error("Could not remove player form player list!")
+                else:
+                    clientlog.info("removed player form playerlist")
+                return
+
+            if data['type'] == Message.type_comp_update:
+                clientlog.info("Setting player location")
+                self.level.set_players_pos(data['data'][Message.field_player_locations])
+                return
+            
+            if data['type'] == Message.type_level_changed:
+                clientlog.info("Got change level from Server")
+                level_name = data[Message.field_level_name]
+                self.level.load_level(level_name)
+                return
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
         if (datetime.now() - self.timer).seconds > 4:
-            data = json.dumps({'type': 'keep_alive'})
+            data = json.dumps({'type': Message.type_keep_alive})
             self.send(data, compression=NetworkConnector.COMPRESSION)
             self.timer = datetime.now()
         pass
@@ -271,6 +304,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
+        self.sync_time = 1
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -282,22 +316,22 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def interpret_client_data(self, data, con_obj):
         """interprets data send from the client to the server"""
-        if data['type'] == "keep_alive":
+        if data['type'] == Message.type_keep_alive:
             srvlog.debug("Got keep Alive")
             pass
-        if data['type'] == "key_update":
+        if data['type'] == Message.type_key_update:
             srvlog.debug("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(con_obj))
-        if data['type'] == "complete_update":
-            srvlog.debug("Got full update from Client")
-            pass
-        if data['type'] == "init_succ":
-            player_id = data['player_id']
+        if data['type'] == Message.type_comp_update:
+            #should never be called as the server is the master and will only send not receive
+            raise Exception('This message should never be send to the Server')
+        if data['type'] == Message.type_init:
+            player_id = data['data']['player_id']
             srvlog.debug("Init succ for client {}".format(player_id))
             for client in self.known_clients:
                 self.callback_client_send(client,json.dumps(data))
             pass
-
+                
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
         srvlog.info("New Client Connected %s" %str(connection_object.address))
@@ -327,12 +361,29 @@ class Server(threading.Thread, MastermindServerTCP):
         
         return super(MastermindServerTCP, self).callback_connect_client(connection_object)
 
+    def callback_disconnect_client(self, connection_object):
+        """gets called if a client disconnects"""
+        disconnected_client = self.known_clients.index(connection_object)
+        srvlog.info("Client disconnected, sending to other clients %s" % disconnected_client)
+
+        #kill the player of the disconnected client on all other clients
+        self.send_to_all_clients(Message.type_client_dc, {'client_id': disconnected_client})
+        self.known_clients.pop(disconnected_client)
+        return super(MastermindServerTCP,self).callback_disconnect_client(connection_object)
+
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
-        data = json.dumps({'type': 'key_update', 'data': str(key), 'player_id': str(player_id)})
+        self.send_to_all_clients(Message.type_key_update, {'key' : str(key), 'player_id' : str(player_id)})
+
+    def notify_level_changed(self, level):
+        data = {Message.field_level_name: level}
+        self.send_to_all_clients(Message.type_level_changed, data)
+
+    def send_to_all_clients(self, message, data):
+        json_data = json.dumps({'type': message, 'data': data})
         for client in self.known_clients:
-            self.callback_client_send(client, data)
+            self.callback_client_send(client, json_data)
 
     def kill(self):
         try:
@@ -353,6 +404,7 @@ class Server(threading.Thread, MastermindServerTCP):
             self.connect(self.ip, self.port)
             self.accepting_allow()
             self.connected = True
+            self.lastUpdate = datetime.now()
         except (OSError, MastermindErrorSocket):
             print(str(OSError))
             print(str(MastermindErrorSocket))
@@ -364,6 +416,17 @@ class Server(threading.Thread, MastermindServerTCP):
         srvlog.info("Server disconnected from network")
         return super(MastermindServerTCP, self).callback_disconnect()
 
+    def update(self):
+        if (datetime.now() - self.lastUpdate).seconds  > self.sync_time:
+            srvlog.info("sending update data to clients")
+            self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
+            self.lastUpdate = datetime.now()
+
+    def get_collected_data(self):
+        collectedData = {}
+        collectedData[Message.field_player_locations] = self.level.get_all_player_pos()
+        return collectedData
+        
     @property
     def level(self):
         """return the current level"""

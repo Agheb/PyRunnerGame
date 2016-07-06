@@ -37,7 +37,7 @@
    <property name="vertical_wall" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJzt0bkNACAMBEGojv47QuQ8Eg7sYCa8aKVrDSDX6NkF7Jx+WXuFz24N+t70xeiLqd4H/JspLgUR
+   eJzt0aERAEAIA0Gojv47YvDw4hFE3ErUDTEDgFvh1wXoTLvUXWGzVwN9Owp96v+jb0e9D8C/BF4RBMk=
   </data>
  </layer>
  <layer name="Coins" width="40" height="23">
@@ -45,7 +45,7 @@
    <property name="collectible" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFIxl4otHk6qfEjFEwMgCu9EFJuhlNc6OAmoCY9DRc05wnEh4FtAGkhi0h9aSYNxqvo2AwAlqny9E8MnAAAJ5uBWw=
+   eJxjYBgFIxl4DlKzRsEoIAaMprlRQE0wktOTJxIeBYMDjNbPo2C4A1qny9F0P3AAANdsAyQ=
   </data>
  </layer>
  <layer name="Leiter" width="40" height="23">
@@ -74,31 +74,25 @@
   </data>
  </layer>
  <objectgroup name="Spawn_Locations">
-  <object id="20" name="Player_1" x="64" y="220">
+  <object id="20" name="Player_1" x="64" y="219" width="32" height="32">
    <properties>
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="24" name="Enemies_1" type="2" x="960" y="100">
+  <object id="24" name="Enemies_1" type="2" x="960" y="91" width="32" height="32">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="25" name="Exit_Gate" type="scifi_16_9" x="975" y="220"/>
-  <object id="26" name="Player_2" x="512" y="640">
+  <object id="26" name="Player_2" x="512" y="635" width="32" height="32">
    <properties>
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="27" name="Enemies_2" type="1" x="928" y="480">
+  <object id="27" name="Enemies_2" type="1" x="928" y="475" width="32" height="32">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
  </objectgroup>
- <layer name="Background B" width="40" height="23" visible="0">
-  <data encoding="base64" compression="zlib">
-   eJztwTEBAAAAwqD1T20IX6AAAADgNw5gAAE=
-  </data>
- </layer>
 </map>

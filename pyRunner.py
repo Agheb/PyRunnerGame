@@ -4,6 +4,8 @@
 # Python 2 related fixes
 from __future__ import division
 # universal imports
+from time import sleep
+
 import pygame
 from pygame.locals import *
 import sys
@@ -31,7 +33,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/desert.tmx"
+    START_LEVEL = "./resources/levels/level1.tmx"
 
     def __init__(self):
         """initialize the game"""
@@ -62,20 +64,27 @@ class PyRunner(object):
         self.load_level(self.START_LEVEL)
         '''init the main menu'''
         self.level_exit = False
+        self.loading_level = False
         self.game_over = False
 
     def load_level(self, path):
         """load another level"""
         '''clear all sprites from an old level if present'''
         if self.level:
-            self.bg_surface.fill(GRAY)
-            self.level_exit = False
+            self.loading_level = True
+            '''clear all old sprites'''
             Player.group.empty()
             WorldObject.group.empty()
             WorldObject.removed.empty()
+            WorldObject.group = pygame.sprite.LayeredDirty(default_layer=0)
+            WorldObject.removed = pygame.sprite.LayeredDirty(default_layer=0)
+            self.bg_surface.fill(GRAY)
+            self.level_exit = False
         # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.fps)
+        sleep(0.5)
+        self.render_thread.refresh_screen(True)
 
         if not self.network_connector:
             self.network_connector = NetworkConnector(self, self.level)
@@ -90,6 +99,7 @@ class PyRunner(object):
         '''and the controller instance'''
         self.controller = Controller(self.config, self.network_connector)
         self.game_over = False
+        self.loading_level = False
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -137,7 +147,7 @@ class PyRunner(object):
                     if not self.menu.in_menu:
                         self.controller.release_key(event.key)
             # save cpu resources
-            if not self.menu.in_menu:
+            if not self.menu.in_menu and not self.loading_level:
                 self.render_thread.add_rect_to_update(self.render_game())
 
                 if self.game_over:

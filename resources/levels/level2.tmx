@@ -17,15 +17,6 @@
    eJwN00OCIAgCALDaadu2bdu2bdu2bdu2bdu2bXtzyBOSNFBAQDKSk4KUpCI1aUhLOtKTgYxkIjNZyEo2spODnOQiN3nISz7yU4CCFKIwRShKMYpTgpKUojRlKEs5ylOBilSiMlWoSjWqU4Oa1KI2dahLPerTgIY0ojFNaEozmtOClrSiNW1oSzva04GOdKIzXehKN7rTg570ojd96Es/+jOAgQxiMEMYyjCGM4KRjGI0YxjLOMYzgYlMYjJTmMo0pjODmcxiNnOYyzzms4CFLGIxS1jKMpazgpWsYjVrWMs61rOBjWxiM1vYyja2s4Od7GI3e9jLPvZzgIMc4jBHOMoxjnOCk5ziNGc4yznOc4GLXOIyV7jKNa5zg5vc4jZ3uMs97vOAhzziMU94yjOe84KXvOI1b3jLO97zgY984jNf+Mo3vvODn/ziN3/4yz8CAgcE/I//CERgghCUYAQnBCEJRWjCEJZwhCcCEYlEZKIQlWhEJwYxiUVs4hCXeMQnAQlJRGKSkJRkJCcFKUlFatKQlnSkJwMZyURmspCVbGQnBznJRW7ykJd85KcABSlEYYpQlGIUpwQlKUVpylCWcpSnAhWpRGWqUJVqVKcGNalFbepQl3rUpwENaURjmtCUZjSnBS1pRWva0JZ2tKcDHelEZ7rQlW50pwc96UVv+tCXfvRnAAMZxGCGMJRhDGcEIxnFaMYwlnGMZwITmcRkpjCVaUxnBjOZxWzmMJd5zGcBC1nEYpawlGUsZwUrWcVq1rCWdaxnAxvZxGa2sJVtbGcHO9nFbvawl33s5wAHOcRhjnCUYxznBCc5xWnOcJZznOcCF7nEZa5wlWtc5wY3ucVt7nCXe9znAQ95xGOe8JRnPOcFL3nFa97wlne85wMf+cRnvvCVb3znBz/5xW/+8Jd/BATxn/8IRGCCEJRgBCcEIQlFaMIQlnCEJwIRiURkohCVaEQnBjGJRWziEJd4xCcBCUlEYpKQlGQkJwUpSUVq0pCWdKQnAxnJRGaykJVsZCcHOclFbvKQl3zkpwAFKURhilCUYhSnBCUpRWnKUJZylKcCFalEZapQlWpUpwY1qUVt6lCXetSnAQ1pRGOa0JRmNKcFLWlFa9rQlna0pwMd6URnutCVbnSnBz3pRW/60Jd+9GcAAxnEYIYwlGEMZwQjGcVoxjCWcYxnAhOZxGSmMJVpTGcGM5nFbOYwl3nMZwELWcRilrCUZSxnBStZxWrWsJZ1rGcDG9nEZrawlW1sZwc72cVu9rCXfeznAAc5xGGOcJRjHOcEJznFac5wlnOc5wIXucRlrnCVa1znBje5xW3ucJd73OcBD3nEY57wlGc85wUvecVr3vCWd7znAx/5xGe+8JVvfOcHP/nFb/7wl38EBPWf/whEYIIQlGAEJwQhCUVowhCWcIQnAhGJRGSiEJVoRCcGMYlFbOIQl3jEJwEJSURikpCUZCQnBSlJRWrSkJZ0pCcDGclEZrKQlWxkJwc5yUVu8pCXfOSnAAUpRGGKUJRiFKcEJSlFacpQlnKUpwIVqURlqlCValSnBjWpRW3qUJd61KcBDWlEY5rQlGY0pwUtaUVr2tCWdrSnAx3pRGe60JVudKcHPelFb/rQl370ZwADGcRghjCUYQxnBCMZxWjGMJZxjGcCE5nEZKYwlWlMZwYzmcVs5jCXecxnAQtZxGKWsJRlLGcFK1nFatawlnWsZwMb2cRmtrCVbWxnBzvZxW728H/az9H2
   </data>
  </layer>
- <layer name="Copy of Block_Removable" width="40" height="23" visible="0">
-  <properties>
-   <property name="removable" type="bool" value="true"/>
-   <property name="solid" type="bool" value="true"/>
-  </properties>
-  <data encoding="base64" compression="zlib">
-   eJxjYBgFo4B8cJMIPJDuIlYdqW6nxN+UhM1NLDQt3E5J+GFzJykAmx5ixYhVM+q+ke0+QvkDmU1p/iDkPndGVDNh/DtomBi3E2M3uhpi/UdNe0lRR6yekew+9LSCLd1Q033Uqj8ImUeu+8gVI9Y8aqsbiu4jFgxl95GS1kcxJgYAkHHTww==
-  </data>
- </layer>
  <layer name="Vertical Wall" width="40" height="23">
   <properties>
    <property name="solid" type="bool" value="true"/>
@@ -86,21 +77,16 @@
   </data>
  </layer>
  <objectgroup name="Spawn_Locations">
-  <object id="20" name="Player_1" x="224" y="640" width="32" height="32">
+  <object id="20" name="Player_1" x="224" y="635" width="32" height="32">
    <properties>
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="24" name="Enemies" x="1120" y="96" width="32" height="32">
+  <object id="24" name="Enemies_1" type="2" x="1120" y="91" width="32" height="32">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="25" name="Exit_Gate" type="jungle" x="1200" y="64" width="64" height="64"/>
+  <object id="25" name="Exit_Gate" type="desert" x="1200" y="64" width="64" height="64"/>
  </objectgroup>
- <layer name="Background B" width="40" height="23" visible="0">
-  <data encoding="base64" compression="zlib">
-   eJztwTEBAAAAwqD1T20IX6AAAADgNw5gAAE=
-  </data>
- </layer>
 </map>
