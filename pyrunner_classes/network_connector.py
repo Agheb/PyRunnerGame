@@ -322,8 +322,8 @@ class Server(threading.Thread, MastermindServerTCP):
             srvlog.debug("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(con_obj))
         if data['type'] == Message.type_comp_update:
-            srvlog.debug("Got full update from Client")
-            pass
+            #should never be called as the server is the master and will only send not receive
+            raise Exception('This message should never be send to the Server')
         if data['type'] == Message.type_init:
             player_id = data['data']['player_id']
             srvlog.debug("Init succ for client {}".format(player_id))

@@ -414,12 +414,15 @@ class Level(object):
     def get_all_player_pos(self):
         players_pos = {}
         for player in Level.players:
-            players_pos[Level.players.index(player)] = player.on_tile
+            normalized_pos = (player.rect.topleft[0] / player.size , player.rect.topleft[1] / player.size ) 
+            players_pos[Level.players.index(player)] = normalized_pos
         return players_pos
 
     def set_players_pos(self, playerPos):
-        #for player in Level.players:
-        #    player.on_tile = playerPos[str(player.pid)]
+        for player in Level.players:
+            player_id = str(player.pid)
+            
+            player.rect.topleft = (round(playerPos[player_id][0] * player.size), round(playerPos[player_id][1] * player.size)) 
         pass
     
     @staticmethod
