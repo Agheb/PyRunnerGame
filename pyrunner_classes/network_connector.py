@@ -31,6 +31,7 @@ class Message():
     type_key_update = "key_update"
     type_init = 'init_succ'
     type_comp_update = 'update_all'
+    type_keep_alive = 'keep_alive'
 
 
     #data fields
@@ -213,8 +214,12 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def send_init_success(self):
         """let the server know the connection succeeded"""
-        data = json.dumps({'type': 'init_succ', 'player_id': self.player_id})
-        self.send(data, compression=NetworkConnector.COMPRESSION)
+        data = {'player_id': self.player_id}
+        self.send_data_to_server(Message.type_init, data)
+
+    def send_data_to_server(self, message_type, py_data):
+        data = json.dumps({'type': message_type, 'data': py_data})
+        self.send(data,compression = NetworkConnector.COMPRESSION)
 
     def kill(self):
         """stop the server"""
@@ -250,7 +255,7 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_init:
                 clientlog.info("got init succ")
                 try:
-                    self.level.players[int(data['player_id'])]
+                    self.level.players[int(data['data']['player_id'])]
                 except IndexError:
                     pid = len(self.level.players)
                     self.level.add_player(pid)
@@ -274,7 +279,7 @@ class Client(threading.Thread, MastermindClientTCP):
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
         if (datetime.now() - self.timer).seconds > 4:
-            data = json.dumps({'type': 'keep_alive'})
+            data = json.dumps({'type': Message.type_keep_alive})
             self.send(data, compression=NetworkConnector.COMPRESSION)
             self.timer = datetime.now()
         pass
@@ -302,17 +307,17 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def interpret_client_data(self, data, con_obj):
         """interprets data send from the client to the server"""
-        if data['type'] == "keep_alive":
+        if data['type'] == Message.type_keep_alive:
             srvlog.debug("Got keep Alive")
             pass
-        if data['type'] == "key_update":
+        if data['type'] == Message.type_key_update:
             srvlog.debug("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(con_obj))
-        if data['type'] == "complete_update":
+        if data['type'] == Message.type_comp_update:
             srvlog.debug("Got full update from Client")
             pass
-        if data['type'] == "init_succ":
-            player_id = data['player_id']
+        if data['type'] == Message.type_init:
+            player_id = data['data']['player_id']
             srvlog.debug("Init succ for client {}".format(player_id))
             for client in self.known_clients:
                 self.callback_client_send(client,json.dumps(data))
