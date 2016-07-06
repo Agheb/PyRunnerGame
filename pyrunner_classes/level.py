@@ -86,12 +86,6 @@ class Level(object):
 
         self.last_row = self.margin_top + self.height - self.tile_height
 
-        '''draw the complete level'''
-        self.render()
-
-        '''calculate walking paths'''
-        self.generate_paths()
-
         try:
             p1_obj = self.tm.get_object_by_name("Player_1")
             p1_pos = self.calc_object_pos((p1_obj.x, p1_obj.y))
@@ -109,7 +103,7 @@ class Level(object):
             self.bot_count += int(bot1_obj.type) if bot1_obj.type else 1
         except ValueError:
             '''enemies fall from the sky'''
-            bot1_pos = randint(0, self.width), 0
+            bot1_pos = (self.width - 100, 0)  # randint(0, self.width), 0
 
         try:
             bot2_obj = self.tm.get_object_by_name("Enemies_2")
@@ -117,7 +111,7 @@ class Level(object):
             self.bot_count += int(bot2_obj.type) if bot2_obj.type else 1
         except ValueError:
             '''enemies fall from the sky'''
-            bot2_pos = randint(0, self.width), 0
+            bot2_pos = (self.width - 100, 0)  # randint(0, self.width), 0
         try:
             next_level = self.tm.get_object_by_name("Exit_Gate")
             self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
@@ -130,6 +124,13 @@ class Level(object):
         self.spawn_enemies_1_pos = bot1_pos
         self.spawn_enemies_2_pos = bot2_pos
 
+        '''draw the complete level'''
+        self.render()
+
+        '''calculate walking paths'''
+        self.generate_paths()
+
+        '''add players'''
         self.spawn_bots()
         self.add_network_players()
 
