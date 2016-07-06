@@ -271,7 +271,7 @@ class Player(pygame.sprite.DirtySprite):
 
             if self.killed_frame is len(self.death_frames) * 2:
                 pygame.sprite.DirtySprite.kill(self)
-                self.level.players.remove(self)
+                # self.level.players.remove(self)
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """
