@@ -368,7 +368,7 @@ class Player(pygame.sprite.DirtySprite):
     def gold(self):
         """returns the players gold"""
         return self.gold_score.gold
-
+        
     @gold.setter
     def gold(self, amount):
         """set the gold value of this player to amount"""

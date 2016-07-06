@@ -304,6 +304,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
+        self.sync_time = 1
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -322,8 +323,8 @@ class Server(threading.Thread, MastermindServerTCP):
             srvlog.debug("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(con_obj))
         if data['type'] == Message.type_comp_update:
-            srvlog.debug("Got full update from Client")
-            pass
+            #should never be called as the server is the master and will only send not receive
+            raise Exception('This message should never be send to the Server')
         if data['type'] == Message.type_init:
             player_id = data['data']['player_id']
             srvlog.debug("Init succ for client {}".format(player_id))
@@ -416,7 +417,7 @@ class Server(threading.Thread, MastermindServerTCP):
         return super(MastermindServerTCP, self).callback_disconnect()
 
     def update(self):
-        if (datetime.now() - self.lastUpdate).seconds > 4:
+        if (datetime.now() - self.lastUpdate).seconds  > self.sync_time:
             srvlog.info("sending update data to clients")
             self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             self.lastUpdate = datetime.now()
