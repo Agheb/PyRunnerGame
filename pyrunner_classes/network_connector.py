@@ -354,11 +354,12 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def callback_disconnect_client(self, connection_object):
         """gets called if a client disconnects"""
-        srvlog.info("Client disconnected, sending to other clients")
         disconnected_client = self.known_clients.index(connection_object)
+        srvlog.info("Client disconnected, sending to other clients %s" % disconnected_client)
 
         #kill the player of the disconnected client on all other clients
-        self.send_to_all_clients(Message.type_client_dc, {'client_id': disconnected_client}) 
+        self.send_to_all_clients(Message.type_client_dc, {'client_id': disconnected_client})
+        self.known_clients.pop(disconnected_client)
         return super(MastermindServerTCP,self).callback_disconnect_client(connection_object)
 
     def send_key(self, key, player_id):

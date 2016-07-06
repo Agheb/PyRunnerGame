@@ -10,6 +10,7 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 # Python 2 related fixes
 from __future__ import division
 import pygame
+
 from .spritesheet_handling import SpriteSheet
 from .player_objects import GoldScore
 
@@ -270,6 +271,7 @@ class Player(pygame.sprite.DirtySprite):
 
             if self.killed_frame is len(self.death_frames) * 2:
                 pygame.sprite.DirtySprite.kill(self)
+                self.level.players.remove(self)
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """
