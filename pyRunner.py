@@ -33,7 +33,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/level1.tmx"
+    START_LEVEL = "./resources/levels/level2.tmx"
 
     def __init__(self):
         """initialize the game"""
@@ -84,7 +84,6 @@ class PyRunner(object):
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.fps)
         sleep(0.5)
-        self.physics = Physics(self.level, self.surface)
         self.render_thread.refresh_screen(True)
 
         if not self.network_connector:
@@ -93,6 +92,10 @@ class PyRunner(object):
         else:
             self.network_connector.level = self.level
 
+        if self.physics:
+            self.physics.level = self.level
+        else:
+            self.physics = Physics(self.level, self.surface)
         '''and the controller instance'''
         self.controller = Controller(self.config, self.network_connector)
         self.game_over = False
