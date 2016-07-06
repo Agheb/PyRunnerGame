@@ -32,10 +32,12 @@ class Message():
     type_init = 'init_succ'
     type_comp_update = 'update_all'
     type_keep_alive = 'keep_alive'
+    type_level_changed = 'level_changed'
 
 
     #data fields
     field_player_locations = "player_locations"
+    field_level_name = "level_name"
 
 class NetworkConnector(object):
     """the main network class"""
@@ -274,7 +276,13 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_comp_update:
                 clientlog.info("Setting player location")
                 self.level.set_players_pos(data['data'][Message.field_player_locations])
-                
+                return
+            
+            if data['type'] == Message.type_level_changed:
+                clientlog.info("Got change level from Server")
+                level_name = data[Message.field_level_name]
+                self.level.load_level(level_name)
+                return
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
@@ -322,7 +330,7 @@ class Server(threading.Thread, MastermindServerTCP):
             for client in self.known_clients:
                 self.callback_client_send(client,json.dumps(data))
             pass
-
+                
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
         srvlog.info("New Client Connected %s" %str(connection_object.address))
@@ -366,6 +374,10 @@ class Server(threading.Thread, MastermindServerTCP):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
         self.send_to_all_clients(Message.type_key_update, {'key' : str(key), 'player_id' : str(player_id)})
+
+    def notify_level_changed(self, level):
+        data = {Message.field_level_name: level}
+        self.send_to_all_clients(Message.type_level_changed, data)
 
     def send_to_all_clients(self, message, data):
         json_data = json.dumps({'type': message, 'data': data})

@@ -418,8 +418,9 @@ class Level(object):
         return players_pos
 
     def set_players_pos(self, playerPos):
-        for player in Level.players:
-            player.on_tile = playerPos[str(player.pid)]
+        #for player in Level.players:
+        #    player.on_tile = playerPos[str(player.pid)]
+        pass
     
     @staticmethod
     def get_level_info_json():
