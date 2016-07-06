@@ -304,6 +304,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
+        self.sync_time = 1
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -416,7 +417,7 @@ class Server(threading.Thread, MastermindServerTCP):
         return super(MastermindServerTCP, self).callback_disconnect()
 
     def update(self):
-        if (datetime.now() - self.lastUpdate).seconds > 4:
+        if (datetime.now() - self.lastUpdate).seconds  > self.sync_time:
             srvlog.info("sending update data to clients")
             self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             self.lastUpdate = datetime.now()
