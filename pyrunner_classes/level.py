@@ -9,6 +9,7 @@ from .level_objecs import *
 from .player import Player
 from .non_player_characters import Bots
 from random import randint
+import pdb
 from operator import itemgetter
 from .dijkstra import Graph
 import logging
@@ -130,6 +131,7 @@ class Level(object):
         self.spawn_enemies_2_pos = bot2_pos
 
         self.spawn_bots()
+        self.add_network_players()
 
     def check_respawn_bot(self):
         """respawn a bot after a specified amount of time"""
@@ -423,21 +425,49 @@ class Level(object):
         self.surface.blit(dirty_rect, sprite.rect)
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
 
-    def add_player(self, pid, pos=None, fps=25):
-        """add a new player"""
-        pid = int(pid)
+    def add_network_players(self):
+        """add players on network level change"""
+        for player in Level.players:
+            player = self.add_current_player(player.pid)
+            Level.players[player.pid] = player
 
-        sheet = self.PLAYERS[pid % len(self.PLAYERS)]
-
+    def add_current_player(self, pid, pos=None):
+        """add players to the level only"""
         if pid % 2 is 0:
             pos = self.spawn_player_1_pos if not pos else pos
         else:
             pos = self.spawn_player_2_pos if not pos else pos
 
         new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+
+        return new_player
+
+    def add_player(self, pid, pos=None):
+        """add a new player"""
+        pid = int(pid)
+
+        new_player = self.add_current_player(pid, pos)
         Level.players.append(new_player)
         log.info("Added Player. Players {}".format(Level.players))
 
+    def remove_player(self, pid):
+        for player in Level.players:
+            if player.pid == pid:
+                player.kill()
+                return True
+        return False
+
+    def get_all_player_pos(self):
+        players_pos = {}
+        for player in Level.players:
+            players_pos[Level.players.index(player)] = player.on_tile
+        return players_pos
+
+    def set_players_pos(self, playerPos):
+        #for player in Level.players:
+        #    player.on_tile = playerPos[str(player.pid)]
+        pass
+    
     @staticmethod
     def get_level_info_json():
         # TODO: finish me
