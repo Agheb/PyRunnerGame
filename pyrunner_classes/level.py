@@ -44,6 +44,7 @@ class Level(object):
     players = []
 
     def __init__(self, surface, path, fps=25):
+        self.ready = False
         self.surface = surface
         self.background = self.surface.copy()
         self.path = path
@@ -136,6 +137,9 @@ class Level(object):
         '''add players'''
         self.spawn_bots()
         self.add_network_players()
+
+        '''let others know it's done rendering'''
+        self.ready = True
 
     def update(self):
         """update level related things"""
