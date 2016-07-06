@@ -187,63 +187,77 @@ class Level(object):
             except KeyError:
                 return False
 
+        def resize_tile_to_fit(tile, target_size):
+            """resize tile to fit the screen size and position"""
+            pos_x, pos_y, image = tile
+            pos_id = pos_x, pos_y
+
+            pos_x = self.margin_left + (width * pos_x)
+            pos_y = self.margin_top + (height * pos_y)
+
+            image = pygame.transform.scale(image, target_size)
+
+            '''chop off the bottom half in the last row to fit 720p'''
+            if pos_y == self.last_row:
+                image = self.squeeze_half_image(image)
+
+            tile = pos_x, pos_y, image
+
+            return tile, pos_id
+
+        width, height = self.tile_width, self.tile_height
+        size = width, height
+
         for layer in self.tm.visible_layers:
-            if isinstance(layer, pytmx.TiledTileLayer):
-                '''first check all layer properties'''
-                ladder = check_property(layer, 'climbable')
-                rope = check_property(layer, 'rope')
-                gold = check_property(layer, 'collectible')
-                removable = check_property(layer, 'removable')
-                solid = check_property(layer, 'solid')
-                wall = check_property(layer, 'vertical_wall')
-                width, height = self.tile_width, self.tile_height
-                fps = self.fps
+            if layer.name == "Background":
+                if isinstance(layer, pytmx.TiledTileLayer):
+                    for a in layer.tiles():
+                        a, tile_id = resize_tile_to_fit(a, size)
 
-                '''create the sprites'''
-                for a in layer.tiles():
-                    pos_x, pos_y, image = a
-                    size = width, height
-                    tile_id = pos_x, pos_y
-
-                    pos_x = self.margin_left + (width * pos_x)
-                    pos_y = self.margin_top + (height * pos_y)
-
-                    image = pygame.transform.scale(image, size)
-
-                    '''chop off the bottom half in the last row to fit 720p'''
-                    if pos_y == self.last_row:
-                        image = self.squeeze_half_image(image)
-
-                    a = pos_x, pos_y, image
-
-                    if ladder:
-                        Ladder(a, size, tile_id, fps, solid)
-                    elif rope:
-                        Rope(a, size, tile_id, fps)
-                    elif gold:
-                        Collectible(a, size, tile_id, fps)
-                    elif removable:
-                        WorldObject(a, size, tile_id, fps, solid, removable)
-                    elif solid or wall:
-                        WorldObject(a, size, tile_id, fps, solid)
-
-                    if layer.name == "Background":
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
-                    elif not gold and not wall:
-                        '''
-                            add all tiles that a player can walk on to this list
-                            to generate paths for the shortest path algorithm
-                        '''
-                        x, y = tile_id
-                        # ignore the last row because it gets cut by 16 pixels
-                        if y is not self.rows - 1:
-                            '''only add walkable tiles'''
-                            if ladder:
-                                '''add ladders separately'''
-                                self.climbable_list.append(tile_id)
-                            self.walkable_list.append(tile_id)
+
+        for layer in self.tm.visible_layers:
+            if isinstance(layer, pytmx.TiledTileLayer):
+                if layer.name != "Background":
+                    '''first check all layer properties'''
+                    ladder = check_property(layer, 'climbable')
+                    rope = check_property(layer, 'rope')
+                    gold = check_property(layer, 'collectible')
+                    removable = check_property(layer, 'removable')
+                    solid = check_property(layer, 'solid')
+                    wall = check_property(layer, 'vertical_wall')
+                    width, height = self.tile_width, self.tile_height
+                    fps = self.fps
+                    '''create the sprites'''
+                    for a in layer.tiles():
+                        a, tile_id = resize_tile_to_fit(a, size)
+
+                        if ladder:
+                            Ladder(a, size, tile_id, fps, solid)
+                        elif rope:
+                            Rope(a, size, tile_id, fps)
+                        elif gold:
+                            Collectible(a, size, tile_id, fps)
+                        elif removable:
+                            WorldObject(a, size, tile_id, fps, solid, removable)
+                        elif solid or wall:
+                            WorldObject(a, size, tile_id, fps, solid)
+
+                        if not gold and not wall:
+                            '''
+                                add all tiles that a player can walk on to this list
+                                to generate paths for the shortest path algorithm
+                            '''
+                            x, y = tile_id
+                            # ignore the last row because it gets cut by 16 pixels
+                            if y is not self.rows - 1:
+                                '''only add walkable tiles'''
+                                if ladder:
+                                    '''add ladders separately'''
+                                    self.climbable_list.append(tile_id)
+                                self.walkable_list.append(tile_id)
 
     def generate_paths(self):
         """create paths by id for bots"""

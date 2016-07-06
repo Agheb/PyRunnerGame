@@ -74,31 +74,25 @@
   </data>
  </layer>
  <objectgroup name="Spawn_Locations">
-  <object id="20" name="Player_1" x="64" y="220">
+  <object id="20" name="Player_1" x="64" y="219" width="32" height="32">
    <properties>
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="24" name="Enemies_1" type="2" x="960" y="100">
+  <object id="24" name="Enemies_1" type="2" x="960" y="91" width="32" height="32">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="25" name="Exit_Gate" type="scifi_16_9" x="975" y="220"/>
-  <object id="26" name="Player_2" x="512" y="640">
+  <object id="26" name="Player_2" x="512" y="635" width="32" height="32">
    <properties>
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="27" name="Enemies_2" type="1" x="928" y="480">
+  <object id="27" name="Enemies_2" type="1" x="928" y="475" width="32" height="32">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
  </objectgroup>
- <layer name="Background B" width="40" height="23" visible="0">
-  <data encoding="base64" compression="zlib">
-   eJztwTEBAAAAwqD1T20IX6AAAADgNw5gAAE=
-  </data>
- </layer>
 </map>
