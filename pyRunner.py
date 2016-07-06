@@ -76,6 +76,8 @@ class PyRunner(object):
             Player.group.empty()
             WorldObject.group.empty()
             WorldObject.removed.empty()
+            # reinitialize
+            Player.group = pygame.sprite.LayeredDirty(default_layer=1)
             WorldObject.group = pygame.sprite.LayeredDirty(default_layer=0)
             WorldObject.removed = pygame.sprite.LayeredDirty(default_layer=0)
             self.bg_surface.fill(GRAY)
@@ -92,10 +94,12 @@ class PyRunner(object):
         else:
             self.network_connector.level = self.level
 
-        if self.physics:
-            self.physics.level = self.level
-        else:
-            self.physics = Physics(self.level, self.surface)
+        # if self.physics:
+        #     self.physics.level = self.level
+        # else:
+        #
+        self.physics = Physics(self.level, self.surface)
+
         '''and the controller instance'''
         self.controller = Controller(self.config, self.network_connector)
         self.game_over = False
