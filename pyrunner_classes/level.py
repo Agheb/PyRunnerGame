@@ -407,7 +407,7 @@ class Level(object):
     def remove_player(self, pid):
         for player in Level.players:
             if player.pid == pid:
-                Level.players.remove(player)
+                player.kill()
                 return True
         return False
 
