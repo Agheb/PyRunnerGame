@@ -50,7 +50,7 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFowA74BwgvUMBDHf/DTfgPdAOGAUDBmidV0fLglFAKRhNQ0MfaAwTO0bBKKAWAACpdwDS
+   eJxjYBgFowA74BwgvUMBDHf/DTfgPdAOGAUDBmidV0fLglFAKRhNQ0Mf0CMOR9PJKBhKAAD2rACU
   </data>
  </layer>
  <layer name="Seil" width="40" height="23">
