@@ -57,7 +57,7 @@ class NetworkConnector(object):
         self.server = None
         self.browser = None
         self.advertiser = None
-        
+
         '''get IP'''
         if socket_ip.startswith("127."):
             self.external_ip = network_ip if not network_ip.startswith("127.") else socket.gethostbyname(socket.getfqdn())
@@ -65,10 +65,14 @@ class NetworkConnector(object):
     @staticmethod
     def get_network_ip():
         """get the local ip"""
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.connect(('<broadcast>', 0))
-        return s.getsockname()[0]
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            s.connect(('<broadcast>', 0))
+            return s.getsockname()[0]
+
+        except OSError:
+            return "127.0.0.1"
 
     def quit(self):
         """shutdown all threads"""
