@@ -90,16 +90,14 @@ class MainMenu(object):
         menu_main = Menu(self, self.config.name, surface, None, font_size)
 
         '''New Game Menu'''
-        m_game = menu_main.add_submenu("Start Game")
+        menu_main.add_item(MenuItem("Start Game", self.network_connector.start_local_game))
 
         '''New Game / Single Player'''
-        m_game_sp = m_game.add_submenu("Singleplayer")
-        m_game_sp.add_item(MenuItem("Start Game", self.network_connector.start_local_game))
-        m_game_sp.add_item(MenuItem("Select Level", None))
-        m_game_sp.add_item(MenuItem("Game Settings", None))
+        # m_game.add_item(MenuItem("Select Level", None))
+        # m_game.add_item(MenuItem("Game Settings", None))
 
         '''New Game / Multiplayer'''
-        m_game_mp = m_game.add_submenu("Multiplayer")
+        m_game_mp = menu_main.add_submenu("Multiplayer")
         m_game_mp.add_item(MenuItem("Local Game", None))
         m_game_mp.add_item(MenuItem("Start Server", self.network_connector.start_server_prompt))
         m_game_mp.add_item(MenuItem("Join Server", self.network_connector.join_server_menu))
@@ -140,7 +138,7 @@ class MainMenu(object):
 
         '''special purpose (hidden) menus'''
         '''game over menu'''
-        menu_game_over = m_game.add_submenu("Game Over", True)
+        menu_game_over = menu_main.add_submenu("Game Over", True)
         '''network related menu'''
         menu_network_browser = m_game_mp.add_submenu("Join Server", True)
 
