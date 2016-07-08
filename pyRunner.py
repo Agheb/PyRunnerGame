@@ -53,6 +53,8 @@ class PyRunner(object):
         self.render_thread.bg_surface = self.bg_surface
         self.render_thread.start()
         self.surface = self.render_thread.screen
+        '''gamepad / joystick support'''
+        pygame.joystick.init()
         '''init the level and main game physics'''
         self.network_connector = None
         self.menu = None

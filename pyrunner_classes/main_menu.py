@@ -143,6 +143,32 @@ class MainMenu(object):
         '''Settings / Controls'''
         m_settings_controls = m_settings.add_submenu("Controls")
         m_settings_cp1 = m_settings_controls.add_submenu("Player 1")
+        m_settings_cp2 = m_settings_controls.add_submenu("Player 2")
+
+        '''joystick/gamepad setup'''
+        if pygame.joystick.get_count() > 0:
+            joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+
+            menu_config_joystick_p1 = m_settings_cp1.add_submenu("Configure Joystick")
+            menu_config_joystick_p2 = m_settings_cp2.add_submenu("Configure Joystick")
+            for jid, js in enumerate(joysticks):
+                js.init()
+                js_name = js.get_name() + " #" + str(jid + 1)
+                js_axes = js.get_numaxes()
+                js_balls = js.get_numballs()
+                js_buttons = js.get_numbuttons()
+                js_hats = js.get_numhats()
+                js_info = "Axes: %(js_axes)s | Balls: %(js_balls)s |" % locals()
+                js_info += "Buttons: %(js_buttons)s | Hats: %(js_hats)s" % locals()
+                '''Add the joystick to the controls section of player 1'''
+                menu_js_1 = menu_config_joystick_p1.add_submenu(js_name)
+                menu_js_1.add_item(MenuItem(js_info))
+                menu_js_1.add_item(MenuItem("Use this Device instead of the Keyboard"))
+                '''and to the controls section of player 2'''
+                menu_js_2 = menu_config_joystick_p2.add_submenu(js_name)
+                menu_js_2.add_item(MenuItem(js_info))
+
+        '''Settings / Controls / Player 1'''
         m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Left: ", pygame.key.name(self.config.p1_left)),
                                          self.configure_key_controls, vars=(1, "Left")))
         m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Right: ", pygame.key.name(self.config.p1_right)),
@@ -160,7 +186,7 @@ class MainMenu(object):
         m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Taunt: ", pygame.key.name(self.config.p1_taunt)),
                                          self.configure_key_controls, vars=(1, "Taunt")))
 
-        m_settings_cp2 = m_settings_controls.add_submenu("Player 2")
+        '''Settings / Controls / Player 2'''
         m_settings_cp2.add_item(MenuItem('{:<24s} {:>10s}'.format("Left: ", pygame.key.name(self.config.p2_left)),
                                          self.configure_key_controls, vars=(2, "Left")))
 
@@ -186,6 +212,7 @@ class MainMenu(object):
         '''control settings'''
         menu_config_p1 = m_settings_cp1.add_submenu("Configure Key", True)
         menu_config_p2 = m_settings_cp2.add_submenu("Configure Key", True)
+
         '''game over menu'''
         menu_game_over = menu_main.add_submenu("Game Over", True)
         '''network related menu'''

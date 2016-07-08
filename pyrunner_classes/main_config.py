@@ -69,6 +69,17 @@ class MainConfig(object):
         self.p1_action_r = None
         self.p1_interact = None
         self.p1_taunt = None
+        '''joystick / gamepad'''
+        self.p1_use_joystick = None
+        self.p1_js_name = None
+        self.p1_js_left_right = None
+        self.p1_js_up_down = None
+        self.p1_js_action_l = None
+        self.p1_js_action_r = None
+        self.p1_js_interact = None
+        self.p1_js_taunt = None
+        self.p1_js_accept = None    # ~= Return
+        self.p1_js_cancel = None    # ~= ESC
         '''controls for player 2'''
         self.p2_left = None
         self.p2_right = None
