@@ -58,10 +58,8 @@ class Physics(object):
             can_go_down = False
 
             '''kill players touched by bots'''
-            if player.is_human:
-                killer = self.find_collision(player.rect.centerx, player.rect.centery, Player.group)
-                if not killer.is_human:
-                    player.kill()
+            if not player.is_human and not player.direction == "Trapped":
+                pygame.sprite.spritecollide(player, Player.humans, True)
 
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)

@@ -168,23 +168,19 @@ class State(object):
             return path if player else False
 
     def check_player_in_range(self):
+        """find the closest player in a circle ratio"""
         collide_rect = pygame.sprite.collide_rect_ratio(self.detection_range)
 
-        players_in_range = \
-            pygame.sprite.spritecollide(self.bot, Player.group, False, collided=collide_rect)
-
-        for x in players_in_range:
-            if not x.is_human:
-                players_in_range.remove(x)
+        players_in_range = pygame.sprite.spritecollide(self.bot, Player.humans, False, collided=collide_rect)
 
         if len(players_in_range) > 1:
-            self.check_closest_player()
+            self.check_closest_player(players_in_range)
         elif len(players_in_range) == 1:
             return players_in_range[0]
         else:
             return None
 
-    def check_closest_player(self):
+    def check_closest_player(self, players=None):
         """Bot checks if a player is in a specified radius. If its is returns the position of the closest player."""
 
         def distance(p0, p1):
@@ -198,8 +194,11 @@ class State(object):
         new_distance = radius
         last_tile = None
 
-        for p in Player.group:
-            if p.is_human and p.on_tile:
+        if not players:
+            players = Player.humans
+
+        for p in players:
+            if p.on_tile:
                 distance = distance(p.on_tile, bot_pos)
                 last_tile = p.on_tile
 

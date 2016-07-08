@@ -19,6 +19,8 @@ class Player(pygame.sprite.DirtySprite):
     """defines the main  player and bots"""
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
+    humans = pygame.sprite.LayeredDirty(default_layer=1)
+    bots = pygame.sprite.LayeredDirty(default_layer=1)
 
     def __init__(self, pos, sheet, pid=1, tile_size=32, level=None, fps=25, bot=False):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
@@ -66,6 +68,7 @@ class Player(pygame.sprite.DirtySprite):
         self.reached_exit = False
 
         if self.is_human:
+            Player.humans.add(self)
             # score related
             self.score_left = True if not self.pid % 2 else False
             self.score_up = True if self.pid <= 2 else False

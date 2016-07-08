@@ -25,6 +25,8 @@ class Bots(Player):
         self.spawning = True
         self.spawn_frame = 0
 
+        Player.bots.add(self)
+
         # STATEMACHINE RELATED
         # Create instances of each state
         exploring_state = Exploring(self)
