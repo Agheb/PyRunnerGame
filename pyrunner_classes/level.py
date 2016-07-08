@@ -237,18 +237,15 @@ class Level(object):
         size = width, height
 
         for layer in self.tm.visible_layers:
-            if layer.name == "Background":
-                if isinstance(layer, pytmx.TiledTileLayer):
+            if isinstance(layer, pytmx.TiledTileLayer):
+                if layer.name == "Background":
                     for a in layer.tiles():
                         a, tile_id = resize_tile_to_fit(a, size)
 
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
-
-        for layer in self.tm.visible_layers:
-            if isinstance(layer, pytmx.TiledTileLayer):
-                if layer.name != "Background":
+                else:
                     '''first check all layer properties'''
                     ladder = check_property(layer, 'climbable')
                     rope = check_property(layer, 'rope')
