@@ -151,6 +151,8 @@ class PyRunner(object):
                         or event.type == JOYBUTTONDOWN or event.type == JOYBUTTONUP or event.type == JOYHATMOTION:
                     if self.menu.in_menu:
                         self.menu.joystick_actions(event)
+                    else:
+                        self.controller.interpret_joystick(event)
 
             # save cpu resources
             if not self.menu.in_menu and not self.loading_level:

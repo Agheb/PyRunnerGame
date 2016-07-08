@@ -83,19 +83,12 @@ class MainMenu(object):
     def joystick_actions(self, event):
         """use a gamepad or joystick to navigate the menu"""
         if self.configure_js:
-            print(str(event))
             self.set_joystick_controls(event)
-
-        if event.type == JOYAXISMOTION:
-            pass
-        elif event.type == JOYBALLMOTION:
-            pass
-        elif event.type == JOYBUTTONDOWN:
-            pass
-        elif event.type == JOYBUTTONUP:
-            pass
-        elif event.type == JOYHATMOTION:
-            pass
+        else:
+            try:
+                self.key_actions(self.main.controller.key_map.get(event.__dict__['value']))
+            except KeyError:
+                self.key_actions(self.main.controller.key_map.get(event.__dict__['button']))
 
     def init_menu(self):
         """initialize the whole main menu structure
