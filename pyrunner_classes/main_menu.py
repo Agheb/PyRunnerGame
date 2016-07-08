@@ -9,7 +9,7 @@ from pygame.locals import *
 from time import sleep
 from .menu import Menu, MenuItem
 from .level import Level
-
+from .sound_thread import MusicMixer
 
 class MainMenu(object):
     """initialize PyRunners main menu, save all required objects"""

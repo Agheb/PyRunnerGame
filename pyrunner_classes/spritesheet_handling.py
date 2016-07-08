@@ -15,6 +15,7 @@ class SpriteSheet(object):
     def __init__(self, file_name, tilesize, pixel_diff=0, fps=25, use_colorkey=True):
         """ Constructor. Pass in the file name of the sprite sheet. """
         # Load the sprite sheet.
+
         self.sprite_sheet = pygame.image.load(SPRITE_SHEET_PATH + file_name).convert_alpha()
         self.tile_size = tilesize
         self.pixel_diff = pixel_diff

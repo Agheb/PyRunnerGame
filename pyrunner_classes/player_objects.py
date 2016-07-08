@@ -7,6 +7,7 @@ import pygame
 from .spritesheet_handling import SpriteSheet
 
 
+
 class GoldScore(pygame.sprite.DirtySprite):
     """store and show the gold of each player"""
 

@@ -151,7 +151,7 @@ class MusicMixer(threading.Thread):
             '''store the file name and loop instruction in the playlist'''
             self._music.append(file_loops)
         if self.play_music:
-            try:
+            # try:
                 if not pygame.mixer.music.get_busy():
                     self._background_music = file
                     pygame.mixer.music.load(file)
@@ -166,8 +166,8 @@ class MusicMixer(threading.Thread):
                     '''stopping is too harsh but the only option if music runs in loop'''
                     # pygame.mixer.music.stop()
                     # pygame.mixer.music.load(self._background_music)
-            except pygame.error:
-                print("Error loading music file %s" % file)
+           # except pygame.error:
+                #print("Error loading music file %s" % file)
                 # pass the exact error
                 # raise
 
