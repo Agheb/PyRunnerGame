@@ -5,10 +5,13 @@
 from __future__ import division
 import pytmx
 from pytmx.util_pygame import load_pygame
+
+from .game_physics import Physics
 from .level_objecs import *
-from .player import Player
+from .player import Player, GoldScore
 from .non_player_characters import Bots
 from random import randint
+import pdb
 from operator import itemgetter
 from .dijkstra import Graph
 import logging
@@ -26,10 +29,6 @@ TMX- Specification:
 """
 
 
-# TODO TMX Specification:
-# TODO make collidable Rects from ObjectLayers
-
-
 class Level(object):
     """
     Level object loads tmx-file for game and draws each tile to screen
@@ -38,8 +37,7 @@ class Level(object):
     2. load all tilesheet image
     3. draw layer by layer
     """
-    PLAYER1 = "LRCharacters32.png"
-    PLAYER2 = "LRCharacters32_p2.png"
+    PLAYERS = ["LRCharacters32_p1.png", "LRCharacters32_p2.png", "LRCharacters32_p3.png", "LRCharacters32_p4.png"]
     SM_SIZE = 32
 
     levels = []
@@ -50,9 +48,13 @@ class Level(object):
         self.background = self.surface.copy()
         self.path = path
         self.fps = fps
+        self.physics = Physics(self)
         self.graph = None
         self.climbable_list = []
         self.walkable_list = []
+        self.bots_respawn = []
+        self.bot_count = 0
+        self.fps_counter = 0
         self.tm = load_pygame(self.path, pixelalpha=True)
         self.tile_width, self.tile_height = self.tm.tilewidth, self.tm.tileheight
         '''
@@ -87,12 +89,6 @@ class Level(object):
 
         self.last_row = self.margin_top + self.height - self.tile_height
 
-        '''draw the complete level'''
-        self.render()
-
-        '''calculate walking paths'''
-        self.generate_paths()
-
         try:
             p1_obj = self.tm.get_object_by_name("Player_1")
             p1_pos = self.calc_object_pos((p1_obj.x, p1_obj.y))
@@ -105,11 +101,20 @@ class Level(object):
             x, y = p1_pos
             p2_pos = x + 32, y
         try:
-            bot_obj = self.tm.get_object_by_name("Enemies")
-            bot_pos = self.calc_object_pos((bot_obj.x, bot_obj.y))
+            bot1_obj = self.tm.get_object_by_name("Enemies_1")
+            bot1_pos = self.calc_object_pos((bot1_obj.x, bot1_obj.y))
+            self.bot_count += int(bot1_obj.type) if bot1_obj.type else 1
         except ValueError:
             '''enemies fall from the sky'''
-            bot_pos = randint(0, self.width), 0
+            bot1_pos = (self.width - 100, 0)  # randint(0, self.width), 0
+
+        try:
+            bot2_obj = self.tm.get_object_by_name("Enemies_2")
+            bot2_pos = self.calc_object_pos((bot2_obj.x, bot2_obj.y))
+            self.bot_count += int(bot2_obj.type) if bot2_obj.type else 1
+        except ValueError:
+            '''enemies fall from the sky'''
+            bot2_pos = (self.width - 100, 0)  # randint(0, self.width), 0
         try:
             next_level = self.tm.get_object_by_name("Exit_Gate")
             self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
@@ -119,9 +124,69 @@ class Level(object):
 
         self.spawn_player_1_pos = p1_pos
         self.spawn_player_2_pos = p2_pos
-        self.spawn_enemies_pos = bot_pos
+        self.spawn_enemies_1_pos = bot1_pos
+        self.spawn_enemies_2_pos = bot2_pos
 
-        self.bot_1 = Bots(self.spawn_enemies_pos, "LRCharacters32.png", self)
+        '''draw the complete level'''
+        self.render()
+
+        '''calculate walking paths'''
+        self.generate_paths()
+
+        '''add players'''
+        self.spawn_bots()
+        self.add_network_players()
+
+    def update(self):
+        """update level related things"""
+        '''update all world sprites'''
+        WorldObject.group.update()
+        WorldObject.removed.update()
+
+        '''draw the level'''
+        rects = WorldObject.group.draw(self.surface)
+
+        '''check for sprite collisions'''
+        self.physics.check_collisions()
+
+        '''check if there are bots to respawn'''
+        self.check_respawn_bot()
+
+        return rects
+
+    def clear(self, screen):
+        """clear the sprite backgrounds, call this after blitting the level surface to the screen"""
+        Player.group.clear(screen, self.surface)
+        GoldScore.scores.clear(screen, self.surface)
+        WorldObject.group.clear(self.surface, self.background)
+        # WorldObject.removed.clear(self.surface, self.background)
+
+    def check_respawn_bot(self):
+        """respawn a bot after a specified amount of time"""
+        if self.fps_counter < self.fps:
+            self.fps_counter += 1
+        else:
+            self.fps_counter = 0
+
+            '''only check once per second if there are bots to respawn'''
+            if self.bots_respawn:
+                for bid, time in self.bots_respawn:
+                    if (datetime.now() - time).seconds >= 10:
+                        self.bots_respawn.remove((bid, time))
+                        pos = self.spawn_enemies_1_pos if bid & 1 else self.spawn_enemies_2_pos
+                        self.create_bot(bid, pos)
+
+    def spawn_bots(self):
+        """spawn the specified amount of bots in the level"""
+        for i in range(self.bot_count):
+            x, y = self.spawn_enemies_1_pos if i & 1 else self.spawn_enemies_2_pos
+            '''create as many bots as specified in Object Type field'''
+            x += self.tile_width * i
+            self.create_bot(i, (x, y))
+
+    def create_bot(self, bid, location):
+        """create a bot at location (x, y)"""
+        Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -150,63 +215,77 @@ class Level(object):
             except KeyError:
                 return False
 
+        def resize_tile_to_fit(tile, target_size):
+            """resize tile to fit the screen size and position"""
+            pos_x, pos_y, image = tile
+            pos_id = pos_x, pos_y
+
+            pos_x = self.margin_left + (width * pos_x)
+            pos_y = self.margin_top + (height * pos_y)
+
+            image = pygame.transform.scale(image, target_size)
+
+            '''chop off the bottom half in the last row to fit 720p'''
+            if pos_y == self.last_row:
+                image = self.squeeze_half_image(image)
+
+            tile = pos_x, pos_y, image
+
+            return tile, pos_id
+
+        width, height = self.tile_width, self.tile_height
+        size = width, height
+
         for layer in self.tm.visible_layers:
-            if isinstance(layer, pytmx.TiledTileLayer):
-                '''first check all layer properties'''
-                ladder = check_property(layer, 'climbable')
-                rope = check_property(layer, 'rope')
-                gold = check_property(layer, 'collectible')
-                removable = check_property(layer, 'removable')
-                solid = check_property(layer, 'solid')
-                wall = check_property(layer, 'vertical_wall')
-                width, height = self.tile_width, self.tile_height
-                fps = self.fps
+            if layer.name == "Background":
+                if isinstance(layer, pytmx.TiledTileLayer):
+                    for a in layer.tiles():
+                        a, tile_id = resize_tile_to_fit(a, size)
 
-                '''create the sprites'''
-                for a in layer.tiles():
-                    pos_x, pos_y, image = a
-                    size = width, height
-                    tile_id = pos_x, pos_y
-
-                    pos_x = self.margin_left + (width * pos_x)
-                    pos_y = self.margin_top + (height * pos_y)
-
-                    image = pygame.transform.scale(image, size)
-
-                    '''chop off the bottom half in the last row to fit 720p'''
-                    if pos_y == self.last_row:
-                        image = self.squeeze_half_image(image)
-
-                    a = pos_x, pos_y, image
-
-                    if ladder:
-                        Ladder(a, size, tile_id, fps, solid)
-                    elif rope:
-                        Rope(a, size, tile_id, fps)
-                    elif gold:
-                        Collectible(a, size, tile_id, fps)
-                    elif removable:
-                        WorldObject(a, size, tile_id, fps, solid, removable)
-                    elif solid or wall:
-                        WorldObject(a, size, tile_id, fps, solid)
-
-                    if layer.name == "Background":
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
-                    elif not gold and not wall:
-                        '''
-                            add all tiles that a player can walk on to this list
-                            to generate paths for the shortest path algorithm
-                        '''
-                        x, y = tile_id
-                        # ignore the last row because it gets cut by 16 pixels
-                        if y is not self.rows - 1:
-                            '''only add walkable tiles'''
-                            if ladder:
-                                '''add ladders separately'''
-                                self.climbable_list.append(tile_id)
-                            self.walkable_list.append(tile_id)
+
+        for layer in self.tm.visible_layers:
+            if isinstance(layer, pytmx.TiledTileLayer):
+                if layer.name != "Background":
+                    '''first check all layer properties'''
+                    ladder = check_property(layer, 'climbable')
+                    rope = check_property(layer, 'rope')
+                    gold = check_property(layer, 'collectible')
+                    removable = check_property(layer, 'removable')
+                    solid = check_property(layer, 'solid')
+                    wall = check_property(layer, 'vertical_wall')
+                    width, height = self.tile_width, self.tile_height
+                    fps = self.fps
+                    '''create the sprites'''
+                    for a in layer.tiles():
+                        a, tile_id = resize_tile_to_fit(a, size)
+
+                        if ladder:
+                            Ladder(a, size, tile_id, fps, solid)
+                        elif rope:
+                            Rope(a, size, tile_id, fps)
+                        elif gold:
+                            Collectible(a, size, tile_id, fps)
+                        elif removable:
+                            WorldObject(a, size, tile_id, fps, solid, removable)
+                        elif solid or wall:
+                            WorldObject(a, size, tile_id, fps, solid)
+
+                        if not gold and not wall:
+                            '''
+                                add all tiles that a player can walk on to this list
+                                to generate paths for the shortest path algorithm
+                            '''
+                            x, y = tile_id
+                            # ignore the last row because it gets cut by 16 pixels
+                            if y is not self.rows - 1:
+                                '''only add walkable tiles'''
+                                if ladder:
+                                    '''add ladders separately'''
+                                    self.climbable_list.append(tile_id)
+                                self.walkable_list.append(tile_id)
 
     def generate_paths(self):
         """create paths by id for bots"""
@@ -388,21 +467,58 @@ class Level(object):
         self.surface.blit(dirty_rect, sprite.rect)
         # self.lvl_surface.blit(dirty_rect, sprite.rect)
 
-    def add_player(self, pid, pos=None, fps=25):
+    def add_network_players(self):
+        """add players on network level change"""
+        for player in Level.players:
+            player = self.add_current_player(player.pid)
+            Level.players[player.pid] = player
+
+    def add_current_player(self, pid, pos=None):
+        """add players to the level only"""
+        if pid % 2 is 0:
+            pos = self.spawn_player_1_pos if not pos else pos
+        else:
+            pos = self.spawn_player_2_pos if not pos else pos
+        
+        sheet = self.PLAYERS[pid % len(self.PLAYERS)]
+
+        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+
+        return new_player
+
+    def add_player(self, pid, pos=None):
         """add a new player"""
         pid = int(pid)
 
-        if pid % 2 is 0:
-            pos = self.spawn_player_1_pos if not pos else pos
-            sheet = self.PLAYER1
-        else:
-            pos = self.spawn_player_2_pos if not pos else pos
-            sheet = self.PLAYER2
-
-        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+        new_player = self.add_current_player(pid, pos)
         Level.players.append(new_player)
         log.info("Added Player. Players {}".format(Level.players))
 
+    def remove_player(self, pid):
+
+        try:
+            for player in Level.players:
+                if player.pid == pid:
+                    player.kill()
+                    Level.players.remove(player)
+            return True
+        except:
+            return False
+
+    def get_all_player_pos(self):
+        players_pos = {}
+        for player in Level.players:
+            normalized_pos = (player.rect.topleft[0] / player.size , player.rect.topleft[1] / player.size ) 
+            players_pos[Level.players.index(player)] = normalized_pos
+        return players_pos
+
+    def set_players_pos(self, playerPos):
+        for player in Level.players:
+            player_id = str(player.pid)
+            
+            player.rect.topleft = (round(playerPos[player_id][0] * player.size), round(playerPos[player_id][1] * player.size)) 
+        pass
+    
     @staticmethod
     def get_level_info_json():
         # TODO: finish me

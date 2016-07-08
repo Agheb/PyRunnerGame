@@ -1,77 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="32" height="24" tilewidth="32" tileheight="32" nextobjectid="26">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="32" tileheight="32" nextobjectid="26">
  <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
   <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
  </tileset>
- <tileset firstgid="806" name="scifi_platform_BG1" tilewidth="32" tileheight="32" tilecount="897" columns="39">
-  <image source="../../../Downloads/scifi_platform_BG1.jpg" width="1279" height="742"/>
+ <tileset firstgid="806" name="bg_star_2" tilewidth="32" tileheight="32" tilecount="920" columns="40">
+  <image source="bg_star_2.png" width="1280" height="736"/>
  </tileset>
- <layer name="Background" width="32" height="24">
+ <layer name="Background" width="40" height="23">
   <data encoding="base64" compression="zlib">
-   eJzt1LkNQkEMhOEnanrQCtAKUAk39MENfcDjLIM/WWkSSxvZSGzwJSOtg7G1dauq2uhgjAmmqJ3yLnroY4Mtdo75AEOMcMUNjWMe0bnmEZ1rHtG55tpJxB60k4g9aCcReyj3/zv3X/7/8v//8/3PMMfCMddO9jjg6JhrJ3c88HTMrftcYoV1ZrfWnJTpO51t3ecJZ1wyu7XmpEzf6WzrPl9445PZrTUnZfpOZ38BKveqkQ==
+   eJwN00OCIAgCALDaadu2bdu2bdu2bdu2bdu2bXtzyBOSNFBAQDKSk4KUpCI1aUhLOtKTgYxkIjNZyEo2spODnOQiN3nISz7yU4CCFKIwRShKMYpTgpKUojRlKEs5ylOBilSiMlWoSjWqU4Oa1KI2dahLPerTgIY0ojFNaEozmtOClrSiNW1oSzva04GOdKIzXehKN7rTg570ojd96Es/+jOAgQxiMEMYyjCGM4KRjGI0YxjLOMYzgYlMYjJTmMo0pjODmcxiNnOYyzzms4CFLGIxS1jKMpazgpWsYjVrWMs61rOBjWxiM1vYyja2s4Od7GI3e9jLPvZzgIMc4jBHOMoxjnOCk5ziNGc4yznOc4GLXOIyV7jKNa5zg5vc4jZ3uMs97vOAhzziMU94yjOe84KXvOI1b3jLO97zgY984jNf+Mo3vvODn/ziN3/4yz8CAgcE/I//CERgghCUYAQnBCEJRWjCEJZwhCcCEYlEZKIQlWhEJwYxiUVs4hCXeMQnAQlJRGKSkJRkJCcFKUlFatKQlnSkJwMZyURmspCVbGQnBznJRW7ykJd85KcABSlEYYpQlGIUpwQlKUVpylCWcpSnAhWpRGWqUJVqVKcGNalFbepQl3rUpwENaURjmtCUZjSnBS1pRWva0JZ2tKcDHelEZ7rQlW50pwc96UVv+tCXfvRnAAMZxGCGMJRhDGcEIxnFaMYwlnGMZwITmcRkpjCVaUxnBjOZxWzmMJd5zGcBC1nEYpawlGUsZwUrWcVq1rCWdaxnAxvZxGa2sJVtbGcHO9nFbvawl33s5wAHOcRhjnCUYxznBCc5xWnOcJZznOcCF7nEZa5wlWtc5wY3ucVt7nCXe9znAQ95xGOe8JRnPOcFL3nFa97wlne85wMf+cRnvvCVb3znBz/5xW/+8Jd/BATxn/8IRGCCEJRgBCcEIQlFaMIQlnCEJwIRiURkohCVaEQnBjGJRWziEJd4xCcBCUlEYpKQlGQkJwUpSUVq0pCWdKQnAxnJRGaykJVsZCcHOclFbvKQl3zkpwAFKURhilCUYhSnBCUpRWnKUJZylKcCFalEZapQlWpUpwY1qUVt6lCXetSnAQ1pRGOa0JRmNKcFLWlFa9rQlna0pwMd6URnutCVbnSnBz3pRW/60Jd+9GcAAxnEYIYwlGEMZwQjGcVoxjCWcYxnAhOZxGSmMJVpTGcGM5nFbOYwl3nMZwELWcRilrCUZSxnBStZxWrWsJZ1rGcDG9nEZrawlW1sZwc72cVu9rCXfeznAAc5xGGOcJRjHOcEJznFac5wlnOc5wIXucRlrnCVa1znBje5xW3ucJd73OcBD3nEY57wlGc85wUvecVr3vCWd7znAx/5xGe+8JVvfOcHP/nFb/7wl38EBPWf/whEYIIQlGAEJwQhCUVowhCWcIQnAhGJRGSiEJVoRCcGMYlFbOIQl3jEJwEJSURikpCUZCQnBSlJRWrSkJZ0pCcDGclEZrKQlWxkJwc5yUVu8pCXfOSnAAUpRGGKUJRiFKcEJSlFacpQlnKUpwIVqURlqlCValSnBjWpRW3qUJd61KcBDWlEY5rQlGY0pwUtaUVr2tCWdrSnAx3pRGe60JVudKcHPelFb/rQl370ZwADGcRghjCUYQxnBCMZxWjGMJZxjGcCE5nEZKYwlWlMZwYzmcVs5jCXecxnAQtZxGKWsJRlLGcFK1nFatawlnWsZwMb2cRmtrCVbWxnBzvZxW728H/az9H2
   </data>
  </layer>
- <layer name="Block" width="32" height="24">
+ <layer name="Block" width="40" height="23">
   <properties>
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztwzENAAAMA6Be9S+5LrYHEhIAAOBKnw89gADB
+   eJxjYBgFowATsCHRbEh8bOrQ5XCpHQ4A2b/EhMtwDouhBoiNu1EwfAAbGg1jo2NceonN34TMH01rIxMQE/+EyiRy0xGudDiaFmkHCMUfuWaOxtvAAFLyDb78Rmxdg08tseYPJgwAJuUC9Q==
   </data>
  </layer>
- <layer name="Block_Removable" width="32" height="24">
+ <layer name="Block_Removable" width="40" height="23">
   <properties>
    <property name="removable" type="bool" value="true"/>
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQxFoItGaSHxs6rBhBjx66AlwuQ+bWwmpGQUjCwx0/FPDfmLTOjF6yck/o2BgATXicLRsHD6A2nE5mi7wA3LzFLXwQAMAAYcU0w==
+   eJxjYBgFo4ByoImEhxPQZCDOb/jUDbcwGepgND5GJiC3fELP27jMGI7l3yigHsCWjrClF1LkR8HgA8S2Gahh/iigL8CVh0mJC1L0DvW4BgBqXwki
   </data>
  </layer>
- <layer name="Coins" width="32" height="24">
+ <layer name="Coins" width="40" height="23">
   <properties>
    <property name="collectible" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztwQEBAAAAgiD/r25IQAEAAC8GDAAAAQ==
+   eJzt1AENAAAIAkHq2b+QKRSZfwkUNiSkKPcBZt//T0JXALa5doe985jKnT53TORMd3c03Q0Ckg==
   </data>
  </layer>
- <layer name="Leiter" width="32" height="24">
+ <layer name="Leiter" width="40" height="23">
   <properties>
    <property name="climbable" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJztlLENwCAQAynYhV2SWcIsyS4ZMD2dsQ8pEq6fs8UbStnamtNpnK2xFHNqwiyR9RBmlawEU8lKMC/AX2HegD/BTMh50wlmB/wV5gv4PwBTUWKnDiOxU4eRuH+nF0SnCK3u6dip1fdE/DV/0weS5QvB
+   eJxjYBgFo2BoAm8K9LJQzRW0AeoU6temiitwAy8K9ftRxRW4AaXhV0gVV+AG6OFHalqmtfty0fikum8qtRyCA0xA41NSFgw0oHVepTRsaJ1X8yjUP4UqrsANJtLYfEoBPdI+JXZQGr+0tmOwxy+1wGBPJ/SIB1qXtaMAFQAAuPwKrA==
   </data>
  </layer>
- <layer name="Leiter_Top" width="32" height="24">
+ <layer name="Leiter_Top" width="40" height="23">
   <properties>
    <property name="climbable" type="bool" value="true"/>
    <property name="solid" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQxVoDJBeeoOh5NZRMAooAbRI66P5Z+iD0Tgc/oDecTyapkYBAAUYAUE=
+   eJxjYBgFowA74BwgvUMBDHf/DTfgPdAOGAUDBmidV0fLglFAKRhNQ0Mf0CMOR9PJKBhKAAD2rACU
   </data>
  </layer>
- <layer name="Seil" width="32" height="24">
+ <layer name="Seil" width="40" height="23">
   <properties>
-   <property name="climbable_horizontal" type="bool" value="true"/>
+   <property name="rope" type="bool" value="true"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   eJxjYBgF1ADbgZgRC94xkI4aBaOASgBb2h5N36NgFIyCUTAKRsHQBABP8wIz
+   eJxjYBgFgwFsB2JGLHjHQDpqFIyCUTAKKASjZdsoGAWjYBSMglEwsgAAMToC6Q==
   </data>
  </layer>
  <objectgroup name="Spawn_Locations">
-  <object id="20" name="Player_1" x="82" y="312">
+  <object id="20" name="Player_1" x="96" y="123" width="32" height="32">
    <properties>
     <property name="players" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="24" name="Enemies" x="689" y="331">
+  <object id="24" name="Enemies_1" type="1" x="672" y="315" width="32" height="32">
    <properties>
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="25" name="Exit_Gate" type="jungle" x="981" y="75"/>
+  <object id="25" name="Exit_Gate" type="level2" x="944" y="32" width="64" height="64"/>
  </objectgroup>
 </map>

@@ -250,6 +250,10 @@ class RenderThread(threading.Thread):
         # blit it to the screen
         self._show_fps_blit()
 
+    def clear_fps_rect(self):
+        """clear the fps background"""
+        self._fps_dirty_rect = None
+
     def _show_fps_blit(self):
         """adds the ability to keep the last calculated fps value on top on a screen refresh"""
         if self._fps_dirty_rect and self._fps_surface:

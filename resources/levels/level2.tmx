@@ -1,16 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="32" tileheight="32" nextobjectid="1">
- <tileset firstgid="1" name="Background" tilewidth="32" tileheight="32" tilecount="880" columns="40">
-  <image source="Background.png" width="1280" height="720"/>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="32" tileheight="32" nextobjectid="26">
+ <tileset firstgid="1" name="scifi_platformTiles_32x32" tilewidth="32" tileheight="32" tilecount="805" columns="35">
+  <image source="scifi_platformTiles_32x32.png" width="1120" height="736"/>
+  <tile id="0">
+   <properties>
+    <property name="solid" type="bool" value="true"/>
+    <property name="vertical_wall" type="bool" value="true"/>
+   </properties>
+  </tile>
  </tileset>
- <layer name="Background" width="40" height="23" offsetx="-6" offsety="-54">
+ <tileset firstgid="806" name="bg_star" tilewidth="32" tileheight="32" tilecount="920" columns="40">
+  <image source="bg_star.png" width="1280" height="736"/>
+ </tileset>
+ <tileset firstgid="1726" name="bg_star_4" tilewidth="32" tileheight="32" tilecount="920" columns="40">
+  <image source="bg_star_4.png" width="1280" height="736"/>
+ </tileset>
+ <layer name="Background" width="40" height="23">
   <data encoding="base64" compression="zlib">
-   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
+   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
   </data>
  </layer>
- <layer name="Tile Layer 2" width="40" height="23">
+ <layer name="Vertical Wall" width="40" height="23">
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+   <property name="vertical_wall" type="bool" value="true"/>
+  </properties>
   <data encoding="base64" compression="zlib">
-   eJztwTEBAAAAwqD1T20IX6AAAADgNw5gAAE=
+   eJxjYBgFo2B4AndG+ughFwyU+4g1gxh16GoGu/uoAUbdRxkYdR9lYCS5jxZgsLuPWDBUwg9ED8Z6FVndYHQfpXrIBaPuowwMdvfREwAAUV4M8Q==
   </data>
  </layer>
+ <layer name="Block" width="40" height="23">
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2DkAndGVAwTQ6YHM8DmVmS/kGMGOfpJ1TMKRsFQAbRM39jKnoHKR+huGM3Po4AYgC3dEJt2KNE7CkYBvQAlaZOWetHzzWDDACgdGME=
+  </data>
+ </layer>
+ <layer name="Block_Removable" width="40" height="23">
+  <properties>
+   <property name="removable" type="bool" value="true"/>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUDAegxAjBpKhFV0+s/lEwCkYCwJY/SMlnlNiLjmlt1ygYBcQCYtMluelqNE2OgsEAcLWR8GF0NcToxSVHSO9gBwDnLwcd
+  </data>
+ </layer>
+ <layer name="Coins" width="40" height="23">
+  <properties>
+   <property name="collectible" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUEAM8aax+FIyCUUBbMFB5crQsGAW0AqNpaxSMRIAr3VMjP4zmKeoAABd3Akk=
+  </data>
+ </layer>
+ <layer name="Leiter" width="40" height="23">
+  <properties>
+   <property name="climbable" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztlbERwCAMA8l+ZBYyC5kl+6V1pcuhh1D4e2EZW1BKkiSrOQ9PX039bFrw5/ZKnRHpsL8L9ldhfzfsj57vs/l8aeh+V7DDPTbhgc7gCF14oDM4gtq7HearcPw52q9/rVPD2V2VCaqGs7sqExHnTfxLm2heEw8QYA==
+  </data>
+ </layer>
+ <layer name="Leiter_Top" width="40" height="23">
+  <properties>
+   <property name="climbable" type="bool" value="true"/>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2D4AV9GyvRrUaifnoAabtUcQv4dBaNgOILBUOYMBjeMgqEHKEk3o2luFIyC4QkAfUABew==
+  </data>
+ </layer>
+ <layer name="Seil" width="40" height="23">
+  <properties>
+   <property name="rope" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt1cEJACAMA8C6/0A6ni6ggiAVuYP8k1ci4EwdKZu0tHZ3rbb/uhmA98z+yBcBWTqHPARh
+  </data>
+ </layer>
+ <objectgroup name="Spawn_Locations">
+  <object id="20" name="Player_1" x="224" y="635" width="32" height="32">
+   <properties>
+    <property name="players" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="24" name="Enemies_1" type="2" x="1120" y="91" width="32" height="32">
+   <properties>
+    <property name="enemies" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="25" name="Exit_Gate" type="desert" x="1200" y="64" width="64" height="64"/>
+ </objectgroup>
 </map>

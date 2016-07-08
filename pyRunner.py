@@ -31,7 +31,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/desert.tmx"
+    START_LEVEL = "./resources/levels/level1.tmx"
 
     def __init__(self):
         """initialize the game"""
@@ -62,20 +62,32 @@ class PyRunner(object):
         self.load_level(self.START_LEVEL)
         '''init the main menu'''
         self.level_exit = False
+        self.loading_level = False
         self.game_over = False
 
     def load_level(self, path):
         """load another level"""
+        self.loading_level = True
         '''clear all sprites from an old level if present'''
         if self.level:
-            self.bg_surface.fill(GRAY)
-            self.level_exit = False
+            '''clear all old sprites'''
             Player.group.empty()
+            Player.humans.empty()
+            Player.bots.empty()
             WorldObject.group.empty()
             WorldObject.removed.empty()
-        # don't remove the GoldScore.scores as they should stay for a level switch
+            self.level_exit = False
+            # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.fps)
+        '''bug fix for old background appearing on the screen'''
+        WorldObject.group.clear(self.level.surface, self.level.background)
+        '''change the dirty rect for fps display'''
+        self.render_thread.clear_fps_rect()
+        '''Linux not refreshing the background bug'''
+        self.render_thread.blit(self.level.surface, None, True)
+        '''refresh the whole screen'''
+        self.render_thread.refresh_screen(True)
 
         if not self.network_connector:
             self.network_connector = NetworkConnector(self, self.level)
@@ -83,13 +95,10 @@ class PyRunner(object):
         else:
             self.network_connector.level = self.level
 
-        if self.physics:
-            self.physics.level = self.level
-        else:
-            self.physics = Physics(self.level, self.surface)
         '''and the controller instance'''
         self.controller = Controller(self.config, self.network_connector)
         self.game_over = False
+        self.loading_level = False
 
     def quit_game(self, shutdown=True):
         """quit the game"""
@@ -136,8 +145,9 @@ class PyRunner(object):
                     '''key pressing events'''
                     if not self.menu.in_menu:
                         self.controller.release_key(event.key)
+
             # save cpu resources
-            if not self.menu.in_menu:
+            if not self.menu.in_menu and not self.loading_level:
                 self.render_thread.add_rect_to_update(self.render_game())
 
                 if self.game_over:
@@ -149,22 +159,23 @@ class PyRunner(object):
 
     def render_game(self):
         """render all game related content"""
-        # update all sprite groups
-        WorldObject.group.update()
-        WorldObject.removed.update()
+        '''update all sprite groups'''
         GoldScore.scores.update()
         Player.group.update()
-
-        '''store all screen changes'''
-        rects = []
-
-        '''check for sprite collisions'''
-        self.physics.check_collisions()
+        '''store all screen changes, draw & update the level'''
+        rects = self.level.update()
+        '''blit the level surface to the main screen'''
+        self.render_thread.blit(self.level.surface, None, True)
+        '''draw the player and scores'''
+        rects.append(Player.group.draw(self.surface))
+        rects.append(GoldScore.scores.draw(self.surface))
+        '''clean up the dirty background'''
+        self.level.clear(self.surface)
 
         '''check if all gold got collected and spawn a exit gate if there's none left'''
         if not self.level_exit and not any(sprite.collectible for sprite in WorldObject.group):
             try:
-                self.level_exit = ExitGate(self.level.next_level_pos, "LRCharacters32.png", 32,
+                self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
             except AttributeError:
                 self.game_over = True
@@ -184,28 +195,6 @@ class PyRunner(object):
             else:
                 '''load the next level, recreate the players and bots etc.'''
                 self.load_level(self.level.next_level)
-
-        # if not self.level_exit and self.game_over:
-        #    self.game_over_menu()
-
-        '''draw the level'''
-        rects.append(WorldObject.group.draw(self.level.surface))
-        self.render_thread.blit(self.level.surface, None, True)
-        '''
-            only dirty Sprites return their rect
-            because we are using dirty rects instead we need to manually find them
-        '''
-        # the rotating coin is a dirty sprite
-        rects.append(GoldScore.scores.draw(self.surface))
-        '''draw the player'''
-        rects.append(Player.group.draw(self.surface))
-        # rects.append(WorldObject.removed.draw(self.level.surface))
-
-        '''clean up the dirty background'''
-        Player.group.clear(self.surface, self.level.surface)
-        WorldObject.group.clear(self.surface, self.level.background)
-        # WorldObject.removed.clear(self.surface, self.level.background)
-        GoldScore.scores.clear(self.surface, self.level.surface)
 
         return rects
 
