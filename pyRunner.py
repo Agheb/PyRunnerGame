@@ -207,16 +207,13 @@ class PyRunner(object):
                 self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
             except AttributeError:
-                for player in Player.group:
-                    if player.is_human:
-                        player.reached_exit = True
-                        player.kill()
+                for player in Player.humans:
+                    player.reached_exit = True
 
-                self.level_exit = True
                 self.game_over = True
 
         '''check if all players are still alive'''
-        if not any(player.is_human for player in Player.group):
+        if not len(Player.humans) or self.game_over:
             if not self.level_exit:
                 '''show the game over menu with player gold scores'''
                 self.game_over = True
