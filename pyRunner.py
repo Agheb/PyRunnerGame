@@ -160,7 +160,7 @@ class PyRunner(object):
                             if p1js:
                                 key1 = self.config.p1_key_map.get(str(event.__dict__))
                             if p2js:
-                                key2 = self.config.p1_key_map.get(str(event.__dict__))
+                                key2 = self.config.p2_key_map.get(str(event.__dict__))
 
                             if key1 == K_ESCAPE or key2 == K_ESCAPE:
                                 self.menu.show_menu(True)
