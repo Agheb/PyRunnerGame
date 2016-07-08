@@ -85,10 +85,11 @@ class MainMenu(object):
         if self.configure_js:
             self.set_joystick_controls(event)
         else:
-            try:
-                self.key_actions(self.main.controller.key_map.get(event.__dict__['value']))
-            except KeyError:
-                self.key_actions(self.main.controller.key_map.get(event.__dict__['button']))
+            string = str(event.__dict__)
+            if self.config.p1_use_joystick:
+                self.key_actions(self.config.p1_menu_map.get(string))
+            elif self.config.p2_use_joystick:
+                self.key_actions(self.config.p2_menu_map.get(string))
 
     def init_menu(self):
         """initialize the whole main menu structure
@@ -474,6 +475,8 @@ class MainMenu(object):
                 self.config.p2_js_cancel = new_key
 
         self.current_menu.get_item(self.menu_pos).val = new_key
+        '''reinit the maps if there are changes made to the config'''
+        self.config.setup_joystick()
         self.navigate_menu(self.menu_pos)
         self.configure_js = False
 

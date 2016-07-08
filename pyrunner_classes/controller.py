@@ -4,10 +4,8 @@
 # Python 2 related fixes
 from __future__ import division
 import pdb
-from pygame.locals import *
 from .level import Level
 from Mastermind import MastermindErrorClient
-from ast import literal_eval as make_tuple
 
 
 class Action(object):
@@ -35,8 +33,6 @@ class Controller(object):
         self.network_connector = network_connector
         self.player_1_movements = []
         self.player_2_movements = []
-        self.current_action = None
-        self.key_map = None
         '''only stop player if movement key got released'''
         self.player_1_movements.append(self.config.p1_left)
         self.player_1_movements.append(self.config.p1_right)
@@ -47,24 +43,23 @@ class Controller(object):
         self.player_2_movements.append(self.config.p2_up)
         self.player_2_movements.append(self.config.p2_down)
 
-        self.setup_joystick()
-
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
-        self.current_action = None
+        current_action = None
+
         # TODO move both players
         if key == self.config.p1_left:
-            self.current_action = Action.LEFT
+            current_action = Action.LEFT
         elif key == self.config.p1_right:
-            self.current_action = Action.RIGHT
+            current_action = Action.RIGHT
         elif key == self.config.p1_up:
-            self.current_action = Action.UP
+            current_action = Action.UP
         elif key == self.config.p1_down:
-            self.current_action = Action.DOWN
+            current_action = Action.DOWN
         elif key == self.config.p1_action_l:
-            self.current_action = Action.DIG_LEFT
+            current_action = Action.DIG_LEFT
         elif key == self.config.p1_action_r:
-            self.current_action = Action.DIG_RIGHT
+            current_action = Action.DIG_RIGHT
         elif key == self.config.p1_interact:
             print("Player 1 interacts")
         elif key == self.config.p1_taunt:
@@ -88,89 +83,14 @@ class Controller(object):
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
 
-        if self.current_action:
+        if current_action:
             try:
-                self.network_connector.client.send_key(self.current_action)
+                self.network_connector.client.send_key(current_action)
             except MastermindErrorClient:
                 for player in Level.players:
                     player.kill()
             # command, playerNum = self.network_connector.client.get_last_command()
             # self.do_action(self.current_action, 0)
-
-    def setup_joystick(self):
-        """get machine readable joystick config format"""
-        def parse_config(player, name):
-            """change the human readable config strings to dictionaries"""
-            if player is 1:
-                jid = self.config.p1_js_id
-            else:
-                jid = self.config.p2_js_id
-            if "Button" in name:
-                # {'button': 1, 'joy': 0}
-                return {'button': int(name[7:]), 'joy': jid}
-            elif "Hat" in name:
-                # {'joy': 0, 'value': (-1, 0), 'hat': 0}
-                name = name[4:]
-                hid = int(name[:1])
-                val = make_tuple(name[2:])
-                return {'joy': jid, 'value': val, 'hat': hid}
-            elif "Axis" in name:
-                # {'axis': 1, 'joy': 0, 'value': -0.1686452833643605}
-                name = name[5:]
-                axis = int(name[:1])
-                val = make_tuple(name[2:])
-                return {'axis': axis, 'joy': jid, 'value': val}
-
-        self.p1_js_left = parse_config(1, self.config.p1_js_left)
-        self.p1_js_right = parse_config(1, self.config.p1_js_right)
-        self.p1_js_up = parse_config(1, self.config.p1_js_up)
-        self.p1_js_down = parse_config(1, self.config.p1_js_down)
-        self.p1_js_stop = self.p1_js_left.copy()
-        self.p1_js_stop['value'] = (0, 0)   # centered hats/axis is 0, 0
-        self.p1_js_al = parse_config(1, self.config.p1_js_action_l)
-        self.p1_js_ar = parse_config(1, self.config.p1_js_action_r)
-        self.p1_js_accept = parse_config(1, self.config.p1_js_accept)
-        self.p1_js_cancel = parse_config(1, self.config.p1_js_cancel)
-
-        self.key_map = {
-            self.p1_js_up['value']: K_UP,
-            self.p1_js_down['value']: K_DOWN,
-            self.p1_js_left['value']: K_LEFT,
-            self.p1_js_right['value']: K_RIGHT,
-            self.p1_js_accept['button']: K_RETURN,
-            self.p1_js_cancel['button']: K_ESCAPE
-        }
-        # self.p1_js_stop = self.p1_js_left['value'] - self.p1_js_right['value']
-        # print(str(self.p1_js_stop))
-
-    def interpret_joystick(self, event):
-        """make joystick usable"""
-        self.current_action = None
-        print(str(event.__dict__))
-        print(str(self.p1_js_al))
-
-        if event.__dict__ == self.p1_js_left:
-            self.current_action = Action.LEFT
-        elif event.__dict__ == self.p1_js_right:
-            self.current_action = Action.RIGHT
-        elif event.__dict__ == self.p1_js_up:
-            self.current_action = Action.UP
-        elif event.__dict__ == self.p1_js_down:
-            self.current_action = Action.DOWN
-        elif event.__dict__ == self.p1_js_stop:
-            self.release_key()
-        elif event.__dict__ == self.p1_js_al:
-            self.current_action = Action.DIG_LEFT
-        elif event.__dict__ == self.p1_js_ar:
-            self.current_action = Action.DIG_RIGHT
-
-        if self.current_action:
-            try:
-                self.network_connector.client.send_key(self.current_action)
-            except MastermindErrorClient:
-                for player in Level.players:
-                    player.kill()
-
 
     def release_key(self, key=None):
         """stop walking"""

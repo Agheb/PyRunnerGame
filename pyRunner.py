@@ -147,12 +147,33 @@ class PyRunner(object):
                     '''key pressing events'''
                     if not self.menu.in_menu:
                         self.controller.release_key(event.key)
-                elif event.type == JOYAXISMOTION or event.type == JOYBALLMOTION \
-                        or event.type == JOYBUTTONDOWN or event.type == JOYBUTTONUP or event.type == JOYHATMOTION:
-                    if self.menu.in_menu:
-                        self.menu.joystick_actions(event)
-                    else:
-                        self.controller.interpret_joystick(event)
+                if self.config.p1_use_joystick or self.config.p2_use_joystick:
+                    '''only check for other events if configured'''
+                    if event.type == JOYAXISMOTION or event.type == JOYBALLMOTION \
+                            or event.type == JOYBUTTONDOWN or event.type == JOYHATMOTION:
+                        if self.menu.in_menu:
+                            self.menu.joystick_actions(event)
+                        else:
+                            p1js, p2js = self.config.p1_use_joystick, self.config.p2_use_joystick
+                            key1, key2 = None, None
+
+                            if p1js:
+                                key1 = self.config.p1_key_map.get(str(event.__dict__))
+                            if p2js:
+                                key2 = self.config.p1_key_map.get(str(event.__dict__))
+
+                            if key1 == K_ESCAPE or key2 == K_ESCAPE:
+                                self.menu.show_menu(True)
+                            else:
+                                if p1js and event.__dict__ == self.config.p1_js_stop:
+                                    self.controller.release_key()
+                                elif p2js and event.__dict__ == self.config.p2_js_stop:
+                                    self.controller.release_key()
+                                else:
+                                    if p1js:
+                                        self.controller.interpret_key(key1)
+                                    if p2js:
+                                        self.controller.interpret_key(key2)
 
             # save cpu resources
             if not self.menu.in_menu and not self.loading_level:
@@ -186,13 +207,13 @@ class PyRunner(object):
                 self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
             except AttributeError:
-                self.game_over = True
-
                 for player in Player.group:
                     if player.is_human:
                         player.reached_exit = True
+                        player.kill()
 
                 self.level_exit = True
+                self.game_over = True
 
         '''check if all players are still alive'''
         if not any(player.is_human for player in Player.group):
@@ -214,7 +235,7 @@ class PyRunner(object):
                 if not found_one:
                     found_one = True
                     self.menu.game_over.add_item(MenuItem("Collected Gold"))
-                score_str = "Player %s: %s coins" % (score.gid, score.gold)
+                score_str = "Player %s: %s coins" % (score.gid + 1, score.gold)
                 self.menu.game_over.add_item(MenuItem(score_str))
 
 if __name__ == "__main__":
