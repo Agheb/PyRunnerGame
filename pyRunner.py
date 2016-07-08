@@ -59,6 +59,7 @@ class PyRunner(object):
         self.network_connector = None
         self.menu = None
         self.level = None
+        self.current_level_path = None
         self.physics = None
         self.controller = None
         self.load_level(self.START_LEVEL)
@@ -67,9 +68,13 @@ class PyRunner(object):
         self.loading_level = False
         self.game_over = False
 
-    def load_level(self, path):
+    def load_level(self, path=None):
         """load another level"""
         self.loading_level = True
+        if not path:
+            path = self.current_level_path if self.current_level_path else self.START_LEVEL
+        else:
+            self.current_level_path = path
         '''clear all sprites from an old level if present'''
         if self.level:
             '''clear all old sprites'''
@@ -99,6 +104,7 @@ class PyRunner(object):
 
         '''and the controller instance'''
         self.controller = Controller(self.config, self.network_connector)
+        self.level_exit = None
         self.game_over = False
         self.loading_level = False
 
@@ -227,6 +233,7 @@ class PyRunner(object):
     def game_over_menu(self):
         """create the game over menu"""
         found_one = False
+        self.menu.game_over.flush_all_items()
         for score in GoldScore.scores:
             if not score.child_num:
                 if not found_one:
@@ -234,6 +241,7 @@ class PyRunner(object):
                     self.menu.game_over.add_item(MenuItem("Collected Gold"))
                 score_str = "Player %s: %s coins" % (score.gid + 1, score.gold)
                 self.menu.game_over.add_item(MenuItem(score_str))
+        self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
 
 if __name__ == "__main__":
     pyrunner = PyRunner()

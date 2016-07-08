@@ -318,6 +318,13 @@ class MainMenu(object):
         self.render_thread.blit(self.current_menu.surface, None, True)
         self.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
 
+    def reload_level(self):
+        """retry/reload the current level"""
+        self.main.load_level()
+        self.current_menu = self.main_menu
+        self.menu_pos = 1
+        self.show_menu(False)
+
     def use_joystick(self, player_jsname):
         """turn usage of a joystick / gamepad on / off per player"""
         player, js_name, jid = player_jsname
