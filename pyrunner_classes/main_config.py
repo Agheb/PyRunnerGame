@@ -31,6 +31,10 @@ _CONF_AUDIO_SFX = "sfx"
 _CONF_AUDIO_SFX_VOL = _CONF_AUDIO_SFX + _CONF_AUDIO_VOL
 _CONF_CONT_P1 = "Player 1 Controls"
 _CONF_CONT_P2 = "Player 2 Controls"
+_CONF_CONT_P1_JS = "Player 1 Joystick/Gamepad"
+_CONF_CONT_P2_JS = "Player 2 Joystick/Gamepad"
+_CONF_CONT_USE_JS = "use joystick/gamepad"
+_CONF_CONT_NAME_JS = "device name"
 _CONF_CONT_LEFT = "left"
 _CONF_CONT_RIGHT = "right"
 _CONF_CONT_UP = "up"
@@ -40,6 +44,8 @@ _CONF_CONT_AR = "action right"
 _CONF_CONT_INT = "interact"
 _CONF_CONT_TAUNT = "taunt"
 _CONF_CONT_JUMP = "jump"
+_CONF_CONT_ACCEPT_JS = "accept"
+_CONF_CONT_CANCEL_JS = "escape"
 
 
 class MainConfig(object):
@@ -72,8 +78,10 @@ class MainConfig(object):
         '''joystick / gamepad'''
         self.p1_use_joystick = None
         self.p1_js_name = None
-        self.p1_js_left_right = None
-        self.p1_js_up_down = None
+        self.p1_js_left = None
+        self.p1_js_right = None
+        self.p1_js_up = None
+        self.p1_js_down = None
         self.p1_js_action_l = None
         self.p1_js_action_r = None
         self.p1_js_interact = None
@@ -89,6 +97,19 @@ class MainConfig(object):
         self.p2_action_r = None
         self.p2_interact = None
         self.p2_taunt = None
+        '''joystick / gamepad'''
+        self.p2_use_joystick = None
+        self.p2_js_name = None
+        self.p2_js_left = None
+        self.p2_js_right = None
+        self.p2_js_up = None
+        self.p2_js_down = None
+        self.p2_js_action_l = None
+        self.p2_js_action_r = None
+        self.p2_js_interact = None
+        self.p2_js_taunt = None
+        self.p2_js_accept = None  # ~= Return
+        self.p2_js_cancel = None  # ~= ESC
         '''read the configuration file to initialize above variables'''
         self.config_parser = self.init_config_parser()
         self.read_settings()
@@ -134,6 +155,19 @@ class MainConfig(object):
             self.p1_action_r = config.getint(_CONF_CONT_P1, _CONF_CONT_AR)
             self.p1_interact = config.getint(_CONF_CONT_P1, _CONF_CONT_INT)
             self.p1_taunt = config.getint(_CONF_CONT_P1, _CONF_CONT_TAUNT)
+            self.p1_use_joystick = config.getboolean(_CONF_CONT_P1_JS, _CONF_CONT_USE_JS)
+            if self.p1_use_joystick:
+                self.p1_js_name = config.get(_CONF_CONT_P1_JS, _CONF_CONT_NAME_JS)
+                self.p1_js_left = config.get(_CONF_CONT_P1_JS, _CONF_CONT_LEFT)
+                self.p1_js_right = config.get(_CONF_CONT_P1_JS, _CONF_CONT_RIGHT)
+                self.p1_js_up = config.get(_CONF_CONT_P1_JS, _CONF_CONT_UP)
+                self.p1_js_down = config.get(_CONF_CONT_P1_JS, _CONF_CONT_DOWN)
+                self.p1_js_action_l = config.get(_CONF_CONT_P1_JS, _CONF_CONT_AL)
+                self.p1_js_action_r = config.get(_CONF_CONT_P1_JS, _CONF_CONT_AR)
+                self.p1_js_interact = config.get(_CONF_CONT_P1_JS, _CONF_CONT_INT)
+                self.p1_js_taunt = config.get(_CONF_CONT_P1_JS, _CONF_CONT_TAUNT)
+                self.p1_js_accept = config.get(_CONF_CONT_P1_JS, _CONF_CONT_ACCEPT_JS)  # ~= Return
+                self.p1_js_cancel = config.get(_CONF_CONT_P1_JS, _CONF_CONT_CANCEL_JS)  # ~= ESC
             '''controls for player 2'''
             self.p2_left = config.getint(_CONF_CONT_P2, _CONF_CONT_LEFT)
             self.p2_right = config.getint(_CONF_CONT_P2, _CONF_CONT_RIGHT)
@@ -143,6 +177,19 @@ class MainConfig(object):
             self.p2_action_r = config.getint(_CONF_CONT_P2, _CONF_CONT_AR)
             self.p2_interact = config.getint(_CONF_CONT_P2, _CONF_CONT_INT)
             self.p2_taunt = config.getint(_CONF_CONT_P2, _CONF_CONT_TAUNT)
+            self.p2_use_joystick = config.getboolean(_CONF_CONT_P2_JS, _CONF_CONT_USE_JS)
+            if self.p2_use_joystick:
+                self.p2_js_name = config.get(_CONF_CONT_P2_JS, _CONF_CONT_NAME_JS)
+                self.p2_js_left = config.get(_CONF_CONT_P2_JS, _CONF_CONT_LEFT)
+                self.p2_js_right = config.get(_CONF_CONT_P2_JS, _CONF_CONT_RIGHT)
+                self.p2_js_up = config.get(_CONF_CONT_P2_JS, _CONF_CONT_UP)
+                self.p2_js_down = config.get(_CONF_CONT_P2_JS, _CONF_CONT_DOWN)
+                self.p2_js_action_l = config.get(_CONF_CONT_P2_JS, _CONF_CONT_AL)
+                self.p2_js_action_r = config.get(_CONF_CONT_P2_JS, _CONF_CONT_AR)
+                self.p2_js_interact = config.get(_CONF_CONT_P2_JS, _CONF_CONT_INT)
+                self.p2_js_taunt = config.get(_CONF_CONT_P2_JS, _CONF_CONT_TAUNT)
+                self.p2_js_accept = config.get(_CONF_CONT_P2_JS, _CONF_CONT_ACCEPT_JS)  # ~= Return
+                self.p2_js_cancel = config.get(_CONF_CONT_P2_JS, _CONF_CONT_CANCEL_JS)  # ~= ESC
         except (configparser.NoSectionError, configparser.NoOptionError, TypeError, ValueError, AttributeError):
             self.write_settings(True)
 
@@ -186,7 +233,7 @@ class MainConfig(object):
                 self.p1_action_r = K_RSHIFT
                 self.p1_interact = K_BACKSPACE
                 self.p1_taunt = K_RETURN
-                self.p1_jump = K_SPACE
+                self.p1_use_joystick = False
                 # controls for player 2
                 self.p2_left = K_a
                 self.p2_right = K_d
@@ -196,7 +243,7 @@ class MainConfig(object):
                 self.p2_action_r = K_e
                 self.p2_interact = K_LSHIFT
                 self.p2_taunt = K_TAB
-                self.p2_jump = K_LSUPER
+                self.p2_use_joystick = False
 
             '''info part'''
             try:
@@ -236,6 +283,23 @@ class MainConfig(object):
             config.set(_CONF_CONT_P1, _CONF_CONT_AR, self.p1_action_r)
             config.set(_CONF_CONT_P1, _CONF_CONT_INT, self.p1_interact)
             config.set(_CONF_CONT_P1, _CONF_CONT_TAUNT, self.p1_taunt)
+            try:
+                config.add_section(_CONF_CONT_P1_JS)
+            except cp_duplicate_section_error:
+                pass
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_USE_JS, self.p1_use_joystick)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_NAME_JS, self.p1_js_name)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_LEFT, self.p1_js_left)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_RIGHT, self.p1_js_right)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_UP, self.p1_js_up)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_DOWN, self.p1_js_down)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_AL, self.p1_js_action_l)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_AR, self.p1_js_action_r)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_INT, self.p1_js_interact)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_TAUNT, self.p1_js_taunt)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_ACCEPT_JS, self.p1_js_accept)  # ~= Return
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_CANCEL_JS, self.p1_js_cancel)  # ~= ESC
+
             '''controls for player 2'''
             try:
                 config.add_section(_CONF_CONT_P2)
@@ -249,7 +313,22 @@ class MainConfig(object):
             config.set(_CONF_CONT_P2, _CONF_CONT_AR, self.p2_action_r)
             config.set(_CONF_CONT_P2, _CONF_CONT_INT, self.p2_interact)
             config.set(_CONF_CONT_P2, _CONF_CONT_TAUNT, self.p2_taunt)
-
+            try:
+                config.add_section(_CONF_CONT_P2_JS)
+            except cp_duplicate_section_error:
+                pass
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_USE_JS, self.p2_use_joystick)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_NAME_JS, self.p2_js_name)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_LEFT, self.p2_js_left)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_RIGHT, self.p2_js_right)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_UP, self.p2_js_up)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_DOWN, self.p2_js_down)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_AL, self.p2_js_action_l)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_AR, self.p2_js_action_r)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_INT, self.p2_js_interact)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_TAUNT, self.p2_js_taunt)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_ACCEPT_JS, self.p2_js_accept)  # ~= Return
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_CANCEL_JS, self.p2_js_cancel)  # ~= ESC
             with open(CONFIG, 'w') as configfile:
                 config.write(configfile)
 

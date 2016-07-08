@@ -156,7 +156,7 @@ class MainMenu(object):
                 js_balls = js.get_numballs()
                 js_buttons = js.get_numbuttons()
                 js_hats = js.get_numhats()
-                js_info = "Axes: %(js_axes)s | Balls: %(js_balls)s |" % locals()
+                js_info = "Axes: %(js_axes)s | Balls: %(js_balls)s | " % locals()
                 js_info += "Buttons: %(js_buttons)s | Hats: %(js_hats)s" % locals()
                 '''Add the joystick to the controls section of player 1'''
                 menu_js_1 = menu_config_joystick_p1.add_submenu(js_name)
@@ -166,6 +166,8 @@ class MainMenu(object):
                 '''and to the controls section of player 2'''
                 menu_js_2 = menu_config_joystick_p2.add_submenu(js_name)
                 menu_js_2.add_item(MenuItem(js_info))
+                menu_js_2.add_item(MenuItem("Use this Device for Player 2", self.use_joystick,
+                                            vars=(2, js_name), val=self.config.p2_use_joystick))
 
         '''Settings / Controls / Player 1'''
         m_settings_cp1.add_item(MenuItem("Left", self.configure_key_controls,
@@ -207,10 +209,6 @@ class MainMenu(object):
         menu_main.add_item(MenuItem("Exit", self.main.quit_game))
 
         '''special purpose (hidden) menus'''
-        '''control settings'''
-        menu_config_p1 = m_settings_cp1.add_submenu("Configure Key", True)
-        menu_config_p2 = m_settings_cp2.add_submenu("Configure Key", True)
-
         '''game over menu'''
         menu_game_over = menu_main.add_submenu("Game Over", True)
         '''network related menu'''
@@ -218,9 +216,7 @@ class MainMenu(object):
 
         '''save the menus'''
         self.m_settings_cp1 = m_settings_cp1
-        self.menu_config_p1 = menu_config_p1
         self.m_settings_cp2 = m_settings_cp2
-        self.menu_config_p2 = menu_config_p2
         self.game_over = menu_game_over
         self.network = menu_network_browser
         self.main_menu = menu_main
@@ -271,7 +267,7 @@ class MainMenu(object):
         self.config_keys_player, self.config_keys_action = player_action
 
         self.current_menu.get_item(self.menu_pos).val = "Press any key"
-        self.navigate_menu(self.menu_pos, True)
+        self.navigate_menu(self.menu_pos)
         self.configure_keys = True
 
     def set_keyboard_controls(self, key):

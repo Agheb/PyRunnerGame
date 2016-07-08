@@ -221,7 +221,7 @@ class Menu(object):
             new_option = self.menu_items[new_pos]
             old_option = self.menu_items[old_pos]
 
-            if length > MAX_ITEMS_NO_SCROLL:
+            if length > MAX_ITEMS_NO_SCROLL and not new_pos == old_pos:
                 if new_pos < old_pos:
                     # if the cursor moves up
                     if new_pos % max_items_view is 0:
@@ -409,7 +409,7 @@ class MenuItem(object):
                 return '{:<10s}: {:>20s}'.format(self._name, self._val)
             elif self._val > 1 and isinstance(self._val, int):
                 '''key setups'''
-                return '{:<10s}: {:>20s}'.format(self._name, pygame.key.name(self._val))
+                return '{:>16s}  :  {:<16s}'.format(self._name, pygame.key.name(self._val))
             else:
                 '''music/sound on/off etc'''
                 return '{:<28s} {:>6s}'.format(self._name, self.bool_to_string(self._val))
