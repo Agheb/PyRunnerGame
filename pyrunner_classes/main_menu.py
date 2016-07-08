@@ -28,6 +28,13 @@ class MainMenu(object):
         self.game_over = None
         self.network = None
         self.surface = None
+        self.configure_keys = False
+        self.config_keys_player = None
+        self.config_keys_action = None
+        self.m_settings_cp1 = None
+        self.menu_config_p1 = None
+        self.m_settings_cp2 = None
+        self.menu_config_p2 = None
         # regular font sizes
         self.h1_size = 72
         self.h2_size = 48
@@ -46,26 +53,31 @@ class MainMenu(object):
                 self.show_menu(False)
         elif key == K_RETURN:
             self.current_menu.get_item(self.menu_pos).do_action()
-        elif key == K_UP:
-            if 1 < self.menu_pos:
-                self.menu_pos -= 1
-                self.navigate_menu(self.menu_pos + 1)
-        elif key == K_DOWN:
-            if self.menu_pos < self.current_menu.length - 1:
-                self.menu_pos += 1
-                self.navigate_menu(self.menu_pos - 1)
-        elif key == K_LEFT:
-            name = self.current_menu.get_item(self.menu_pos).name
-            if name == "Music":
-                self.switch_audio_volume((1, -1))
-            elif name == "Sounds":
-                self.switch_audio_volume((2, -1))
-        elif key == K_RIGHT:
-            name = self.current_menu.get_item(self.menu_pos).name
-            if name == "Music":
-                self.switch_audio_volume((1, 1))
-            elif name == "Sounds":
-                self.switch_audio_volume((2, 1))
+        else:
+            if self.configure_keys:
+                self.set_keyboard_controls(key)
+
+        if not self.configure_keys:
+            if key == K_UP:
+                if 1 < self.menu_pos:
+                    self.menu_pos -= 1
+                    self.navigate_menu(self.menu_pos + 1)
+            elif key == K_DOWN:
+                if self.menu_pos < self.current_menu.length - 1:
+                    self.menu_pos += 1
+                    self.navigate_menu(self.menu_pos - 1)
+            elif key == K_LEFT:
+                name = self.current_menu.get_item(self.menu_pos).name
+                if name == "Music":
+                    self.switch_audio_volume((1, -1))
+                elif name == "Sounds":
+                    self.switch_audio_volume((2, -1))
+            elif key == K_RIGHT:
+                name = self.current_menu.get_item(self.menu_pos).name
+                if name == "Music":
+                    self.switch_audio_volume((1, 1))
+                elif name == "Sounds":
+                    self.switch_audio_volume((2, 1))
 
     def init_menu(self):
         """initialize the whole main menu structure
@@ -130,19 +142,60 @@ class MainMenu(object):
 
         '''Settings / Controls'''
         m_settings_controls = m_settings.add_submenu("Controls")
-        m_settings_controls.add_item(MenuItem("Player 1", None))
-        m_settings_controls.add_item(MenuItem("Player 2", None))
+        m_settings_cp1 = m_settings_controls.add_submenu("Player 1")
+        m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Left: ", pygame.key.name(self.config.p1_left)),
+                                         self.configure_key_controls, vars=(1, "Left")))
+        m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Right: ", pygame.key.name(self.config.p1_right)),
+                                         self.configure_key_controls, vars=(1, "Right")))
+        m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Up: ", pygame.key.name(self.config.p1_up)),
+                                         self.configure_key_controls, vars=(1, "Up")))
+        m_settings_cp1.add_item(MenuItem('{:<22s} {:>10s}'.format("Down: ", pygame.key.name(self.config.p1_down)),
+                                         self.configure_key_controls, vars=(1, "Down")))
+        m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Dig Left: ", pygame.key.name(self.config.p1_action_l)),
+                                         self.configure_key_controls, vars=(1, "Dig Left")))
+        m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Dig Right: ", pygame.key.name(self.config.p1_action_r)),
+                                         self.configure_key_controls, vars=(1, "Dig Right")))
+        m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Interact: ", pygame.key.name(self.config.p1_interact))
+                                         , self.configure_key_controls, vars=(1, "Interact")))
+        m_settings_cp1.add_item(MenuItem('{:<24s} {:>10s}'.format("Taunt: ", pygame.key.name(self.config.p1_taunt)),
+                                         self.configure_key_controls, vars=(1, "Taunt")))
+
+        m_settings_cp2 = m_settings_controls.add_submenu("Player 2")
+        m_settings_cp2.add_item(MenuItem('{:<24s} {:>10s}'.format("Left: ", pygame.key.name(self.config.p2_left)),
+                                         self.configure_key_controls, vars=(2, "Left")))
+
+        m_settings_cp2.add_item(MenuItem('{:<24s} {:>10s}'.format("Right: ", pygame.key.name(self.config.p2_right)),
+                                         self.configure_key_controls, vars=(2, "Right")))
+        m_settings_cp2.add_item(MenuItem('{:<24s} {:>10s}'.format("Up: ", pygame.key.name(self.config.p2_up)),
+                                         self.configure_key_controls, vars=(2, "Up")))
+        m_settings_cp2.add_item(MenuItem('{:<22s} {:>10s}'.format("Down: ", pygame.key.name(self.config.p2_down)),
+                                         self.configure_key_controls, vars=(2, "Down")))
+        m_settings_cp2.add_item(MenuItem('{:<24s} {:>10s}'.format("Dig Left: ", pygame.key.name(self.config.p2_action_l)),
+                                         self.configure_key_controls, vars=(2, "Dig Left")))
+        m_settings_cp2.add_item(MenuItem('{:<24s} {:>10s}'.format("Dig Right: ", pygame.key.name(self.config.p2_action_r)),
+                                         self.configure_key_controls, vars=(2, "Dig Right")))
+        m_settings_cp2.add_item(MenuItem('{:<24s} {:>10s}'.format("Interact: ", pygame.key.name(self.config.p2_interact))
+                                         , self.configure_key_controls, vars=(2, "Interact")))
+        m_settings_cp2.add_item(MenuItem('{:<24s} {:>10s}'.format("Taunt: ", pygame.key.name(self.config.p2_taunt)),
+                                         self.configure_key_controls, vars=(2, "Taunt")))
 
         '''Exit'''
         menu_main.add_item(MenuItem("Exit", self.main.quit_game))
 
         '''special purpose (hidden) menus'''
+        '''control settings'''
+        menu_config_p1 = m_settings_cp1.add_submenu("Configure Key", True)
+        menu_config_p2 = m_settings_cp2.add_submenu("Configure Key", True)
         '''game over menu'''
         menu_game_over = menu_main.add_submenu("Game Over", True)
         '''network related menu'''
         menu_network_browser = m_game_mp.add_submenu("Join Server", True)
 
         '''save the menus'''
+        self.m_settings_cp1 = m_settings_cp1
+        self.menu_config_p1 = menu_config_p1
+        self.m_settings_cp2 = m_settings_cp2
+        self.menu_config_p2 = menu_config_p2
         self.game_over = menu_game_over
         self.network = menu_network_browser
         self.main_menu = menu_main
@@ -182,6 +235,76 @@ class MainMenu(object):
         rects, self.menu_pos = self.current_menu.print_menu(self.menu_pos, old_pos, complete)
         self.render_thread.blit(self.current_menu.surface, None, True)
         self.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
+
+    @staticmethod
+    def update_item_name(starts_with, new_name, menu):
+        """update a menu item name"""
+        for item in menu.menu_items:
+            if item.name.startswith(starts_with):
+                item.name = new_name
+
+    def configure_key_controls(self, player_action):
+        """decide what should be configured"""
+        self.config_keys_player, self.config_keys_action = player_action
+
+        self.menu_config_p1.flush_all_items()
+        self.menu_config_p1.add_item(MenuItem("Press any key for %s" % self.config_keys_action, None))
+
+        self.set_current_menu(self.menu_config_p1)
+
+        self.configure_keys = True
+
+    def set_keyboard_controls(self, key):
+        """configure the player controls"""
+        player, action = self.config_keys_player, self.config_keys_action
+        new_key = pygame.key.name(key)
+        new_name = '{:<24s} {:>10s}'.format("%s: " % action, new_key)
+        menu_item = MenuItem("New Key: %s" % new_key)
+
+        if player is 1:
+            if action == "Left":
+                self.config.p1_left = key
+            elif action == "Right":
+                self.config.p1_right = key
+            elif action == "Up":
+                self.config.p1_up = key
+            elif action == "Down":
+                self.config.p1_down = key
+            elif action == "Dig Left":
+                self.config.p1_action_l = key
+            elif action == "Dig Right":
+                self.config.p1_action_r = key
+            elif action == "Interact":
+                self.config.p1_interact = key
+            elif action == "Taunt":
+                self.config.p1_taunt = key
+
+            self.menu_config_p1.add_item(menu_item)
+            self.update_item_name(action, new_name, self.m_settings_cp1)
+
+        elif player is 2:
+            if action == "Left":
+                self.config.p2_left = key
+            elif action == "Right":
+                self.config.p2_right = key
+            elif action == "Up":
+                self.config.p2_up = key
+            elif action == "Down":
+                self.config.p2_down = key
+            elif action == "Dig Left":
+                self.config.p2_action_l = key
+            elif action == "Dig Right":
+                self.config.p2_action_r = key
+            elif action == "Interact":
+                self.config.p2_interact = key
+            elif action == "Taunt":
+                self.config.p2_taunt = key
+
+            self.menu_config_p2.add_item(menu_item)
+            self.update_item_name(action, new_name, self.m_settings_cp2)
+
+        self.show_menu(True)
+        self.configure_keys = False
 
     def set_resolution(self, var):
         """set the main screen/surface resolution

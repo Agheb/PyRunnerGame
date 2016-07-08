@@ -18,9 +18,11 @@ from .player_objects import GoldScore
 class Player(pygame.sprite.DirtySprite):
     """defines the main  player and bots"""
 
+    '''render group'''
     group = pygame.sprite.LayeredDirty(default_layer=1)
-    humans = pygame.sprite.LayeredDirty(default_layer=1)
-    bots = pygame.sprite.LayeredDirty(default_layer=1)
+    '''collision test groups'''
+    humans = pygame.sprite.Group()
+    bots = pygame.sprite.Group()
 
     def __init__(self, pos, sheet, pid=1, tile_size=32, level=None, fps=25, bot=False):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
