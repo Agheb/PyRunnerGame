@@ -35,6 +35,7 @@ _CONF_CONT_P1_JS = "Player 1 Joystick/Gamepad"
 _CONF_CONT_P2_JS = "Player 2 Joystick/Gamepad"
 _CONF_CONT_USE_JS = "use joystick/gamepad"
 _CONF_CONT_NAME_JS = "device name"
+_CONF_CONT_ID_JS = "device id"
 _CONF_CONT_LEFT = "left"
 _CONF_CONT_RIGHT = "right"
 _CONF_CONT_UP = "up"
@@ -78,6 +79,7 @@ class MainConfig(object):
         '''joystick / gamepad'''
         self.p1_use_joystick = None
         self.p1_js_name = None
+        self.p1_js_id = None
         self.p1_js_left = None
         self.p1_js_right = None
         self.p1_js_up = None
@@ -100,6 +102,7 @@ class MainConfig(object):
         '''joystick / gamepad'''
         self.p2_use_joystick = None
         self.p2_js_name = None
+        self.p2_js_id = None
         self.p2_js_left = None
         self.p2_js_right = None
         self.p2_js_up = None
@@ -158,6 +161,7 @@ class MainConfig(object):
             self.p1_use_joystick = config.getboolean(_CONF_CONT_P1_JS, _CONF_CONT_USE_JS)
             if self.p1_use_joystick:
                 self.p1_js_name = config.get(_CONF_CONT_P1_JS, _CONF_CONT_NAME_JS)
+                self.p1_js_id = config.getint(_CONF_CONT_P1_JS, _CONF_CONT_ID_JS)
                 self.p1_js_left = config.get(_CONF_CONT_P1_JS, _CONF_CONT_LEFT)
                 self.p1_js_right = config.get(_CONF_CONT_P1_JS, _CONF_CONT_RIGHT)
                 self.p1_js_up = config.get(_CONF_CONT_P1_JS, _CONF_CONT_UP)
@@ -180,6 +184,7 @@ class MainConfig(object):
             self.p2_use_joystick = config.getboolean(_CONF_CONT_P2_JS, _CONF_CONT_USE_JS)
             if self.p2_use_joystick:
                 self.p2_js_name = config.get(_CONF_CONT_P2_JS, _CONF_CONT_NAME_JS)
+                self.p2_js_id = config.getint(_CONF_CONT_P2_JS, _CONF_CONT_ID_JS)
                 self.p2_js_left = config.get(_CONF_CONT_P2_JS, _CONF_CONT_LEFT)
                 self.p2_js_right = config.get(_CONF_CONT_P2_JS, _CONF_CONT_RIGHT)
                 self.p2_js_up = config.get(_CONF_CONT_P2_JS, _CONF_CONT_UP)
@@ -217,7 +222,7 @@ class MainConfig(object):
                 self.screen_x = 800
                 self.screen_y = 600
                 self.fps = 25
-                self.fullscreen = True
+                self.fullscreen = False
                 self.switch_resolution = False
                 # default audio settings
                 self.play_music = True
@@ -289,6 +294,7 @@ class MainConfig(object):
                 pass
             config.set(_CONF_CONT_P1_JS, _CONF_CONT_USE_JS, self.p1_use_joystick)
             config.set(_CONF_CONT_P1_JS, _CONF_CONT_NAME_JS, self.p1_js_name)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_ID_JS, self.p1_js_id)
             config.set(_CONF_CONT_P1_JS, _CONF_CONT_LEFT, self.p1_js_left)
             config.set(_CONF_CONT_P1_JS, _CONF_CONT_RIGHT, self.p1_js_right)
             config.set(_CONF_CONT_P1_JS, _CONF_CONT_UP, self.p1_js_up)
@@ -319,6 +325,7 @@ class MainConfig(object):
                 pass
             config.set(_CONF_CONT_P2_JS, _CONF_CONT_USE_JS, self.p2_use_joystick)
             config.set(_CONF_CONT_P2_JS, _CONF_CONT_NAME_JS, self.p2_js_name)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_ID_JS, self.p2_js_id)
             config.set(_CONF_CONT_P2_JS, _CONF_CONT_LEFT, self.p2_js_left)
             config.set(_CONF_CONT_P2_JS, _CONF_CONT_RIGHT, self.p2_js_right)
             config.set(_CONF_CONT_P2_JS, _CONF_CONT_UP, self.p2_js_up)

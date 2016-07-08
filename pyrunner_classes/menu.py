@@ -405,6 +405,7 @@ class MenuItem(object):
                 '''music/sound volume bars'''
                 return '{:<14s} {:<5s} {:10s}'.format(self._name, self.bool_to_string(self._val),
                                                       self.print_bar(self.bar))
+
             if isinstance(self._val, str):
                 return '{:<10s}: {:>20s}'.format(self._name, self._val)
             elif self._val > 1 and isinstance(self._val, int):

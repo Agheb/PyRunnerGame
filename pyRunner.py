@@ -147,6 +147,10 @@ class PyRunner(object):
                     '''key pressing events'''
                     if not self.menu.in_menu:
                         self.controller.release_key(event.key)
+                elif event.type == JOYAXISMOTION or event.type == JOYBALLMOTION \
+                        or event.type == JOYBUTTONDOWN or event.type == JOYBUTTONUP or event.type == JOYHATMOTION:
+                    if self.menu.in_menu:
+                        self.menu.joystick_actions(event)
 
             # save cpu resources
             if not self.menu.in_menu and not self.loading_level:
