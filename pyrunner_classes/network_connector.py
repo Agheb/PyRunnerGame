@@ -23,6 +23,21 @@ clientlog = netlog.getChild("Client")
 
 START_PORT = 6799
 
+class Message():
+    """just a wrapper object to store messages in one place"""
+
+    #types
+    type_client_dc = "client_disconnected"
+    type_key_update = "key_update"
+    type_init = 'init_succ'
+    type_comp_update = 'update_all'
+    type_keep_alive = 'keep_alive'
+    type_level_changed = 'level_changed'
+
+
+    #data fields
+    field_player_locations = "player_locations"
+    field_level_name = "level_name"
 
 class NetworkConnector(object):
     """the main network class"""
@@ -32,7 +47,8 @@ class NetworkConnector(object):
     def __init__(self, main, level):
         self.ip = "0.0.0.0"
         socket_ip = socket.gethostbyname(socket.gethostname())
-        self.external_ip = socket_ip if not socket_ip.startswith("127.") else socket.gethostbyname(socket.getfqdn())
+        network_ip = self.get_network_ip()
+        self.external_ip = socket_ip
         self.main = main
         self.level = level
         self.port = START_PORT
@@ -41,6 +57,22 @@ class NetworkConnector(object):
         self.server = None
         self.browser = None
         self.advertiser = None
+
+        '''get IP'''
+        if socket_ip.startswith("127."):
+            self.external_ip = network_ip if not network_ip.startswith("127.") else socket.gethostbyname(socket.getfqdn())
+
+    @staticmethod
+    def get_network_ip():
+        """get the local ip"""
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            s.connect(('<broadcast>', 0))
+            return s.getsockname()[0]
+
+        except OSError:
+            return "127.0.0.1"
 
     def quit(self):
         """shutdown all threads"""
@@ -52,18 +84,22 @@ class NetworkConnector(object):
         except AttributeError:
             pass
 
-    def init_new_server(self):
+    def init_new_server(self, local_only=False):
         """start a new server thread"""
         if self.server:
             self.server.kill()
 
-        self.server = Server(self.ip, self.port, self.level, self.main)
+        self.server = Server(self.ip, self.port, self.level, self.main, local_only)
         self.master = True
         self.server.start()
 
-    def start_server_prompt(self, port=START_PORT):
-        """starting a network server from the main menu"""
+    def start_local_game(self):
+        """run a single player game"""
+        self.start_server_prompt(START_PORT - 10, True)
 
+    def start_server_prompt(self, port=START_PORT, local_only=False):
+        """starting a network server from the main menu"""
+        self.ip = "0.0.0.0" if not local_only else "127.0.0.1"
         self.port = port if port else START_PORT
 
         def start_server():
@@ -71,7 +107,7 @@ class NetworkConnector(object):
 
             if not self.server:
 
-                self.init_new_server()
+                self.init_new_server(local_only)
 
                 while not self.server.connected:
                     '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
@@ -88,6 +124,8 @@ class NetworkConnector(object):
                             self.server.kill()
                             break
             else:
+                if local_only:
+                    self.server.kill()
                 self.join_server_prompt((self.ip, self.port))
                 # self.main.load_level(self.main.START_LEVEL)
 
@@ -96,8 +134,9 @@ class NetworkConnector(object):
 
         if self.server and self.server.connected:
             self.join_server_prompt((self.ip, self.port))
-            '''propagate server over zeroconf'''
-            self.advertiser = ZeroConfAdvertiser(self.external_ip, self.port)
+            if not local_only:
+                '''propagate server over zeroconf'''
+                self.advertiser = ZeroConfAdvertiser(self.external_ip, self.port)
 
     def join_server_menu(self):
         """browse for games and then join"""
@@ -130,6 +169,7 @@ class NetworkConnector(object):
     def update(self):
         try:
             self.client.update()
+            self.server.update()
         except (MastermindErrorClient, AttributeError):
             pass
 
@@ -152,7 +192,6 @@ class Client(threading.Thread, MastermindClientTCP):
         clientlog.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update', 'data': str(key)})
         self.send(data, compression=NetworkConnector.COMPRESSION)
-
     def run(self):
         clientlog.info("Connecting to ip %s" % str(self.target_ip))
         try:
@@ -160,20 +199,12 @@ class Client(threading.Thread, MastermindClientTCP):
             clientlog.info("Client connecting, waiting for initData")
             self.connected = True
             self.wait_for_init_data()
-        except (OSError, MastermindErrorSocket):
-            error = "An error occurred connecting to the server. Please try again later."
+        except (OSError, MastermindErrorSocket, MastermindErrorClient):
+            error = "An error occurred connecting to the server."
+            error += " %s:%s Please try again later." % (self.target_ip, self.port)
             self.main.menu.network.print_error(error)
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
-
-    def get_last_command(self):
-        # for now, maybe we need non blocking later
-        raw_data = self.receive(True)
-        data = json.loads(raw_data)
-        clientlog.info("Got data from server: {}".format(str(data)))
-        if data['type'] == 'key_update':
-            clientlog.info("got key_update from server")
-            return data['data'], data['player_id']
 
     def wait_for_init_data(self):
         """start the server and wait for players to connect"""
@@ -202,8 +233,12 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def send_init_success(self):
         """let the server know the connection succeeded"""
-        data = json.dumps({'type': 'init_succ', 'player_id': self.player_id})
-        self.send(data, compression=NetworkConnector.COMPRESSION)
+        data = {'player_id': self.player_id}
+        self.send_data_to_server(Message.type_init, data)
+
+    def send_data_to_server(self, message_type, py_data):
+        data = json.dumps({'type': message_type, 'data': py_data})
+        self.send(data,compression = NetworkConnector.COMPRESSION)
 
     def kill(self):
         """stop the server"""
@@ -231,22 +266,45 @@ class Client(threading.Thread, MastermindClientTCP):
         if raw_data:
             data = json.loads(raw_data)
             clientlog.info("Got data from server: {}".format(str(data)))
-            if data['type'] == 'key_update':
+            if data['type'] == Message.type_key_update:
                 clientlog.info("got key_update from server")
-                Controller.do_action(data['data'], data['player_id'])
-            if data['type'] == 'init_succ':
+                Controller.do_action(data['data']['key'], data['data']['player_id'])
+                return
+            
+            if data['type'] == Message.type_init:
                 clientlog.info("got init succ")
                 try:
-                    self.level.players[int(data['player_id'])]
+                    self.level.players[int(data['data']['player_id'])]
                 except IndexError:
                     pid = len(self.level.players)
                     self.level.add_player(pid)
                 self.main.menu.show_menu(False)
+                return
+
+            if data['type'] == Message.type_client_dc:
+                clientlog.info("A client disconnected, removing from game")
+                pid = data['data']['client_id']
+                if not self.level.remove_player(pid):
+                    clientlog.error("Could not remove player form player list!")
+                else:
+                    clientlog.info("removed player form playerlist")
+                return
+
+            if data['type'] == Message.type_comp_update:
+                clientlog.info("Setting player location")
+                self.level.set_players_pos(data['data'][Message.field_player_locations])
+                return
+            
+            if data['type'] == Message.type_level_changed:
+                clientlog.info("Got change level from Server")
+                level_name = data[Message.field_level_name]
+                self.level.load_level(level_name)
+                return
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
         if (datetime.now() - self.timer).seconds > 4:
-            data = json.dumps({'type': 'keep_alive'})
+            data = json.dumps({'type': Message.type_keep_alive})
             self.send(data, compression=NetworkConnector.COMPRESSION)
             self.timer = datetime.now()
         pass
@@ -255,13 +313,15 @@ class Client(threading.Thread, MastermindClientTCP):
 class Server(threading.Thread, MastermindServerTCP):
 
     """main network server"""
-    def __init__(self, ip, port, level, main):
+    def __init__(self, ip, port, level, main, local_only=False):
         self.ip = ip
         self.port = port
         self._level = level
         self.main = main
+        self.local_only = local_only
         self.known_clients = []
         self.connected = False
+        self.sync_time = 1
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -273,22 +333,22 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def interpret_client_data(self, data, con_obj):
         """interprets data send from the client to the server"""
-        if data['type'] == "keep_alive":
+        if data['type'] == Message.type_keep_alive:
             srvlog.debug("Got keep Alive")
             pass
-        if data['type'] == "key_update":
+        if data['type'] == Message.type_key_update:
             srvlog.debug("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(con_obj))
-        if data['type'] == "complete_update":
-            srvlog.debug("Got full update from Client")
-            pass
-        if data['type'] == "init_succ":
-            player_id = data['player_id']
+        if data['type'] == Message.type_comp_update:
+            #should never be called as the server is the master and will only send not receive
+            raise Exception('This message should never be send to the Server')
+        if data['type'] == Message.type_init:
+            player_id = data['data']['player_id']
             srvlog.debug("Init succ for client {}".format(player_id))
             for client in self.known_clients:
                 self.callback_client_send(client,json.dumps(data))
             pass
-
+                
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
         srvlog.info("New Client Connected %s" %str(connection_object.address))
@@ -318,12 +378,29 @@ class Server(threading.Thread, MastermindServerTCP):
         
         return super(MastermindServerTCP, self).callback_connect_client(connection_object)
 
+    def callback_disconnect_client(self, connection_object):
+        """gets called if a client disconnects"""
+        disconnected_client = self.known_clients.index(connection_object)
+        srvlog.info("Client disconnected, sending to other clients %s" % disconnected_client)
+
+        #kill the player of the disconnected client on all other clients
+        self.send_to_all_clients(Message.type_client_dc, {'client_id': disconnected_client})
+        self.known_clients.pop(disconnected_client)
+        return super(MastermindServerTCP,self).callback_disconnect_client(connection_object)
+
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
-        data = json.dumps({'type': 'key_update', 'data': str(key), 'player_id': str(player_id)})
+        self.send_to_all_clients(Message.type_key_update, {'key' : str(key), 'player_id' : str(player_id)})
+
+    def notify_level_changed(self, level):
+        data = {Message.field_level_name: level}
+        self.send_to_all_clients(Message.type_level_changed, data)
+
+    def send_to_all_clients(self, message, data):
+        json_data = json.dumps({'type': message, 'data': data})
         for client in self.known_clients:
-            self.callback_client_send(client, data)
+            self.callback_client_send(client, json_data)
 
     def kill(self):
         try:
@@ -344,6 +421,7 @@ class Server(threading.Thread, MastermindServerTCP):
             self.connect(self.ip, self.port)
             self.accepting_allow()
             self.connected = True
+            self.lastUpdate = datetime.now()
         except (OSError, MastermindErrorSocket):
             print(str(OSError))
             print(str(MastermindErrorSocket))
@@ -355,6 +433,17 @@ class Server(threading.Thread, MastermindServerTCP):
         srvlog.info("Server disconnected from network")
         return super(MastermindServerTCP, self).callback_disconnect()
 
+    def update(self):
+        if (datetime.now() - self.lastUpdate).seconds  > self.sync_time:
+            srvlog.info("sending update data to clients")
+            self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
+            self.lastUpdate = datetime.now()
+
+    def get_collected_data(self):
+        collectedData = {}
+        collectedData[Message.field_player_locations] = self.level.get_all_player_pos()
+        return collectedData
+        
     @property
     def level(self):
         """return the current level"""

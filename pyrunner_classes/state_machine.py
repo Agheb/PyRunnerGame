@@ -5,7 +5,7 @@ class StateMachine(object):
 
     def add_state(self, state):
         # add a state to dictionary of statemachine instance
-        self.stateslist[state.name] = state
+        self.stateslist[state.statename] = state
         # print("list of active states in Statemachine")
         # print(self.stateslist)
         # print("state " + state.name + " added")

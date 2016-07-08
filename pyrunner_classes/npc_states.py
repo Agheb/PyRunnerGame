@@ -2,6 +2,7 @@ from .player import Player
 from ast import literal_eval as make_tuple
 from datetime import datetime
 import math
+import pygame
 
 
 class State(object):
@@ -12,8 +13,8 @@ class State(object):
         Bots are Instances of non_player_characters, inherited from player class.
     """
 
-    def __init__(self, name, bot):
-        self.name = name
+    def __init__(self, statename, bot):
+        self.statename = statename
         self.bot = bot
         self.bot_last_tile = None
         self.closest_player = None
@@ -26,6 +27,7 @@ class State(object):
         self.switch_direction = False
         self.search_ladder = False
         self.climbed_ladder = False
+        self.detection_range = 10
 
     def do_actions(self):
         """
@@ -106,7 +108,7 @@ class State(object):
                 self.bot.go_up()
         elif y > by and self.bot.on_rope and (x - 2 <= bx <= x + 2 or not self.bot.change_x):
             '''jump down of ropes if the player is walking below the bot'''
-            jump_down = True    # make sure the bot jumps off a rope if he's stuck
+            jump_down = True  # make sure the bot jumps off a rope if he's stuck
 
             if self.bot.change_x:
                 '''check if there's nothing in the way to the player'''
@@ -165,21 +167,38 @@ class State(object):
 
             return path if player else False
 
-    def check_closest_player(self):
+    def check_player_in_range(self):
+        """find the closest player in a circle ratio"""
+        collide_rect = pygame.sprite.collide_rect_ratio(self.detection_range)
+
+        players_in_range = pygame.sprite.spritecollide(self.bot, Player.humans, False, collided=collide_rect)
+
+        if len(players_in_range) > 1:
+            self.check_closest_player(players_in_range)
+        elif len(players_in_range) == 1:
+            return players_in_range[0]
+        else:
+            return None
+
+    def check_closest_player(self, players=None):
         """Bot checks if a player is in a specified radius. If its is returns the position of the closest player."""
+
         def distance(p0, p1):
             """calculate the distance to a player"""
             return math.sqrt((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2) if p0 and p1 else radius
 
         bot_pos = self.bot.on_tile
-        radius = 10     # tiles!! (not pixels)
+        radius = self.detection_range  # tiles!! (not pixels)
 
         player = None
         new_distance = radius
         last_tile = None
 
-        for p in Player.group:
-            if p.is_human and p.on_tile:
+        if not players:
+            players = Player.humans
+
+        for p in players:
+            if p.on_tile:
                 distance = distance(p.on_tile, bot_pos)
                 last_tile = p.on_tile
 
@@ -187,7 +206,6 @@ class State(object):
                 if distance < new_distance:
                     player = p
                     new_distance = distance
-                    print(str(distance))
 
         if player:
             self.closest_player = player
@@ -216,7 +234,7 @@ class State(object):
 
             if bx == self.bot.level.cols - 1:
                 self.bot.walk_left = True
-            elif bx == 1:
+            elif bx == 0 and not self.bot.on_ladder:
                 self.bot.walk_left = False
 
             self.bot.go_left() if self.bot.walk_left else self.bot.go_right()
@@ -224,6 +242,7 @@ class State(object):
 
 class Exploring(State):
     """wander around the map"""
+
     def __init__(self, bot):
         State.__init__(self, "exploring", bot)
 
@@ -267,7 +286,7 @@ class Exploring(State):
 
     def check_conditions(self):
         """as soon as a player is in sight switch to a hunting mode"""
-        if self.check_closest_player():
+        if self.check_player_in_range():
             print("player found")
             return "shortest path"
 
@@ -282,6 +301,7 @@ class Exploring(State):
 
 class ShortestPath(State):
     """Hunt a player using Dijkstra's shortest path algorithm"""
+
     def __init__(self, bot):
         State.__init__(self, "shortest path", bot)
 
@@ -329,7 +349,7 @@ class ShortestPath(State):
 
     def entry_actions(self):
         """look up a shortest path if entering this state"""
-        self.closest_player = self.check_closest_player()
+        self.closest_player = self.check_player_in_range()
 
         if not self.path:
             if self.bot.on_tile and self.closest_player.on_tile:
@@ -343,6 +363,7 @@ class ShortestPath(State):
 
 class Hunting(Exploring):
     """Hunt a player using a simple/stupid move to player x/y algorithm"""
+
     def __init__(self, bot):
         State.__init__(self, "hunting", bot)
         self.check_sp = False
@@ -388,7 +409,7 @@ class Hunting(Exploring):
 
     def entry_actions(self):
         """look up the closest player when entering this state"""
-        self.closest_player = self.check_closest_player()
+        self.closest_player = self.check_player_in_range()
         self.switch_time = datetime.now()
 
     def exit_actions(self):

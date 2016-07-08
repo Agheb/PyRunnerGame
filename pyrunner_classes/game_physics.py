@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 # Python 2 related fixes
 from __future__ import division
-from .level import *
+from .level_objecs import WorldObject
 from .player import *
-from .non_player_characters import Bots
 import pygame
 import logging
 import pdb
@@ -15,11 +14,8 @@ log = logging.getLogger("Physics")
 class Physics(object):
     """physics"""
 
-    def __init__(self, level, screen):
+    def __init__(self, level):
         self.level = level
-        self.surface = screen
-
-        # TODO: set level id on level id, via level.py or WorldObjects
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -61,6 +57,10 @@ class Physics(object):
             on_ground = False
             can_go_down = False
 
+            '''kill players touched by bots'''
+            if not player.is_human and not player.direction == "Trapped":
+                pygame.sprite.spritecollide(player, Player.humans, True, collided=pygame.sprite.collide_rect_ratio(0.5))
+
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
             if removed_collision:
@@ -72,23 +72,23 @@ class Physics(object):
                         on_ground = True
 
             '''add sprites left and right of the bot for collision detection'''
-            right_tile = self.find_collision(player.rect.centerx + player.size, player.rect.centery, WorldObject.group)
+            right_tile = self.find_collision(player.rect.centerx + half_size, player.rect.centery, WorldObject.group)
             right_bottom = self.find_collision(player.rect.centerx + player.tile_size,
                                                player.rect.bottom + half_size)
             '''find sprites to the left'''
-            left_tile = self.find_collision(player.rect.centerx - player.size, player.rect.centery, WorldObject.group)
+            left_tile = self.find_collision(player.rect.centerx - half_size, player.rect.centery, WorldObject.group)
             left_bottom = self.find_collision(player.rect.centerx - player.tile_size,
                                               player.rect.bottom + half_size)
 
             if not player.is_human:
-                if right_tile and not (right_tile.collectible or right_tile.climbable):
+                if right_tile and not right_tile.collectible and not right_tile.climbable:
                     player.right_tile = right_tile
                 else:
                     player.right_tile = None
 
                 player.right_bottom = right_bottom if right_bottom else None
 
-                if left_tile and not (left_tile.collectible or left_tile.climbable):
+                if left_tile and not left_tile.collectible and not left_tile.climbable:
                     player.left_tile = left_tile
                 else:
                     player.left_tile = None
@@ -135,12 +135,6 @@ class Physics(object):
                 '''if a bot hits a player from below the player should die'''
                 self.hit_top(player, top_collision)
 
-            '''kill players touched by bots'''
-            if player.is_human:
-                killer = self.find_collision(player.rect.centerx, player.rect.centery, Player.group)
-                if not killer.is_human:
-                    player.kill()
-
             '''handle all other direct collisions'''
             collisions = pygame.sprite.spritecollide(player, WorldObject.group, False, False)
             for sprite in collisions:
@@ -154,6 +148,8 @@ class Physics(object):
                         # self.level.clean_sprite(sprite)
                         # and remove it
                         sprite.kill()
+                    elif not player.robbed_gold:
+                        player.collect_gold(sprite)
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:

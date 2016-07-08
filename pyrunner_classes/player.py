@@ -10,6 +10,7 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 # Python 2 related fixes
 from __future__ import division
 import pygame
+
 from .spritesheet_handling import SpriteSheet
 from .player_objects import GoldScore
 
@@ -18,6 +19,8 @@ class Player(pygame.sprite.DirtySprite):
     """defines the main  player and bots"""
 
     group = pygame.sprite.LayeredDirty(default_layer=1)
+    humans = pygame.sprite.LayeredDirty(default_layer=1)
+    bots = pygame.sprite.LayeredDirty(default_layer=1)
 
     def __init__(self, pos, sheet, pid=1, tile_size=32, level=None, fps=25, bot=False):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
@@ -28,6 +31,7 @@ class Player(pygame.sprite.DirtySprite):
         self.size = self.tile_size + self.pixel_diff
         self.fps = fps
         self.is_human = True if not bot else False
+        self.dirty = 2  # always repaint this sprite
         # positional attributes
         self.x, self.y = pos
         self.on_tile = None
@@ -64,6 +68,7 @@ class Player(pygame.sprite.DirtySprite):
         self.reached_exit = False
 
         if self.is_human:
+            Player.humans.add(self)
             # score related
             self.score_left = True if not self.pid % 2 else False
             self.score_up = True if self.pid <= 2 else False
@@ -199,8 +204,6 @@ class Player(pygame.sprite.DirtySprite):
 
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
-        self.dirty = 1
-
         if not self.is_human:
             self.process()
 
@@ -269,6 +272,8 @@ class Player(pygame.sprite.DirtySprite):
             self.killed_frame += 1
 
             if self.killed_frame is len(self.death_frames) * 2:
+                if not self.is_human:
+                    self.death_actions()
                 pygame.sprite.DirtySprite.kill(self)
 
     def calc_gravity(self):
@@ -363,7 +368,7 @@ class Player(pygame.sprite.DirtySprite):
     def gold(self):
         """returns the players gold"""
         return self.gold_score.gold
-
+        
     @gold.setter
     def gold(self, amount):
         """set the gold value of this player to amount"""

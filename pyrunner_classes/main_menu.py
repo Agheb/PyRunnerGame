@@ -6,6 +6,7 @@ from __future__ import division
 # universal imports
 import pygame
 from pygame.locals import *
+from time import sleep
 from .menu import Menu, MenuItem
 from .level import Level
 
@@ -76,28 +77,27 @@ class MainMenu(object):
         s_height = (self.render_thread.screen.get_height() // 9) * 5
         surface = pygame.Surface((s_width, s_height))
         # regular font sizes
-        h1_size = 72
-        h2_size = 48
-        item_size = 36
+        h1_size = self.h1_size
+        h2_size = self.h2_size
+        item_size = self.item_size
         '''calculate the ratio to adjust font sizes accordingly'''
         ratio = Menu.calc_font_size(surface, h1_size, item_size)
         h1_size = int(h1_size * ratio)
         h2_size = int(h2_size * ratio)
         item_size = int(item_size * ratio)
+        font_size = h1_size, h2_size, item_size
         '''first create the root menu'''
-        menu_main = Menu(self, self.config.name, surface, None, h1_size, h2_size, item_size)
+        menu_main = Menu(self, self.config.name, surface, None, font_size)
 
         '''New Game Menu'''
-        m_game = menu_main.add_submenu("Start Game")
+        menu_main.add_item(MenuItem("Start Game", self.network_connector.start_local_game))
 
         '''New Game / Single Player'''
-        m_game_sp = m_game.add_submenu("Singleplayer")
-        m_game_sp.add_item(MenuItem("Start Game", None))
-        m_game_sp.add_item(MenuItem("Select Level", None))
-        m_game_sp.add_item(MenuItem("Game Settings", None))
+        # m_game.add_item(MenuItem("Select Level", None))
+        # m_game.add_item(MenuItem("Game Settings", None))
 
         '''New Game / Multiplayer'''
-        m_game_mp = m_game.add_submenu("Multiplayer")
+        m_game_mp = menu_main.add_submenu("Multiplayer")
         m_game_mp.add_item(MenuItem("Local Game", None))
         m_game_mp.add_item(MenuItem("Start Server", self.network_connector.start_server_prompt))
         m_game_mp.add_item(MenuItem("Join Server", self.network_connector.join_server_menu))
@@ -136,11 +136,11 @@ class MainMenu(object):
         '''Exit'''
         menu_main.add_item(MenuItem("Exit", self.main.quit_game))
 
-        '''special purpose menus'''
+        '''special purpose (hidden) menus'''
         '''game over menu'''
-        menu_game_over = Menu(self, "Game Over", surface, menu_main, h1_size, h2_size, item_size)
+        menu_game_over = menu_main.add_submenu("Game Over", True)
         '''network related menu'''
-        menu_network_browser = Menu(self, "Browse Games", surface, m_game_mp, h1_size, h2_size, item_size)
+        menu_network_browser = m_game_mp.add_submenu("Join Server", True)
 
         '''save the menus'''
         self.game_over = menu_game_over
@@ -160,18 +160,20 @@ class MainMenu(object):
         self.menu_pos = 1
         self.show_menu()
 
-    def show_menu(self, boolean=True):
+    def show_menu(self, show=True):
         """print the current menu to the screen"""
-        if boolean:
-            self.in_menu = True
+        self.in_menu = show
+
+        if self.in_menu:
             self.render_thread.blit(self.main.level.background, None, True)
             rects, self.menu_pos = self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
             self.render_thread.blit(self.current_menu.surface, None, True)
-            # render_thread.add_rect_to_update(rects)
         else:
-            self.in_menu = False
             self.menu_pos = 1
             self.render_thread.blit(self.main.level.surface, None, True)
+
+        '''avoid screen flickering'''
+        sleep(0.1)
         # draw the selected surface to the screen
         self.render_thread.refresh_screen(True)
 

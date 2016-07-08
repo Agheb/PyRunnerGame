@@ -20,6 +20,8 @@ class GoldScore(pygame.sprite.DirtySprite):
         self.level = self.player.level
         self.pixel_diff = self.player.pixel_diff
         self.fps = self.player.fps
+        # this frame should be rendered permanently
+        self.dirty = 2
         self._gold = 0
         self.tile_size = 32
         self.min_pixels = 6
@@ -98,9 +100,6 @@ class GoldScore(pygame.sprite.DirtySprite):
                     pos = i if self.left else length - i - 1
                     child.set_number(num[pos])
 
-        # this frame should be rendered permanently
-        self.dirty = 1
-
     @property
     def gold(self):
         """the amount of gold this object stores"""
@@ -129,7 +128,7 @@ class ScoreNumber(pygame.sprite.DirtySprite):
         self.pos = self.gs.pos
         self.pixel_diff = self.gs.pixel_diff
         self.fps = self.gs.fps
-        self.sprite_sheet = SpriteSheet("numbers_gold_320x32.png", 32, self.pixel_diff, self.fps, False)
+        self.sprite_sheet = SpriteSheet("numbers_320x32.png", 32, self.pixel_diff, self.fps, False)
         self.number = number
         self.numbers = self.sprite_sheet.add_animation(0, 0, 10)
         self.changed = True
