@@ -247,10 +247,14 @@ class MainMenu(object):
         """decide what should be configured"""
         self.config_keys_player, self.config_keys_action = player_action
 
-        self.menu_config_p1.flush_all_items()
-        self.menu_config_p1.add_item(MenuItem("Press any key for %s" % self.config_keys_action, None))
-
-        self.set_current_menu(self.menu_config_p1)
+        if self.config_keys_player is 1:
+            self.menu_config_p1.flush_all_items()
+            self.menu_config_p1.add_item(MenuItem("Press any key for %s" % self.config_keys_action, None))
+            self.set_current_menu(self.menu_config_p1)
+        else:
+            self.menu_config_p2.flush_all_items()
+            self.menu_config_p2.add_item(MenuItem("Press any key for %s" % self.config_keys_action, None))
+            self.set_current_menu(self.menu_config_p2)
 
         self.configure_keys = True
 
