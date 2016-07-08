@@ -72,6 +72,8 @@ class PyRunner(object):
         if self.level:
             '''clear all old sprites'''
             Player.group.empty()
+            Player.humans.empty()
+            Player.bots.empty()
             WorldObject.group.empty()
             WorldObject.removed.empty()
             self.level_exit = False

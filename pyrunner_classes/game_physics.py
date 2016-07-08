@@ -59,7 +59,7 @@ class Physics(object):
 
             '''kill players touched by bots'''
             if not player.is_human and not player.direction == "Trapped":
-                pygame.sprite.spritecollide(player, Player.humans, True)
+                pygame.sprite.spritecollide(player, Player.humans, True, collided=pygame.sprite.collide_rect_ratio(0.5))
 
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
