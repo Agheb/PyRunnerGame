@@ -8,7 +8,7 @@ from pprint import pprint
 import pdb
 from .controller import Controller
 from datetime import datetime
-from time import sleep
+from time import sleep, time
 import json
 import socket
 from libs.Mastermind import *
@@ -334,7 +334,8 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
-        self.sync_time = 1 / self.level.fps
+        self.sync_time = 500   # milliseconds
+        self.last_update = int(round(time() * 1000))
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -440,7 +441,6 @@ class Server(threading.Thread, MastermindServerTCP):
             self.connect(self.ip, self.port)
             self.accepting_allow()
             self.connected = True
-            self.lastUpdate = datetime.now()
         except (OSError, MastermindErrorSocket):
             print(str(OSError))
             print(str(MastermindErrorSocket))
@@ -453,12 +453,12 @@ class Server(threading.Thread, MastermindServerTCP):
         return super(MastermindServerTCP, self).callback_disconnect()
 
     def update(self):
-        if (datetime.now() - self.lastUpdate).seconds >= self.sync_time:
+        if (int(round(time() * 1000)) - self.last_update) >= self.sync_time:
             srvlog.info("sending update data to clients")
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             self.send_to_all_clients(Message.type_comp_update)
-            self.lastUpdate = datetime.now()
+            self.last_update = int(round(time() * 1000))  # datetime.now()
 
     def get_collected_data(self):
         collectedData = {}
