@@ -293,7 +293,8 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_comp_update:
                 clientlog.info("Sending own Pos to Server")
                 player = self.level.players[int(self.player_id)]
-                normalized_pos = (player.rect.x / player.size, player.rect.y / player.size)
+                normalized_pos = ((player.rect.x - self.level.margin_left) / player.size,
+                                  (player.rect.y - self.level.margin_top) / player.size)
                 playerInfo = (self.player_id, normalized_pos)
                 self.send_data_to_server(Message.type_comp_update, playerInfo)
                 return
