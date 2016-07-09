@@ -491,32 +491,36 @@ class Level(object):
         Level.players.append(new_player)
         log.info("Added Player. Players {}".format(Level.players))
 
-    def remove_player(self, pid):
-
+    @staticmethod
+    def remove_player(pid):
+        """remove a player from the game"""
         try:
             for player in Level.players:
                 if player.pid == pid:
                     player.kill()
                     Level.players.remove(player)
             return True
-        except:
+        except (IndexError, AttributeError):
             return False
 
     def get_all_player_pos(self):
+        """resolution independent positions of all players in the map"""
         players_pos = {}
         for player in Level.players:
-            normalized_pos = (player.rect.topleft[0] / player.size , player.rect.topleft[1] / player.size ) 
+            normalized_pos = ((player.rect.x - self.margin_left) / player.size,
+                              (player.rect.y - self.margin_top) / player.size)
             players_pos[Level.players.index(player)] = normalized_pos
         return players_pos
 
-    def set_player_pos(self, playerId, playerPos):
+    def set_player_pos(self, player_id, player_pos):
+        """set the player position for all players in the level according to the viewers screen resolution"""
         for player in Level.players:
-            if player.pid == int(playerId):
-                player.rect.x = round(playerPos[0] * player.size + self.margin_left)
-                player.rect.y = round(playerPos[1] * player.size + self.margin_top)
-                log.info("Set Player {} position".format(playerId))
+            if player.pid == int(player_id):
+                player.rect.x = round(player_pos[0] * player.size + self.margin_left)
+                player.rect.y = round(player_pos[1] * player.size + self.margin_top)
+                log.info("Set Player {} position".format(player_id))
                 return
-        log.info("Cant find player {} to set pos".format(playerId))
+        log.info("Cant find player {} to set pos".format(player_id))
         
     
     @staticmethod

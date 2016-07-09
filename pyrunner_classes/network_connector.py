@@ -193,6 +193,7 @@ class Client(threading.Thread, MastermindClientTCP):
         clientlog.info("Sending key Action %s to server" % key)
         data = json.dumps({'type': 'key_update', 'data': str(key)})
         self.send(data, compression=NetworkConnector.COMPRESSION)
+
     def run(self):
         clientlog.info("Connecting to ip %s" % str(self.target_ip))
         try:
@@ -239,7 +240,7 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def send_data_to_server(self, message_type, py_data):
         data = json.dumps({'type': message_type, 'data': py_data})
-        self.send(data,compression = NetworkConnector.COMPRESSION)
+        self.send(data, compression=NetworkConnector.COMPRESSION)
 
     def kill(self):
         """stop the server"""
@@ -296,8 +297,8 @@ class Client(threading.Thread, MastermindClientTCP):
                 player = self.level.players[int(self.player_id)]
                 normalized_pos = ((player.rect.x - self.level.margin_left) / player.size,
                                   (player.rect.y - self.level.margin_top) / player.size)
-                playerInfo = (self.player_id, normalized_pos)
-                self.send_data_to_server(Message.type_comp_update, playerInfo)
+                player_info = (self.player_id, normalized_pos)
+                self.send_data_to_server(Message.type_comp_update, player_info)
                 return
             
             if data['type'] == Message.type_level_changed:
@@ -341,7 +342,7 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def callback_client_handle(self, connection_object, data):
         """Initial point of data arrival. Data is received and passed on"""
-        srvlog.info("got: '%s'" %str(data))
+        srvlog.info("got: '%s'" % str(data))
         json_data = json.loads(data)
         self.interpret_client_data(json_data, connection_object)
 
