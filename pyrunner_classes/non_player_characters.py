@@ -20,7 +20,7 @@ class Bots(Player):
         self.walk_left = True
         self.robbed_gold = None
         # give humans a chance
-        self.speed -= 1
+        self.speed -= self.size / 30
         self.frame_counter = 0
         self.spawning = True
         self.spawn_frame = 0
