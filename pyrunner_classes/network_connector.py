@@ -22,7 +22,7 @@ clientlog = netlog.getChild("Client")
 START_PORT = 6799
 
 
-class Message():
+class Message(object):
     """just a wrapper object to store messages in one place"""
 
     #types
@@ -38,6 +38,7 @@ class Message():
     #data fields
     field_player_locations = "player_locations"
     field_level_name = "level_name"
+
 
 class NetworkConnector(object):
     """the main network class"""
@@ -333,7 +334,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
-        self.sync_time = 0.1
+        self.sync_time = 1 / self.level.fps
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -452,7 +453,7 @@ class Server(threading.Thread, MastermindServerTCP):
         return super(MastermindServerTCP, self).callback_disconnect()
 
     def update(self):
-        if (datetime.now() - self.lastUpdate).seconds  > self.sync_time:
+        if (datetime.now() - self.lastUpdate).seconds >= self.sync_time:
             srvlog.info("sending update data to clients")
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
