@@ -16,6 +16,8 @@ class Physics(object):
 
     def __init__(self, level):
         self.level = level
+        '''sounds'''
+        self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Collect_Point_01.wav'))
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -142,12 +144,13 @@ class Physics(object):
                     if player.is_human:
                         '''only human players can take gold'''
                         player.add_gold()
-                        # clear the item
-                        # self.level.clean_sprite(sprite)
-                        # and remove it
+                        "Collect gold SFX"
+                        self.level.sound_thread.play_sound(self.sfx_coin_collected)
+                        # remove it
                         sprite.kill()
                     elif not player.robbed_gold:
                         player.collect_gold(sprite)
+                        self.level.sound_thread.play_sound(self.sfx_coin_collected)
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:
