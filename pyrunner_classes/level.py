@@ -512,8 +512,8 @@ class Level(object):
     def set_player_pos(self, playerId, playerPos):
         for player in Level.players:
             if player.pid == int(playerId):
-                player.rect.topleft = (int(playerPos[0] * player.size),
-                                       int(playerPos[1] * player.size))
+                player.rect.x = round(playerPos[0] * player.size + self.margin_left)
+                player.rect.y = round(playerPos[1] * player.size + self.margin_top)
                 log.info("Set Player {} position".format(playerId))
                 return
         log.info("Cant find player {} to set pos".format(playerId))

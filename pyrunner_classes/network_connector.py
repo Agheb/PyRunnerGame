@@ -8,7 +8,7 @@ from pprint import pprint
 import pdb
 from .controller import Controller
 from datetime import datetime
-from time import sleep
+from time import sleep, time
 import json
 import socket
 from libs.Mastermind import *
@@ -22,7 +22,7 @@ clientlog = netlog.getChild("Client")
 START_PORT = 6799
 
 
-class Message():
+class Message(object):
     """just a wrapper object to store messages in one place"""
 
     #types
@@ -38,6 +38,7 @@ class Message():
     #data fields
     field_player_locations = "player_locations"
     field_level_name = "level_name"
+
 
 class NetworkConnector(object):
     """the main network class"""
@@ -293,7 +294,8 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_comp_update:
                 clientlog.info("Sending own Pos to Server")
                 player = self.level.players[int(self.player_id)]
-                normalized_pos = (player.rect.x / player.size, player.rect.y / player.size)
+                normalized_pos = ((player.rect.x - self.level.margin_left) / player.size,
+                                  (player.rect.y - self.level.margin_top) / player.size)
                 playerInfo = (self.player_id, normalized_pos)
                 self.send_data_to_server(Message.type_comp_update, playerInfo)
                 return
@@ -332,7 +334,8 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
-        self.sync_time = 1
+        self.sync_time = 500   # milliseconds
+        self.last_update = int(round(time() * 1000))
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -438,7 +441,6 @@ class Server(threading.Thread, MastermindServerTCP):
             self.connect(self.ip, self.port)
             self.accepting_allow()
             self.connected = True
-            self.lastUpdate = datetime.now()
         except (OSError, MastermindErrorSocket):
             print(str(OSError))
             print(str(MastermindErrorSocket))
@@ -451,12 +453,12 @@ class Server(threading.Thread, MastermindServerTCP):
         return super(MastermindServerTCP, self).callback_disconnect()
 
     def update(self):
-        if (datetime.now() - self.lastUpdate).seconds  > self.sync_time:
+        if (int(round(time() * 1000)) - self.last_update) >= self.sync_time:
             srvlog.info("sending update data to clients")
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             self.send_to_all_clients(Message.type_comp_update)
-            self.lastUpdate = datetime.now()
+            self.last_update = int(round(time() * 1000))  # datetime.now()
 
     def get_collected_data(self):
         collectedData = {}
