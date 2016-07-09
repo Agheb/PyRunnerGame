@@ -293,9 +293,9 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_comp_update:
                 clientlog.info("Sending own Pos to Server")
                 player = self.level.players[int(self.player_id)]
-                normalized_pos = (player.rect.topleft[0] / player.size , player.rect.topleft[1] / player.size )
+                normalized_pos = (player.rect.x / player.size, player.rect.y / player.size)
                 playerInfo = (self.player_id, normalized_pos)
-                self.send_data_to_server(Message.type_comp_update , playerInfo)
+                self.send_data_to_server(Message.type_comp_update, playerInfo)
                 return
             
             if data['type'] == Message.type_level_changed:
@@ -355,7 +355,7 @@ class Server(threading.Thread, MastermindServerTCP):
             return
 
         if data['type'] == Message.type_comp_update:
-            #sending the pos of the player to all the clients
+            # sending the pos of the player to all the clients
             self.send_to_all_clients(Message.type_comp_update_set, data['data']) 
             return
         
@@ -363,12 +363,12 @@ class Server(threading.Thread, MastermindServerTCP):
             player_id = data['data']['player_id']
             srvlog.debug("Init succ for client {}".format(player_id))
             for client in self.known_clients:
-                self.callback_client_send(client,json.dumps(data))
+                self.callback_client_send(client, json.dumps(data))
             return
                 
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
-        srvlog.info("New Client Connected %s" %str(connection_object.address))
+        srvlog.info("New Client Connected %s" % str(connection_object.address))
         #adding ip to client list to generate the playerId
         if connection_object not in self.known_clients:
             srvlog.debug("Added client to known clients")
@@ -403,18 +403,18 @@ class Server(threading.Thread, MastermindServerTCP):
         #kill the player of the disconnected client on all other clients
         self.send_to_all_clients(Message.type_client_dc, {'client_id': disconnected_client})
         self.known_clients.pop(disconnected_client)
-        return super(MastermindServerTCP,self).callback_disconnect_client(connection_object)
+        return super(MastermindServerTCP, self).callback_disconnect_client(connection_object)
 
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
-        self.send_to_all_clients(Message.type_key_update, {'key' : str(key), 'player_id' : str(player_id)})
+        self.send_to_all_clients(Message.type_key_update, {'key': str(key), 'player_id': str(player_id)})
 
     def notify_level_changed(self, level):
         data = {Message.field_level_name: level}
         self.send_to_all_clients(Message.type_level_changed, data)
 
-    def send_to_all_clients(self, message, data = None):
+    def send_to_all_clients(self, message, data=None):
         json_data = json.dumps({'type': message, 'data': data})
         for client in self.known_clients:
             self.callback_client_send(client, json_data)
