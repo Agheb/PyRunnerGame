@@ -31,6 +31,7 @@ class Message():
     type_key_update = "key_update"
     type_init = 'init_succ'
     type_comp_update = 'update_all'
+    type_comp_update_set = 'update_all_set'
     type_keep_alive = 'keep_alive'
     type_level_changed = 'level_changed'
 
@@ -291,14 +292,25 @@ class Client(threading.Thread, MastermindClientTCP):
                 return
 
             if data['type'] == Message.type_comp_update:
-                clientlog.info("Setting player location")
-                self.level.set_players_pos(data['data'][Message.field_player_locations])
+                clientlog.info("Sending own Pos to Server")
+                player = self.level.players[int(self.player_id)]
+                normalized_pos = (player.rect.topleft[0] / player.size , player.rect.topleft[1] / player.size )
+                playerInfo = (self.player_id, normalized_pos)
+                self.send_data_to_server(Message.type_comp_update , playerInfo)
                 return
             
             if data['type'] == Message.type_level_changed:
                 clientlog.info("Got change level from Server")
                 level_name = data[Message.field_level_name]
                 self.level.load_level(level_name)
+                return
+            
+            if data['type'] == Message.type_comp_update_set:
+                playerId, normalizedPos = data['data']
+                if playerId != self.player_id:
+                #Dont set our own pos
+                    clientlog.info("Got pos setter from server")
+                    self.level.set_player_pos(playerId, normalizedPos)
                 return
 
     def send_keep_alive(self):
@@ -333,21 +345,27 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def interpret_client_data(self, data, con_obj):
         """interprets data send from the client to the server"""
+
         if data['type'] == Message.type_keep_alive:
             srvlog.debug("Got keep Alive")
-            pass
+            return
+
         if data['type'] == Message.type_key_update:
             srvlog.debug("Got key Update from Client")
             self.send_key(data['data'], self.known_clients.index(con_obj))
+            return
+
         if data['type'] == Message.type_comp_update:
-            #should never be called as the server is the master and will only send not receive
-            raise Exception('This message should never be send to the Server')
+            #sending the pos of the player to all the clients
+            self.send_to_all_clients(Message.type_comp_update_set, data['data']) 
+            return
+        
         if data['type'] == Message.type_init:
             player_id = data['data']['player_id']
             srvlog.debug("Init succ for client {}".format(player_id))
             for client in self.known_clients:
                 self.callback_client_send(client,json.dumps(data))
-            pass
+            return
                 
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
@@ -397,7 +415,7 @@ class Server(threading.Thread, MastermindServerTCP):
         data = {Message.field_level_name: level}
         self.send_to_all_clients(Message.type_level_changed, data)
 
-    def send_to_all_clients(self, message, data):
+    def send_to_all_clients(self, message, data = None):
         json_data = json.dumps({'type': message, 'data': data})
         for client in self.known_clients:
             self.callback_client_send(client, json_data)
@@ -436,7 +454,9 @@ class Server(threading.Thread, MastermindServerTCP):
     def update(self):
         if (datetime.now() - self.lastUpdate).seconds  > self.sync_time:
             srvlog.info("sending update data to clients")
-            self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
+            #change to requesting updates from each client 
+            #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
+            self.send_to_all_clients(Message.type_comp_update)
             self.lastUpdate = datetime.now()
 
     def get_collected_data(self):
@@ -455,6 +475,3 @@ class Server(threading.Thread, MastermindServerTCP):
 
         for client_id in range(len(self.known_clients)):
             self.level.add_player(client_id)
-
-        # TODO
-        # re-add players for each client on level change

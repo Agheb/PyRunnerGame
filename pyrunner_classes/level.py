@@ -512,12 +512,14 @@ class Level(object):
             players_pos[Level.players.index(player)] = normalized_pos
         return players_pos
 
-    def set_players_pos(self, playerPos):
+    def set_player_pos(self, playerId, playerPos):
         for player in Level.players:
-            player_id = str(player.pid)
-            
-            player.rect.topleft = (round(playerPos[player_id][0] * player.size), round(playerPos[player_id][1] * player.size)) 
-        pass
+            if player.pid == int(playerId):
+                player.rect.topleft = (round(playerPos[0] * player.size), round(playerPos[1] * player.size))
+                log.info("Set Player {} position".format(playerId))
+                return
+        log.info("Cant find player {} to set pos".format(playerId))
+        
     
     @staticmethod
     def get_level_info_json():
