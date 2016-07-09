@@ -162,18 +162,33 @@ class PyRunner(object):
                         else:
                             p1js, p2js = self.config.p1_use_joystick, self.config.p2_use_joystick
                             key1, key2 = None, None
+                            event_dict = event.__dict__
+
+                            if event.type == JOYAXISMOTION:
+                                '''normalize analog stick movements'''
+                                val = event_dict['value']
+
+                                if val < -0.75:
+                                    event_dict['value'] = -1
+                                elif val > 0.75:
+                                    event_dict['value'] = 1
+                                else:
+                                    event_dict['value'] = 0
 
                             if p1js:
-                                key1 = self.config.p1_key_map.get(str(event.__dict__))
+                                key1 = self.config.p1_key_map.get(str(event_dict))
                             if p2js:
-                                key2 = self.config.p2_key_map.get(str(event.__dict__))
+                                key2 = self.config.p2_key_map.get(str(event_dict))
+
+                            print(str(event_dict))
+                            print(str(key1))
 
                             if key1 == K_ESCAPE or key2 == K_ESCAPE:
                                 self.menu.show_menu(True)
                             else:
-                                if p1js and event.__dict__ == self.config.p1_js_stop:
+                                if p1js and event_dict == self.config.p1_js_stop:
                                     self.controller.release_key()
-                                elif p2js and event.__dict__ == self.config.p2_js_stop:
+                                elif p2js and event_dict == self.config.p2_js_stop:
                                     self.controller.release_key()
                                 else:
                                     if p1js:

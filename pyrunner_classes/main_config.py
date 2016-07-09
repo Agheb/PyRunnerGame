@@ -376,7 +376,7 @@ class MainConfig(object):
                 name = name[5:]
                 axis = int(name[:1])
                 val = make_tuple(name[2:])
-                return {'axis': axis, 'joy': jid, 'value': val}
+                return {'value': val, 'axis': axis, 'joy': jid}
 
         '''stop motion'''
         if self.p1_use_joystick:
