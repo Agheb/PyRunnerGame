@@ -11,7 +11,7 @@ from datetime import datetime
 from time import sleep
 import json
 import socket
-from Mastermind import *
+from libs.Mastermind import *
 from .level_objecs import WorldObject
 from.zeroconf_bonjour import ZeroConfAdvertiser, ZeroConfListener
 

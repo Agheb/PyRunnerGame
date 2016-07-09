@@ -5,7 +5,7 @@
 from __future__ import division
 import pdb
 from .level import Level
-from Mastermind import MastermindErrorClient
+from libs.Mastermind import MastermindErrorClient
 
 
 class Action(object):

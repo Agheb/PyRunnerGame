@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys,os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/libs")
 
 """main package handling all important game classes"""
 from .constants import *
@@ -17,6 +16,7 @@ from .player_objects import GoldScore
 from .game_physics import Physics
 from .controller import Controller
 from .network_connector import NetworkConnector
+
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
            'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer',
