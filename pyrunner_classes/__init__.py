@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import sys,os
+
 """main package handling all important game classes"""
 from .constants import *
 from .main_config import MainConfig
@@ -15,11 +17,11 @@ from .game_physics import Physics
 from .controller import Controller
 from .network_connector import NetworkConnector
 
+
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
            'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer',
            'Level', 'Physics', 'Controller', 'NetworkConnector',
            'Player', 'GoldScore', 'WorldObject', 'ExitGate']
-
 
 __version__ = '0.1.3'
 __author__ = 'Team pyBerries'
