@@ -43,10 +43,11 @@ class Level(object):
     levels = []
     players = []
 
-    def __init__(self, surface, path, fps=25):
+    def __init__(self, surface,path,sound_thread,fps=25):
         self.surface = surface
         self.background = self.surface.copy()
         self.path = path
+        self.sound_thread = sound_thread
         self.fps = fps
         self.physics = Physics(self)
         self.graph = None

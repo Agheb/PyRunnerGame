@@ -142,6 +142,9 @@ class Physics(object):
                     if player.is_human:
                         '''only human players can take gold'''
                         player.add_gold()
+                        "Collect gold SFX"
+                        self.level.sound_thread.play_sound("Collect_Point_01.wav")
+
                         # clear the item
                         # self.level.clean_sprite(sprite)
                         # and remove it

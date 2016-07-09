@@ -43,7 +43,7 @@ class PyRunner(object):
         '''init the audio subsystem prior to anything else'''
         self.music_thread = MusicMixer(self.config.play_music, self.config.vol_music,
                                        self.config.play_sfx, self.config.vol_sfx, self.fps)
-        self.music_thread.background_music = ('time_delay.wav', 1)
+        self.music_thread.background_music = ('thememusic.ogg', 1)
         self.music_thread.start()
         '''init the main screen'''
         self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.fps,
@@ -62,7 +62,7 @@ class PyRunner(object):
         self.current_level_path = None
         self.physics = None
         self.controller = None
-        self.load_level(self.START_LEVEL)
+        self.load_level(self.START_LEVEL, self.music_thread)
         '''init the main menu'''
         self.level_exit = False
         self.loading_level = False
@@ -86,7 +86,7 @@ class PyRunner(object):
             self.level_exit = False
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
-        self.level = Level(self.bg_surface, path, self.fps)
+        self.level = Level(self.bg_surface, path,sound_thread, self.fps)
         '''bug fix for old background appearing on the screen'''
         WorldObject.group.clear(self.level.surface, self.level.background)
         '''change the dirty rect for fps display'''
@@ -95,6 +95,7 @@ class PyRunner(object):
         self.render_thread.blit(self.level.surface, None, True)
         '''refresh the whole screen'''
         self.render_thread.refresh_screen(True)
+
 
         if not self.network_connector:
             self.network_connector = NetworkConnector(self, self.level)
@@ -131,9 +132,9 @@ class PyRunner(object):
         clock = pygame.time.Clock()
 
         # switch music (test)
-        self.music_thread.background_music = ('summers_end_acoustic.aif', 0)
+        self.music_thread.background_music = ('thememusic.ogg', 0)
         # we should probably save all game sounds as variables
-        sound_shoot = pygame.mixer.Sound(self.music_thread.get_full_path_sfx('9_mm_gunshot-mike-koenig-123.wav'))
+        sound_shoot = pygame.mixer.Sound(self.music_thread.get_full_path_sfx('coin.wav'))
 
         while self.game_is_running:
             for event in pygame.event.get():
@@ -147,6 +148,7 @@ class PyRunner(object):
                     else:
                         if key == K_ESCAPE:
                             self.menu.show_menu(True)
+
                         else:
                             self.controller.interpret_key(key)
                 elif event.type == KEYUP:
