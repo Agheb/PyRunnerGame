@@ -168,7 +168,7 @@ class MusicMixer(threading.Thread):
                     # pygame.mixer.music.load(self._background_music)
             except pygame.error:
                 print("Error loading music file %s" % file)
-                # pass the exact error
+                pass
                 # raise
 
     @property

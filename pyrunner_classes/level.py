@@ -10,7 +10,6 @@ from .game_physics import Physics
 from .level_objecs import *
 from .player import Player, GoldScore
 from .non_player_characters import Bots
-from random import randint
 import pdb
 from operator import itemgetter
 from .dijkstra import Graph
@@ -43,7 +42,7 @@ class Level(object):
     levels = []
     players = []
 
-    def __init__(self, surface,path,sound_thread,fps=25):
+    def __init__(self, surface, path, sound_thread, fps=25):
         self.surface = surface
         self.background = self.surface.copy()
         self.path = path

@@ -5,7 +5,6 @@ import pygame
 from .constants import *
 from pygame.locals import *
 
-
 SPRITE_SHEET_PATH = "./resources/sprites/"
 
 
