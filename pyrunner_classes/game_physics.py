@@ -16,6 +16,8 @@ class Physics(object):
 
     def __init__(self, level):
         self.level = level
+        '''sounds'''
+        self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Collect_Point_01.wav'))
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -49,7 +51,7 @@ class Physics(object):
         for player in Player.group:
             # check if the player is still on the screen
             self.check_world_boundaries(player)
-            half_size = player.tile_size // 2 + 5
+            half_size = player.size / 2
 
             # assume he's flying in the air
             on_rope = False
@@ -72,13 +74,11 @@ class Physics(object):
                         on_ground = True
 
             '''add sprites left and right of the bot for collision detection'''
-            right_tile = self.find_collision(player.rect.centerx + half_size, player.rect.centery, WorldObject.group)
-            right_bottom = self.find_collision(player.rect.centerx + player.tile_size,
-                                               player.rect.bottom + half_size)
+            right_tile = self.find_collision(player.rect.right + half_size, player.rect.centery, WorldObject.group)
+            right_bottom = self.find_collision(player.rect.right + half_size, player.rect.bottom + half_size)
             '''find sprites to the left'''
-            left_tile = self.find_collision(player.rect.centerx - half_size, player.rect.centery, WorldObject.group)
-            left_bottom = self.find_collision(player.rect.centerx - player.tile_size,
-                                              player.rect.bottom + half_size)
+            left_tile = self.find_collision(player.rect.left - half_size, player.rect.centery, WorldObject.group)
+            left_bottom = self.find_collision(player.rect.left - half_size, player.rect.bottom + half_size)
 
             if not player.is_human:
                 if right_tile and not right_tile.collectible and not right_tile.climbable:
@@ -144,12 +144,13 @@ class Physics(object):
                     if player.is_human:
                         '''only human players can take gold'''
                         player.add_gold()
-                        # clear the item
-                        # self.level.clean_sprite(sprite)
-                        # and remove it
+                        "Collect gold SFX"
+                        self.level.sound_thread.play_sound(self.sfx_coin_collected)
+                        # remove it
                         sprite.kill()
                     elif not player.robbed_gold:
                         player.collect_gold(sprite)
+                        self.level.sound_thread.play_sound(self.sfx_coin_collected)
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:
@@ -222,14 +223,14 @@ class Physics(object):
     @staticmethod
     def hit_left(player, sprite):
         """player hits left side of a sprite"""
-        if player.rect.right > sprite.rect.left and player.rect.centery >= sprite.rect.y:
+        if player.rect.right > sprite.rect.left and player.rect.centery > sprite.rect.y:
             player.rect.right = sprite.rect.left
             player.change_x = 0
 
     @staticmethod
     def hit_right(player, sprite):
         """player hits right side of a sprite"""
-        if player.rect.left < sprite.rect.right and player.rect.centery >= sprite.rect.y:
+        if player.rect.left < sprite.rect.right and player.rect.centery > sprite.rect.y:
             player.rect.left = sprite.rect.right
             player.change_x = 0
 

@@ -10,6 +10,7 @@ except ImportError:
     import ConfigParser    # Python 2
 # PyGame
 from pygame.locals import *
+from ast import literal_eval as make_tuple
 
 '''constants'''
 NAME = "pyRunner"
@@ -31,6 +32,11 @@ _CONF_AUDIO_SFX = "sfx"
 _CONF_AUDIO_SFX_VOL = _CONF_AUDIO_SFX + _CONF_AUDIO_VOL
 _CONF_CONT_P1 = "Player 1 Controls"
 _CONF_CONT_P2 = "Player 2 Controls"
+_CONF_CONT_P1_JS = "Player 1 Joystick/Gamepad"
+_CONF_CONT_P2_JS = "Player 2 Joystick/Gamepad"
+_CONF_CONT_USE_JS = "use joystick/gamepad"
+_CONF_CONT_NAME_JS = "device name"
+_CONF_CONT_ID_JS = "device id"
 _CONF_CONT_LEFT = "left"
 _CONF_CONT_RIGHT = "right"
 _CONF_CONT_UP = "up"
@@ -40,6 +46,8 @@ _CONF_CONT_AR = "action right"
 _CONF_CONT_INT = "interact"
 _CONF_CONT_TAUNT = "taunt"
 _CONF_CONT_JUMP = "jump"
+_CONF_CONT_ACCEPT_JS = "accept"
+_CONF_CONT_CANCEL_JS = "escape"
 
 
 class MainConfig(object):
@@ -60,6 +68,11 @@ class MainConfig(object):
         self.vol_music = None
         self.play_sfx = None
         self.vol_sfx = None
+        '''controls'''
+        self.p1_key_map = None
+        self.p1_menu_map = None
+        self.p2_key_map = None
+        self.p2_menu_map = None
         '''controls for player 1'''
         self.p1_left = None
         self.p1_right = None
@@ -69,7 +82,21 @@ class MainConfig(object):
         self.p1_action_r = None
         self.p1_interact = None
         self.p1_taunt = None
-        self.p1_jump = None
+        '''joystick / gamepad'''
+        self.p1_use_joystick = None
+        self.p1_js_name = None
+        self.p1_js_id = None
+        self.p1_js_left = None
+        self.p1_js_right = None
+        self.p1_js_up = None
+        self.p1_js_down = None
+        self.p1_js_stop = None
+        self.p1_js_action_l = None
+        self.p1_js_action_r = None
+        self.p1_js_interact = None
+        self.p1_js_taunt = None
+        self.p1_js_accept = None    # ~= Return
+        self.p1_js_cancel = None    # ~= ESC
         '''controls for player 2'''
         self.p2_left = None
         self.p2_right = None
@@ -79,10 +106,26 @@ class MainConfig(object):
         self.p2_action_r = None
         self.p2_interact = None
         self.p2_taunt = None
-        self.p2_jump = None
+        '''joystick / gamepad'''
+        self.p2_use_joystick = None
+        self.p2_js_name = None
+        self.p2_js_id = None
+        self.p2_js_left = None
+        self.p2_js_right = None
+        self.p2_js_up = None
+        self.p2_js_down = None
+        self.p2_js_stop = None
+        self.p2_js_action_l = None
+        self.p2_js_action_r = None
+        self.p2_js_interact = None
+        self.p2_js_taunt = None
+        self.p2_js_accept = None  # ~= Return
+        self.p2_js_cancel = None  # ~= ESC
         '''read the configuration file to initialize above variables'''
         self.config_parser = self.init_config_parser()
         self.read_settings()
+
+        self.setup_joystick()
 
     @staticmethod
     def init_config_parser():
@@ -125,7 +168,20 @@ class MainConfig(object):
             self.p1_action_r = config.getint(_CONF_CONT_P1, _CONF_CONT_AR)
             self.p1_interact = config.getint(_CONF_CONT_P1, _CONF_CONT_INT)
             self.p1_taunt = config.getint(_CONF_CONT_P1, _CONF_CONT_TAUNT)
-            self.p1_jump = config.getint(_CONF_CONT_P1, _CONF_CONT_JUMP)
+            self.p1_use_joystick = config.getboolean(_CONF_CONT_P1_JS, _CONF_CONT_USE_JS)
+            if self.p1_use_joystick:
+                self.p1_js_name = config.get(_CONF_CONT_P1_JS, _CONF_CONT_NAME_JS)
+                self.p1_js_id = config.getint(_CONF_CONT_P1_JS, _CONF_CONT_ID_JS)
+                self.p1_js_left = config.get(_CONF_CONT_P1_JS, _CONF_CONT_LEFT)
+                self.p1_js_right = config.get(_CONF_CONT_P1_JS, _CONF_CONT_RIGHT)
+                self.p1_js_up = config.get(_CONF_CONT_P1_JS, _CONF_CONT_UP)
+                self.p1_js_down = config.get(_CONF_CONT_P1_JS, _CONF_CONT_DOWN)
+                self.p1_js_action_l = config.get(_CONF_CONT_P1_JS, _CONF_CONT_AL)
+                self.p1_js_action_r = config.get(_CONF_CONT_P1_JS, _CONF_CONT_AR)
+                self.p1_js_interact = config.get(_CONF_CONT_P1_JS, _CONF_CONT_INT)
+                self.p1_js_taunt = config.get(_CONF_CONT_P1_JS, _CONF_CONT_TAUNT)
+                self.p1_js_accept = config.get(_CONF_CONT_P1_JS, _CONF_CONT_ACCEPT_JS)  # ~= Return
+                self.p1_js_cancel = config.get(_CONF_CONT_P1_JS, _CONF_CONT_CANCEL_JS)  # ~= ESC
             '''controls for player 2'''
             self.p2_left = config.getint(_CONF_CONT_P2, _CONF_CONT_LEFT)
             self.p2_right = config.getint(_CONF_CONT_P2, _CONF_CONT_RIGHT)
@@ -135,7 +191,20 @@ class MainConfig(object):
             self.p2_action_r = config.getint(_CONF_CONT_P2, _CONF_CONT_AR)
             self.p2_interact = config.getint(_CONF_CONT_P2, _CONF_CONT_INT)
             self.p2_taunt = config.getint(_CONF_CONT_P2, _CONF_CONT_TAUNT)
-            self.p1_jump = config.getint(_CONF_CONT_P1, _CONF_CONT_JUMP)
+            self.p2_use_joystick = config.getboolean(_CONF_CONT_P2_JS, _CONF_CONT_USE_JS)
+            if self.p2_use_joystick:
+                self.p2_js_name = config.get(_CONF_CONT_P2_JS, _CONF_CONT_NAME_JS)
+                self.p2_js_id = config.getint(_CONF_CONT_P2_JS, _CONF_CONT_ID_JS)
+                self.p2_js_left = config.get(_CONF_CONT_P2_JS, _CONF_CONT_LEFT)
+                self.p2_js_right = config.get(_CONF_CONT_P2_JS, _CONF_CONT_RIGHT)
+                self.p2_js_up = config.get(_CONF_CONT_P2_JS, _CONF_CONT_UP)
+                self.p2_js_down = config.get(_CONF_CONT_P2_JS, _CONF_CONT_DOWN)
+                self.p2_js_action_l = config.get(_CONF_CONT_P2_JS, _CONF_CONT_AL)
+                self.p2_js_action_r = config.get(_CONF_CONT_P2_JS, _CONF_CONT_AR)
+                self.p2_js_interact = config.get(_CONF_CONT_P2_JS, _CONF_CONT_INT)
+                self.p2_js_taunt = config.get(_CONF_CONT_P2_JS, _CONF_CONT_TAUNT)
+                self.p2_js_accept = config.get(_CONF_CONT_P2_JS, _CONF_CONT_ACCEPT_JS)  # ~= Return
+                self.p2_js_cancel = config.get(_CONF_CONT_P2_JS, _CONF_CONT_CANCEL_JS)  # ~= ESC
         except (configparser.NoSectionError, configparser.NoOptionError, TypeError, ValueError, AttributeError):
             self.write_settings(True)
 
@@ -163,7 +232,7 @@ class MainConfig(object):
                 self.screen_x = 800
                 self.screen_y = 600
                 self.fps = 25
-                self.fullscreen = True
+                self.fullscreen = False
                 self.switch_resolution = False
                 # default audio settings
                 self.play_music = True
@@ -179,7 +248,7 @@ class MainConfig(object):
                 self.p1_action_r = K_RSHIFT
                 self.p1_interact = K_BACKSPACE
                 self.p1_taunt = K_RETURN
-                self.p1_jump = K_SPACE
+                self.p1_use_joystick = False
                 # controls for player 2
                 self.p2_left = K_a
                 self.p2_right = K_d
@@ -189,7 +258,7 @@ class MainConfig(object):
                 self.p2_action_r = K_e
                 self.p2_interact = K_LSHIFT
                 self.p2_taunt = K_TAB
-                self.p2_jump = K_LSUPER
+                self.p2_use_joystick = False
 
             '''info part'''
             try:
@@ -229,7 +298,24 @@ class MainConfig(object):
             config.set(_CONF_CONT_P1, _CONF_CONT_AR, self.p1_action_r)
             config.set(_CONF_CONT_P1, _CONF_CONT_INT, self.p1_interact)
             config.set(_CONF_CONT_P1, _CONF_CONT_TAUNT, self.p1_taunt)
-            config.set(_CONF_CONT_P1, _CONF_CONT_JUMP, self.p1_jump)
+            try:
+                config.add_section(_CONF_CONT_P1_JS)
+            except cp_duplicate_section_error:
+                pass
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_USE_JS, self.p1_use_joystick)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_NAME_JS, self.p1_js_name)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_ID_JS, self.p1_js_id)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_LEFT, self.p1_js_left)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_RIGHT, self.p1_js_right)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_UP, self.p1_js_up)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_DOWN, self.p1_js_down)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_AL, self.p1_js_action_l)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_AR, self.p1_js_action_r)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_INT, self.p1_js_interact)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_TAUNT, self.p1_js_taunt)
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_ACCEPT_JS, self.p1_js_accept)  # ~= Return
+            config.set(_CONF_CONT_P1_JS, _CONF_CONT_CANCEL_JS, self.p1_js_cancel)  # ~= ESC
+
             '''controls for player 2'''
             try:
                 config.add_section(_CONF_CONT_P2)
@@ -243,11 +329,102 @@ class MainConfig(object):
             config.set(_CONF_CONT_P2, _CONF_CONT_AR, self.p2_action_r)
             config.set(_CONF_CONT_P2, _CONF_CONT_INT, self.p2_interact)
             config.set(_CONF_CONT_P2, _CONF_CONT_TAUNT, self.p2_taunt)
-            config.set(_CONF_CONT_P2, _CONF_CONT_JUMP, self.p2_jump)
-
+            try:
+                config.add_section(_CONF_CONT_P2_JS)
+            except cp_duplicate_section_error:
+                pass
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_USE_JS, self.p2_use_joystick)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_NAME_JS, self.p2_js_name)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_ID_JS, self.p2_js_id)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_LEFT, self.p2_js_left)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_RIGHT, self.p2_js_right)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_UP, self.p2_js_up)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_DOWN, self.p2_js_down)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_AL, self.p2_js_action_l)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_AR, self.p2_js_action_r)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_INT, self.p2_js_interact)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_TAUNT, self.p2_js_taunt)
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_ACCEPT_JS, self.p2_js_accept)  # ~= Return
+            config.set(_CONF_CONT_P2_JS, _CONF_CONT_CANCEL_JS, self.p2_js_cancel)  # ~= ESC
             with open(CONFIG, 'w') as configfile:
                 config.write(configfile)
 
         except cp_permission_error:
             print("The config file is locked or not writable.")
             print("Please delete config.cfg or make sure you have write access")
+
+    def setup_joystick(self):
+        """get machine readable joystick config format"""
+
+        def parse_config(player, name):
+            """change the human readable config strings to dictionaries"""
+            if player is 1:
+                jid = self.p1_js_id
+            else:
+                jid = self.p2_js_id
+            if "Button" in name:
+                # {'button': 1, 'joy': 0}
+                return {'button': int(name[7:]), 'joy': jid}
+            elif "Hat" in name:
+                # {'joy': 0, 'value': (-1, 0), 'hat': 0}
+                name = name[4:]
+                hid = int(name[:1])
+                val = make_tuple(name[2:])
+                return {'joy': jid, 'value': val, 'hat': hid}
+            elif "Axis" in name:
+                # {'axis': 1, 'joy': 0, 'value': -0.1686452833643605}
+                name = name[5:]
+                axis = int(name[:1])
+                val = make_tuple(name[2:])
+                return {'value': val, 'axis': axis, 'joy': jid}
+
+        '''stop motion'''
+        if self.p1_use_joystick:
+            p1_js_left = parse_config(1, self.p1_js_left)
+            p1_js_stop = p1_js_left.copy()
+            p1_js_stop['value'] = (0, 0)  # centered hats/axis is 0, 0
+            self.p1_js_stop = p1_js_stop
+
+            self.p1_key_map = {
+                str(parse_config(1, self.p1_js_up)): self.p1_up,
+                str(parse_config(1, self.p1_js_down)): self.p1_down,
+                str(parse_config(1, self.p1_js_left)): self.p1_left,
+                str(parse_config(1, self.p1_js_right)): self.p1_right,
+                str(parse_config(1, self.p1_js_action_l)): self.p1_action_l,
+                str(parse_config(1, self.p1_js_action_r)): self.p1_action_r,
+                str(parse_config(1, self.p1_js_cancel)): K_ESCAPE
+            }
+
+            self.p1_menu_map = {
+                str(parse_config(1, self.p1_js_up)): K_UP,
+                str(parse_config(1, self.p1_js_down)): K_DOWN,
+                str(parse_config(1, self.p1_js_left)): K_LEFT,
+                str(parse_config(1, self.p1_js_right)): K_RIGHT,
+                str(parse_config(1, self.p1_js_accept)): K_RETURN,
+                str(parse_config(1, self.p1_js_cancel)): K_ESCAPE
+            }
+
+        if self.p2_use_joystick:
+            p2_js_left = parse_config(2, self.p2_js_left)
+            p2_js_stop = p2_js_left.copy()
+            p2_js_stop['value'] = (0, 0)  # centered hats/axis is 0, 0
+            self.p2_js_stop = p2_js_stop
+
+            self.p2_key_map = {
+                str(parse_config(2, self.p2_js_up)): self.p2_up,
+                str(parse_config(2, self.p2_js_down)): self.p2_down,
+                str(parse_config(2, self.p2_js_left)): self.p2_left,
+                str(parse_config(2, self.p2_js_right)): self.p2_right,
+                str(parse_config(2, self.p2_js_action_l)): self.p2_action_l,
+                str(parse_config(2, self.p2_js_action_r)): self.p2_action_r,
+                str(parse_config(2, self.p2_js_cancel)): K_ESCAPE
+            }
+
+            self.p2_menu_map = {
+                str(parse_config(2, self.p2_js_up)): K_UP,
+                str(parse_config(2, self.p2_js_down)): K_DOWN,
+                str(parse_config(2, self.p2_js_left)): K_LEFT,
+                str(parse_config(2, self.p2_js_right)): K_RIGHT,
+                str(parse_config(2, self.p2_js_accept)): K_RETURN,
+                str(parse_config(2, self.p2_js_cancel)): K_ESCAPE
+            }

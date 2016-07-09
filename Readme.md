@@ -1,6 +1,20 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
 ###### last updated: 2016-05-24 at 06:15 pm (UTC +2)
 
+##Running the game
+
+## Setup
+Um das spiel zu starten werden die folgenden Libs benötigt
+- PyGame
+- ZeroConf
+- pyTmx
+- Mastermind
+
+Mastermind ist bereits inkludiert, Pygame muss selbst installiert/compiliert werden, der rest kann mit `pip install -r requirements.txt` installiert werden 
+
+##Starten
+Das Spiel wird mit `python3 pyRunner.py` gestarted
+
 ## Team Communication:
 
 ### Slack
@@ -10,160 +24,6 @@
 - https://trello.com/b/VtSg0iUi/
 
 
-## To-Do
-
-## Basic functionality
-- [ ] create main class / function @fahrenwalde
-    - [x] add basic player movement/action function support @fahrenwalde
-        - [x] hard coded player 1 and 2 keys added (+ stored in the config) @fahrenwalde
-        - [ ] add a sub menu that allows users to change the keys (pygame.key.name(key) as output) @fahrenwalde
-            - [ ] sub menu must be generic enough to support two players @fahrenwalde
-            - [ ] sub menu must be generic enough to support game pads as well @fahrenwalde
-            - [ ] key setting changes must be possible without restarting the game @fahrenwalde
-                - [ ] but still stored as local variables afterwards???
-
-### Menu
-- [x] create object orientated menu class @fahrenwalde
-    - [x] ESC shows/hides the menu
-- [ ] Menu Items
-    - [ ] New Game
-        - [ ] Single Player
-            - [ ] New Game
-            - [ ] Resume
-            - [ ] Difficulty
-        - [ ] Multiplayer
-            - [ ] Start Game
-            - [ ] cooperative (local and LAN)
-            - [ ] versus (only LAN)
-            - [ ] Join Game
-    - [ ] Settings
-        - [x] Audio @fahrenwalde
-            - [x] Music on/off and volume @fahrenwalde
-            - [x] Sound FX on/off and volume @fahrenwalde
-        - [ ] Controls @fahrenwalde
-            - [ ] Keyboard Player 1/2
-            - [ ] Joystick (optional)
-            - [ ] Actions
-                - [ ] Left
-                - [ ] Right
-                - [ ] Up
-                - [ ] Down
-                - [ ] Shoot/Dig Left
-                - [ ] Shoot/Dig Right
-                - [ ] Interact
-                - [ ] ...
-        - [x] Video @fahrenwalde
-            - [x] fullscreen on/off @fahrenwalde
-            - [x] screen resolutions @fahrenwalde
-            - [x] switch resolutions @fahrenwalde
-            - [x] show fps @fahrenwalde
-    - [x] Exit for top level, Back for sub menus @fahrenwalde
-
-### Rendering / PyGame Display
-- [x] create main render thread @fahrenwalde
-    - [x] reduce screen flickering by blocking screen updates @fahrenwalde
-    - [x] avoid crashes @fahrenwalde
-    - [x] aim for low cpu usage @fahrenwalde
-    - [x] screen modes @fahrenwalde
-        - [x] windowed @fahrenwalde
-        - [x] fullscreen @fahrenwalde
-        - [x] fullscreen with smaller main surface (don't switch resolution) @fahrenwalde
-    - [x] allow window resizing @fahrenwalde
-        - [ ] ~~fix background surface resizing bug in windowed mode @fahrenwalde~~
-        - [x] or turn off the window resizing feature and add resolution selection for windows @fahrenwalde
-    - [x] only update changed rects @fahrenwalde
-        - [x] add basic dirty_rect support @fahrenwalde
-            - [ ] improve it for the main game @fahrenwalde
-    - [x] update the whole screen if needed @fahrenwalde
-    - [x] allow other classes to blit surfaces to the screen @fahrenwalde
-        - [x] calculate offsets for smaller surfaces @fahrenwalde
-
-### Music and Sound FX
-- [x] create sound and music thread @fahrenwalde
-    - [x] allow sound playback @fahrenwalde
-        - [x] create more sound channels if too many sounds are played at once @fahrenwalde
-    - [x] allow music playback @fahrenwalde
-        - [x] playlist and loops @fahrenwalde
-    - [x] allow user to mute music/sfx and change the volume @fahrenwalde
-
-### Configuration persistence
-- [x] add config parser to read and write configs @fahrenwalde
-    - [x] add screen related settings @fahrenwalde
-    - [x] add audio related settings @fahrenwalde
-    - [ ] add control related settings @fahrenwalde
-
-### LAN Networking
-- [ ] create main network thread @fahrenwalde @wankmueller
-    - [ ] exchange player and enemy positions (x, y) [old -> new]
-    - [ ] UDP for fast response
-    - [ ] TCP for a synched state
-    - [ ] Zeroconf/Bonjour network browser (optional) @fahrenwalde
-
-
-## Main Game functionality
-
-### Basic functionality
-- [ ] create basic game rendering @wankmueller @ghebreweldi @grombach
-    - [ ] don't use fps for movement speed
-        - [ ] use a seperate clock!! (fps should be changeable)
-    - [ ] player can move
-        - [ ] left/right
-        - [ ] up/down
-    - [ ] colission detection
-    - [ ] add enemies
-        - [ ] shortest path algorithm thread @fahrenwalde @wankmueller
-    - [ ] add extras (optional)
-        - [ ] weapon's
-            - [ ] honey to glue enemies to non diggable grounds
-
-### Tile Map Support
-#### every tile measures 32x32, the World Size is 32x24 which results in a resolution of 1024x768
-- [ ] add tile map support @wankmueller @ghebreweldi @grombach
-    - [ ] different tiles for different floors
-        - [ ] diggable
-            - [ ] grass
-            - [ ] dirt
-        - [ ] non digabble
-            - [ ] stone
-            - [ ] steel/metal
-    - [ ] make tilemaps adjustable to screen size @fahrenwalde
-
-### Sprites and Textures
-- [ ] Sprites @ghebreweldi
-    - [ ] Players @ghebreweldi
-    - [ ] Enemies @ghebreweldi
-- [ ] World Textures @ghebreweldi
-
-### Multiplayer support
-- [ ] Multiplayer support
-    - [ ] test game modes
-    - [ ] 2 players coop (local and LAN) (priority!)
-    - [ ] 2 - 4 players versus in teams (optional)
-        - [ ] enemy team can't see holes in the ground
-    - [ ] players can interact
-        - [ ] taunt
-        - [ ] carry/throw each other around (optional)
-    - [ ] scoreboard
-        - [ ] global high score (top 10)
-        - [ ] Players can set their name
-        - [ ] teams switch role each round (enemy becomes attacker and the other way round)
-    - [ ] both players need to collect specific keys to get to the next level
-    - [ ] the players have to collect all coins
-        - [ ] every coin increases the players/teams score
-        - [ ] enemies can collect one coin each (or more in mp?)
-            - [ ] which drops when they fall into a hole
-
-### More levels (5 minimum)
-- [ ] add more levels with Tiled @grombach
-    - [ ] Indiana Jones style like Lode Runner - The Legend returns
-
-### Graphics finalization
-- [ ] refine graphics, textures and sprites @ghebreweldi
-
-
-## Deployment
-- [ ] package things up to deploy @wankmueller
-    - [ ] maintain Python 2.7 compatibility @all
 
 ## Documentation and Codeguidelines
 - regulary check this file for updates or update it yourself
@@ -191,11 +51,6 @@
             - this ~~would~~ ensures that the screen resolution doesn't change if the game is running (restarts on resolution change)
 
 
-## Requirements
-This game is tested with Python 3.5.1 and Python 2.7.11, both with the
-latest version of PyGame (1.9.2) installed. Although Python 2 is no
-requirement at the SEP, it would be great if we can keep compatibility,
-as most PyGame installers are still linked against Python 2.
 
 ## External Libraries
 

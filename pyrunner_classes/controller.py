@@ -5,7 +5,7 @@
 from __future__ import division
 import pdb
 from .level import Level
-from Mastermind import MastermindErrorClient
+from libs.Mastermind import MastermindErrorClient
 
 
 class Action(object):
@@ -33,8 +33,6 @@ class Controller(object):
         self.network_connector = network_connector
         self.player_1_movements = []
         self.player_2_movements = []
-        self.current_action = None
-
         '''only stop player if movement key got released'''
         self.player_1_movements.append(self.config.p1_left)
         self.player_1_movements.append(self.config.p1_right)
@@ -47,25 +45,25 @@ class Controller(object):
 
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
+        current_action = None
+
         # TODO move both players
         if key == self.config.p1_left:
-            self.current_action = Action.LEFT
+            current_action = Action.LEFT
         elif key == self.config.p1_right:
-            self.current_action = Action.RIGHT
+            current_action = Action.RIGHT
         elif key == self.config.p1_up:
-            self.current_action = Action.UP
+            current_action = Action.UP
         elif key == self.config.p1_down:
-            self.current_action = Action.DOWN
+            current_action = Action.DOWN
         elif key == self.config.p1_action_l:
-            self.current_action = Action.DIG_LEFT
+            current_action = Action.DIG_LEFT
         elif key == self.config.p1_action_r:
-            self.current_action = Action.DIG_RIGHT
+            current_action = Action.DIG_RIGHT
         elif key == self.config.p1_interact:
             print("Player 1 interacts")
         elif key == self.config.p1_taunt:
             print("Player 1 taunts")
-        elif key == self.config.p1_jump:
-            pass
         # TODO the same for player 2
         elif key == self.config.p2_left:
             print("Player 2 moves left")
@@ -85,15 +83,16 @@ class Controller(object):
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
 
-        try:
-            self.network_connector.client.send_key(self.current_action)
-        except MastermindErrorClient:
-            for player in Level.players:
-                player.kill()
-        # command, playerNum = self.network_connector.client.get_last_command()
-        # self.do_action(self.current_action, 0)
+        if current_action:
+            try:
+                self.network_connector.client.send_key(current_action)
+            except MastermindErrorClient:
+                for player in Level.players:
+                    player.kill()
+            # command, playerNum = self.network_connector.client.get_last_command()
+            # self.do_action(self.current_action, 0)
 
-    def release_key(self, key):
+    def release_key(self, key=None):
         """stop walking"""
         '''
         if self.player_1 and key in self.player_1_movements:

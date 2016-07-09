@@ -43,7 +43,7 @@ class PyRunner(object):
         '''init the audio subsystem prior to anything else'''
         self.music_thread = MusicMixer(self.config.play_music, self.config.vol_music,
                                        self.config.play_sfx, self.config.vol_sfx, self.fps)
-        self.music_thread.background_music = ('time_delay.wav', 1)
+        self.music_thread.background_music = ('thememusic.ogg', 1)
         self.music_thread.start()
         '''init the main screen'''
         self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.fps,
@@ -53,10 +53,13 @@ class PyRunner(object):
         self.render_thread.bg_surface = self.bg_surface
         self.render_thread.start()
         self.surface = self.render_thread.screen
+        '''gamepad / joystick support'''
+        pygame.joystick.init()
         '''init the level and main game physics'''
         self.network_connector = None
         self.menu = None
         self.level = None
+        self.current_level_path = None
         self.physics = None
         self.controller = None
         self.load_level(self.START_LEVEL)
@@ -65,9 +68,13 @@ class PyRunner(object):
         self.loading_level = False
         self.game_over = False
 
-    def load_level(self, path):
+    def load_level(self, path=None):
         """load another level"""
         self.loading_level = True
+        if not path:
+            path = self.current_level_path if self.current_level_path else self.START_LEVEL
+        else:
+            self.current_level_path = path
         '''clear all sprites from an old level if present'''
         if self.level:
             '''clear all old sprites'''
@@ -79,7 +86,7 @@ class PyRunner(object):
             self.level_exit = False
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
-        self.level = Level(self.bg_surface, path, self.fps)
+        self.level = Level(self.bg_surface, path, self.music_thread, self.fps)
         '''bug fix for old background appearing on the screen'''
         WorldObject.group.clear(self.level.surface, self.level.background)
         '''change the dirty rect for fps display'''
@@ -97,6 +104,7 @@ class PyRunner(object):
 
         '''and the controller instance'''
         self.controller = Controller(self.config, self.network_connector)
+        self.level_exit = None
         self.game_over = False
         self.loading_level = False
 
@@ -122,11 +130,6 @@ class PyRunner(object):
         # Main loop relevant vars
         clock = pygame.time.Clock()
 
-        # switch music (test)
-        self.music_thread.background_music = ('summers_end_acoustic.aif', 0)
-        # we should probably save all game sounds as variables
-        sound_shoot = pygame.mixer.Sound(self.music_thread.get_full_path_sfx('9_mm_gunshot-mike-koenig-123.wav'))
-
         while self.game_is_running:
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -139,12 +142,55 @@ class PyRunner(object):
                     else:
                         if key == K_ESCAPE:
                             self.menu.show_menu(True)
+
                         else:
                             self.controller.interpret_key(key)
                 elif event.type == KEYUP:
                     '''key pressing events'''
                     if not self.menu.in_menu:
                         self.controller.release_key(event.key)
+                if self.config.p1_use_joystick or self.config.p2_use_joystick:
+                    '''only check for other events if configured'''
+                    if event.type == JOYAXISMOTION or event.type == JOYBALLMOTION \
+                            or event.type == JOYBUTTONDOWN or event.type == JOYHATMOTION:
+                        if self.menu.in_menu:
+                            self.menu.joystick_actions(event)
+                        else:
+                            p1js, p2js = self.config.p1_use_joystick, self.config.p2_use_joystick
+                            key1, key2 = None, None
+                            event_dict = event.__dict__
+
+                            if event.type == JOYAXISMOTION:
+                                '''normalize analog stick movements'''
+                                val = event_dict['value']
+
+                                if val < -0.75:
+                                    event_dict['value'] = -1
+                                elif val > 0.75:
+                                    event_dict['value'] = 1
+                                else:
+                                    event_dict['value'] = 0
+
+                            if p1js:
+                                key1 = self.config.p1_key_map.get(str(event_dict))
+                            if p2js:
+                                key2 = self.config.p2_key_map.get(str(event_dict))
+
+                            print(str(event_dict))
+                            print(str(key1))
+
+                            if key1 == K_ESCAPE or key2 == K_ESCAPE:
+                                self.menu.show_menu(True)
+                            else:
+                                if p1js and event_dict == self.config.p1_js_stop:
+                                    self.controller.release_key()
+                                elif p2js and event_dict == self.config.p2_js_stop:
+                                    self.controller.release_key()
+                                else:
+                                    if p1js:
+                                        self.controller.interpret_key(key1)
+                                    if p2js:
+                                        self.controller.interpret_key(key2)
 
             # save cpu resources
             if not self.menu.in_menu and not self.loading_level:
@@ -178,16 +224,13 @@ class PyRunner(object):
                 self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
             except AttributeError:
+                for player in Player.humans:
+                    player.reached_exit = True
+
                 self.game_over = True
 
-                for player in Player.group:
-                    if player.is_human:
-                        player.reached_exit = True
-
-                self.level_exit = True
-
         '''check if all players are still alive'''
-        if not any(player.is_human for player in Player.group):
+        if not len(Player.humans) or self.game_over:
             if not self.level_exit:
                 '''show the game over menu with player gold scores'''
                 self.game_over = True
@@ -201,13 +244,15 @@ class PyRunner(object):
     def game_over_menu(self):
         """create the game over menu"""
         found_one = False
+        self.menu.game_over.flush_all_items()
         for score in GoldScore.scores:
             if not score.child_num:
                 if not found_one:
                     found_one = True
                     self.menu.game_over.add_item(MenuItem("Collected Gold"))
-                score_str = "Player %s: %s coins" % (score.gid, score.gold)
+                score_str = "Player %s: %s coins" % (score.gid + 1, score.gold)
                 self.menu.game_over.add_item(MenuItem(score_str))
+        self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
 
 if __name__ == "__main__":
     pyrunner = PyRunner()
