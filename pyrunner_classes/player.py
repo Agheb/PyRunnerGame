@@ -46,7 +46,7 @@ class Player(pygame.sprite.DirtySprite):
         # movement related
         self.change_x = 0
         self.change_y = 0
-        self.speed = self.size // 10 * 2
+        self.speed = (self.size / 10) * 2
         # lists holding the image for movement. Up and down movement uses the same sprites.
         self.spawn_frames = []
         self.walking_frames_l = []

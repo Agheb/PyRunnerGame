@@ -15,13 +15,12 @@ from Mastermind import *
 from .level_objecs import WorldObject
 from.zeroconf_bonjour import ZeroConfAdvertiser, ZeroConfListener
 
-parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, parentdir)
 netlog = logging.getLogger("Network")
 srvlog = netlog.getChild("Server")
 clientlog = netlog.getChild("Client")
 
 START_PORT = 6799
+
 
 class Message():
     """just a wrapper object to store messages in one place"""

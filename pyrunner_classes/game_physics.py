@@ -49,7 +49,7 @@ class Physics(object):
         for player in Player.group:
             # check if the player is still on the screen
             self.check_world_boundaries(player)
-            half_size = player.tile_size // 2 + 5
+            half_size = player.tile_size / 2
 
             # assume he's flying in the air
             on_rope = False
@@ -73,12 +73,10 @@ class Physics(object):
 
             '''add sprites left and right of the bot for collision detection'''
             right_tile = self.find_collision(player.rect.centerx + half_size, player.rect.centery, WorldObject.group)
-            right_bottom = self.find_collision(player.rect.centerx + player.tile_size,
-                                               player.rect.bottom + half_size)
+            right_bottom = self.find_collision(player.rect.centerx + half_size, player.rect.bottom + half_size)
             '''find sprites to the left'''
             left_tile = self.find_collision(player.rect.centerx - half_size, player.rect.centery, WorldObject.group)
-            left_bottom = self.find_collision(player.rect.centerx - player.tile_size,
-                                              player.rect.bottom + half_size)
+            left_bottom = self.find_collision(player.rect.centerx - half_size, player.rect.bottom + half_size)
 
             if not player.is_human:
                 if right_tile and not right_tile.collectible and not right_tile.climbable:
@@ -222,14 +220,14 @@ class Physics(object):
     @staticmethod
     def hit_left(player, sprite):
         """player hits left side of a sprite"""
-        if player.rect.right > sprite.rect.left and player.rect.centery >= sprite.rect.y:
+        if player.rect.right > sprite.rect.left and player.rect.centery > sprite.rect.y:
             player.rect.right = sprite.rect.left
             player.change_x = 0
 
     @staticmethod
     def hit_right(player, sprite):
         """player hits right side of a sprite"""
-        if player.rect.left < sprite.rect.right and player.rect.centery >= sprite.rect.y:
+        if player.rect.left < sprite.rect.right and player.rect.centery > sprite.rect.y:
             player.rect.left = sprite.rect.right
             player.change_x = 0
 
