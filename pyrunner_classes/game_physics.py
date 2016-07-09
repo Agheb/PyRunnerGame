@@ -144,9 +144,7 @@ class Physics(object):
                         player.add_gold()
                         "Collect gold SFX"
                         self.level.sound_thread.play_sound("Collect_Point_01.wav")
-
-                        # clear the item
-                        # and remove it
+                        # remove it
                         sprite.kill()
                     elif not player.robbed_gold:
                         player.collect_gold(sprite)
