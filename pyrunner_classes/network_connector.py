@@ -333,7 +333,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
-        self.sync_time = 1
+        self.sync_time = 0.1
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
