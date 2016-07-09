@@ -49,7 +49,7 @@ class Physics(object):
         for player in Player.group:
             # check if the player is still on the screen
             self.check_world_boundaries(player)
-            half_size = player.tile_size / 2
+            half_size = player.size / 2
 
             # assume he's flying in the air
             on_rope = False
@@ -72,11 +72,11 @@ class Physics(object):
                         on_ground = True
 
             '''add sprites left and right of the bot for collision detection'''
-            right_tile = self.find_collision(player.rect.centerx + half_size, player.rect.centery, WorldObject.group)
-            right_bottom = self.find_collision(player.rect.centerx + half_size, player.rect.bottom + half_size)
+            right_tile = self.find_collision(player.rect.right + half_size, player.rect.centery, WorldObject.group)
+            right_bottom = self.find_collision(player.rect.right + half_size, player.rect.bottom + half_size)
             '''find sprites to the left'''
-            left_tile = self.find_collision(player.rect.centerx - half_size, player.rect.centery, WorldObject.group)
-            left_bottom = self.find_collision(player.rect.centerx - half_size, player.rect.bottom + half_size)
+            left_tile = self.find_collision(player.rect.left - half_size, player.rect.centery, WorldObject.group)
+            left_bottom = self.find_collision(player.rect.left - half_size, player.rect.bottom + half_size)
 
             if not player.is_human:
                 if right_tile and not right_tile.collectible and not right_tile.climbable:
