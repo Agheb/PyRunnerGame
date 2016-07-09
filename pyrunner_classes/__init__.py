@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import sys,os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/libs")
+
 """main package handling all important game classes"""
 from .constants import *
 from .main_config import MainConfig
@@ -19,7 +22,6 @@ __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
            'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer',
            'Level', 'Physics', 'Controller', 'NetworkConnector',
            'Player', 'GoldScore', 'WorldObject', 'ExitGate']
-
 
 __version__ = '0.1.3'
 __author__ = 'Team pyBerries'
