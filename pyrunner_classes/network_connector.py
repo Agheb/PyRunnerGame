@@ -317,9 +317,11 @@ class Client(threading.Thread, MastermindClientTCP):
             
             if data['type'] == Message.type_comp_update_set:
                 player_id, normalized_pos, is_bot = data['data']
+                clientlog.debug("recieved player data: ", data['data'])
                 if (player_id != self.player_id) or (is_bot and not self.master):
                 #Dont set our own pos
                     clientlog.info("Got pos setter from server")
+                    clientlog.debug("setting player data: ", data['data'])
                     self.level.set_player_pos(player_id, normalized_pos, is_bot)
                 return
 
@@ -472,9 +474,9 @@ class Server(threading.Thread, MastermindServerTCP):
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             for bot in self.level.bots:
-                print("sending bot data")
                 player_info = self.level.get_normalized_pos(bot, True)
-                self.send_to_all_clients(Message.type_comp_update, player_info)
+                srvlog.debug("sending bot data: ", player_info)
+                self.send_to_all_clients(Message.type_comp_update_set, player_info)
             self.send_to_all_clients(Message.type_comp_update)
             self.last_update = datetime.now()
 
