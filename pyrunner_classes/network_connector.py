@@ -374,10 +374,8 @@ class Server(threading.Thread, MastermindServerTCP):
         self.known_clients = []
         self.own_client = None
         self.connected = False
-        # self.sync_time = (1 / self.main.fps) * 1000000  # microseconds
-        # self.last_update = datetime.now()
-        self.frame_counter = 0
-        self.update_interval = self.main.fps // 2
+        self.sync_interval = 10  # seconds
+        self.sync_time = datetime.now()
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -509,7 +507,17 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def update(self):
         """update all clients"""
-        pass
+        if len(self.known_clients) > 1:
+            if (datetime.now() - self.sync_time).seconds >= self.sync_interval:
+                '''sync all players every x seconds'''
+                srvlog.info("sending update data to clients")
+                for bot in self.level.bots:
+                    '''update the bot positions only on the clients'''
+                    player_info = self.level.get_normalized_pos_and_data(bot, True)
+                    srvlog.debug("sending bot data: ", player_info)
+                    self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
+                self.send_to_all_clients(Message.type_comp_update)
+                self.sync_time = datetime.now()
 
     def send_bot_pos_and_data(self, bot):
         """send updated bot movements to all clients"""
