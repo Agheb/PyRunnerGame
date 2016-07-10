@@ -49,6 +49,13 @@ class Physics(object):
             if sprite.rect.collidepoint(x, y):
                 return sprite
         return None
+
+    @staticmethod
+    def remove_sprites_by_id(spriteIds):
+        log.info("removing sprites")
+        for sprite in WorldObject.group:
+            if sprite.tile_id in spriteIds:
+                sprite.kill()
     
     def check_collisions(self):
         """calculates collision for players and sprites using the rectangles of the sprites"""
@@ -151,7 +158,7 @@ class Physics(object):
                         "Collect gold SFX"
                         self.level.sound_thread.play_sound(self.sfx_coin_collected)
                         #notify the server
-                        self.network_connector.client.gold_removed(sprite.rect.topleft)
+                        self.network_connector.client.gold_removed(sprite.tile_id)
                         # remove it
                         sprite.kill()
                     elif not player.robbed_gold:

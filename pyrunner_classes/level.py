@@ -218,7 +218,7 @@ class Level(object):
         def resize_tile_to_fit(tile, target_size):
             """resize tile to fit the screen size and position"""
             pos_x, pos_y, image = tile
-            pos_id = pos_x, pos_y
+            pos_id = (pos_x, pos_y)
 
             pos_x = self.margin_left + (width * pos_x)
             pos_y = self.margin_top + (height * pos_y)

@@ -32,11 +32,13 @@ class Message(object):
     type_keep_alive = 'keep_alive'
     type_level_changed = 'level_changed'
     type_gold_removed = 'gold_removed'
+    type_player_killed = 'player_killed'
 
 
     #data fields
     field_player_locations = "player_locations"
     field_level_name = "level_name"
+    field_removed_sprites = "removed_sprites"
 
 
 class NetworkConnector(object):
@@ -231,15 +233,28 @@ class Client(threading.Thread, MastermindClientTCP):
             # add ourself
             self.level.add_player(self.player_id)
 
+            #kill removed sprites_removed
+            removedSprite_ids_list = contents[Message.field_removed_sprites]
+            tupeld = []
+            for a in removedSprite_ids_list:
+                tupeld.append((a[0], a[1]))
+                
+            self.level.physics.remove_sprites_by_id(tupeld)
+            
+            
             # tell the server that the client is init
             self.send_init_success()
             self.main.menu.show_menu(False)
         else:
             raise Exception('Did not get init as first Package') 
 
-    def gold_removed(self, pos):
+    def gold_removed(self, index):
         clientlog.info("Gold removed, notifing server")
-        self.send_data_to_server(Message.type_gold_removed, pos)
+        self.send_data_to_server(Message.type_gold_removed, index)
+
+    def player_killed(self):
+        clientlog.info("Player got killed sending to server")
+        self.send_data_to_server(Message.type_player_killed, self.player_id)
 
     def send_init_success(self):
         """let the server know the connection succeeded"""
@@ -262,16 +277,6 @@ class Client(threading.Thread, MastermindClientTCP):
         """run the server"""
         self.send_keep_alive()
         raw_data = self.receive(False)
-
-        # TODO sync world object state over network
-        # .pop(0) removes the first item in a list (FIFO with .append)
-        # and automatically empties the list
-        if WorldObject.network_kill_list:
-            for index in WorldObject.network_kill_list.pop(0):
-                pass
-                # TODO send index (list) to all clients
-                # TODO all clients should then call
-                # WorldObject.kill_world_object(index)
 
         if raw_data:
             data = json.loads(raw_data)
@@ -326,9 +331,16 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_gold_removed:
                 #Todo maybe remove gold if the sync is not working
-                clientlog.info("Gold removed rec, from server")
+                clientlog.info("Gold removed recieved from server, killing gold")
+                WorldObject.kill_world_object(data['data'])
                 return
-                
+
+            if data['type'] == Message.type_player_killed:
+                clientlog.info("Got player killed from Server")
+                pdb.set_trace()
+                for player in self.level.players:
+                    if player.player_id == data['data']:
+                        player.kill()
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
@@ -337,7 +349,6 @@ class Client(threading.Thread, MastermindClientTCP):
             self.send(data, compression=NetworkConnector.COMPRESSION)
             self.timer = datetime.now()
         pass
-
 
 class Server(threading.Thread, MastermindServerTCP):
 
@@ -350,6 +361,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
+        self.sprites_removed = []
         self.sync_time = 500   # milliseconds
         self.last_update = int(round(time() * 1000))
         threading.Thread.__init__(self, daemon=True)
@@ -386,7 +398,12 @@ class Server(threading.Thread, MastermindServerTCP):
 
         if data['type'] == Message.type_gold_removed:
             srvlog.debug("Got gold removed from Client")
-            self.send_to_all_clients(Message.type_gold_removed, data['data'])
+            self.sprites_removed.append(data['data'])
+            return
+
+        if data['type'] == Message.type_player_killed:
+            srvlog.debug("Player {} got killed, telling other clients").format(data['data'])
+            self.send_to_all_clients(Message.type_player_killed, data['data'])
             return
 
     def callback_connect_client(self, connection_object):
@@ -399,7 +416,8 @@ class Server(threading.Thread, MastermindServerTCP):
         #sending initial Data, to all clients so everyone is on the same page. TODO:  add info about enemies
         level_info = self.level.get_level_info_json()
         #the clients id
-        misc_info = {'player_id': str(self.known_clients.index(connection_object))}
+        misc_info = {'player_id': str(self.known_clients.index(connection_object)),
+                     Message.field_removed_sprites : self.sprites_removed}
         #concat the data
         combined = {}
         for d in (level_info, misc_info):
