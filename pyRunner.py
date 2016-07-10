@@ -223,7 +223,6 @@ class PyRunner(object):
             try:
                 self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
-                # TODO Portal sound in loop while portal is open
                 self.music_thread.play_sound(self.sfx_portal_sound, loop=True)
             except AttributeError:
                 for player in Player.humans:
