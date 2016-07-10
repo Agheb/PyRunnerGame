@@ -506,25 +506,50 @@ class Level(object):
         except (IndexError, AttributeError):
             return False
 
-    def get_all_player_pos(self):
+    def get_normalized_pos(self, player):
+        """returns the x/y coordinates independant of the screen resolution"""
+        normalized_pos = ((player.rect.x - self.margin_left) / player.size,
+                          (player.rect.y - self.margin_top) / player.size)
+        return normalized_pos
+
+    def get_player_pos(self):
         """resolution independent positions of all players in the map"""
         players_pos = {}
-        for player in Level.players:
-            normalized_pos = ((player.rect.x - self.margin_left) / player.size,
-                              (player.rect.y - self.margin_top) / player.size)
-            players_pos[Level.players.index(player)] = normalized_pos
+        player = Level.players[self.network_connector.client.player_id]
+        '''only update yourself'''
+        players_pos[player.pid] = self.get_normalized_pos(player)
+        
         return players_pos
+
+    def get_all_bot_pos(self):
+        """resolution independent positions of all players in the map"""
+        bot_pos = {}
+        for bot in Level.bots:
+            bot_pos[bot.bid] = self.get_normalized_pos(bot)
+        return bot_pos
+
+    def set_normalized_pos(self, player, player_pos):
+        """set the player position dependant to the screen resolution"""
+        player.rect.x = round(player_pos[0] * player.size + self.margin_left)
+        player.rect.y = round(player_pos[1] * player.size + self.margin_top)
 
     def set_player_pos(self, player_id, player_pos):
         """set the player position for all players in the level according to the viewers screen resolution"""
         for player in Level.players:
             if player.pid == int(player_id):
-                player.rect.x = round(player_pos[0] * player.size + self.margin_left)
-                player.rect.y = round(player_pos[1] * player.size + self.margin_top)
+                self.set_normalized_pos(player, player_pos)
                 log.info("Set Player {} position".format(player_id))
                 return
         log.info("Cant find player {} to set pos".format(player_id))
-        
+
+    def set_bot_pos(self, bot_id, bot_pos):
+        """set the player position for all players in the level according to the viewers screen resolution"""
+        for bot in Level.players:
+            if bot.bid == int(bot_id):
+                self.set_normalized_pos(bot, bot_pos)
+                log.info("Set Player {} position".format(bot_id))
+                return
+        log.info("Cant find player {} to set pos".format(bot_id))
     
     @staticmethod
     def get_level_info_json():

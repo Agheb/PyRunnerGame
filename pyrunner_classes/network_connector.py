@@ -318,11 +318,15 @@ class Client(threading.Thread, MastermindClientTCP):
                 return
             
             if data['type'] == Message.type_comp_update_set:
-                playerId, normalizedPos = data['data']
-                if playerId != self.player_id:
+                is_bot = False
+                player_id, normalized_pos = data['data']
+                if player_id != self.player_id:
                 #Dont set our own pos
                     clientlog.info("Got pos setter from server")
-                    self.level.set_player_pos(playerId, normalizedPos)
+                    if is_bot:
+                        self.level.set_bot_pos(player_id, normalized_pos)
+                    else:
+                        self.level.set_player_pos(player_id, normalized_pos)
                 return
 
     def send_keep_alive(self):
@@ -345,8 +349,8 @@ class Server(threading.Thread, MastermindServerTCP):
         self.local_only = local_only
         self.known_clients = []
         self.connected = False
-        self.sync_time = 500   # milliseconds
-        self.last_update = int(round(time() * 1000))
+        self.sync_time = 1
+        self.last_update = datetime.now()
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -469,16 +473,16 @@ class Server(threading.Thread, MastermindServerTCP):
         return super(MastermindServerTCP, self).callback_disconnect()
 
     def update(self):
-        if (int(round(time() * 1000)) - self.last_update) >= self.sync_time:
+        if (datetime.now() - self.last_update).seconds >= self.sync_time:
             srvlog.info("sending update data to clients")
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             self.send_to_all_clients(Message.type_comp_update)
-            self.last_update = int(round(time() * 1000))  # datetime.now()
+            self.last_update = datetime.now()
 
     def get_collected_data(self):
         collectedData = {}
-        collectedData[Message.field_player_locations] = self.level.get_all_player_pos()
+        collectedData[Message.field_player_locations] = self.level.get_player_pos()
         return collectedData
         
     @property
