@@ -250,7 +250,7 @@ class PyRunner(object):
         '''stops backgroundmusic and plays GameOver SFX'''
         self.music_thread.clear_background_music()
 
-        self.music_thread.play_sound("GameOver4.ogg")
+        self.music_thread.play_sound("GameOver4.ogg", False)
         found_one = False
         self.menu.game_over.flush_all_items()
         for score in GoldScore.scores:

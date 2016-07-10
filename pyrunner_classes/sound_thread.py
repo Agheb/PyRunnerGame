@@ -103,7 +103,8 @@ class MusicMixer(threading.Thread):
                     self.play_sound(file)
             except TypeError:
                 '''if necessary parse a filename string to a full path and load it as pygame.mixer.Sound'''
-                self.play_sound(pygame.mixer.Sound(self.get_full_path_sfx(file)))
+                # self.play_sound(pygame.mixer.Sound(self.get_full_path_sfx(file)))
+                # TODO: when this exception is called the game breaks
 
     @staticmethod
     def get_full_path_music(file):

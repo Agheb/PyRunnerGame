@@ -20,6 +20,7 @@ class Physics(object):
         self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Collect_Point_01.wav'))
         self.sfx_coin_robbed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Robbed_Point_01.wav'))
         self.sfx_player_portal = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('portal_exit.wav'))
+        self.sfx_player_killed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_kill.ogg'))
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -63,8 +64,9 @@ class Physics(object):
 
             '''kill players touched by bots'''
             if not player.is_human and not player.direction == "Trapped":
-                pygame.sprite.spritecollide(player, Player.humans, True, collided=pygame.sprite.collide_rect_ratio(0.5))
-                # TODO Kill Sound
+                if pygame.sprite.spritecollide(player, Player.humans, True,
+                                               collided=pygame.sprite.collide_rect_ratio(0.5)):
+                    self.level.sound_thread.play_sound(self.sfx_player_killed, loop=False)
 
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
@@ -154,6 +156,7 @@ class Physics(object):
                         sprite.kill()
                     elif not player.robbed_gold:
                         player.collect_gold(sprite)
+                        # play sound when collecting gold
                         self.level.sound_thread.play_sound(self.sfx_coin_robbed, loop=False)
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
