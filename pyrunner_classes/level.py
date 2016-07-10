@@ -509,7 +509,8 @@ class Level(object):
     @staticmethod
     def get_player_states(player):
         """return the status vars of a specific player"""
-        return player.on_ground, player.on_ladder, player.on_rope, player.killed
+        return player.on_ground, player.on_ladder, player.on_rope, player.killed, \
+            player.change_x, player.change_y, player.direction
 
     def get_normalized_pos_and_data(self, player, is_bot, calc_pos=True):
         """returns the x/y coordinates independant of the screen resolution"""
@@ -542,11 +543,14 @@ class Level(object):
     @staticmethod
     def set_player_states(player, info):
         """set the state vars for a specific player"""
-        on_ground, on_ladder, on_rope, killed = info
+        on_ground, on_ladder, on_rope, killed, change_x, change_y, direction = info
         player.on_ground = bool(on_ground)
         player.on_ladder = bool(on_ladder)
         player.on_rope = bool(on_rope)
         player.killed = bool(killed)
+        player.change_x = float(change_x)
+        player.change_y = float(change_y)
+        player.direction = direction
         return
 
     def set_normalized_pos(self, player, player_pos):

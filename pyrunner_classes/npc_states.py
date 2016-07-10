@@ -1,6 +1,7 @@
 from .player import Player
 from ast import literal_eval as make_tuple
 from datetime import datetime
+from .actions import Action
 import logging
 import math
 import pygame
@@ -77,7 +78,7 @@ class State(object):
 
         log.info("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
 
-        if self.bot.on_ladder or self.bot.can_go_down:
+        if y != by and (self.bot.on_ladder or self.bot.can_go_down):
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
                 '''climb on ropes which are connected to ladders etc. left of the player'''
                 # self.bot.stop_on_ground = True
@@ -102,9 +103,8 @@ class State(object):
                 self.bot.walk_left = False
             elif y > by and (self.bot.can_go_down or self.bot.on_ladder):
                 '''use ladders solid top spots to climb down'''
-                if self.bot.can_go_down:
-                    self.bot.stop_on_ground = True
-                    self.bot.go_down()
+                self.bot.change_x = 0
+                self.bot.go_down()
             elif y < by and self.bot.on_ladder:
                 '''or simply climb up'''
                 self.bot.change_x = 0
@@ -126,7 +126,7 @@ class State(object):
             if jump_down:
                 self.bot.change_x = 0
                 self.bot.go_down()
-        if x < bx:
+        elif x < bx:
             '''else simply go to the left if the player is on the left or we hit the right border'''
             self.bot.go_left()
             self.bot.walk_left = True
@@ -265,7 +265,7 @@ class Exploring(State):
                             self.bot.stop_on_ground = True
                             y = by + 1
 
-                        if not self.bot.change_y and not self.bot.change_x and self.climbed_ladder:
+                        if not self.bot.change_y and self.climbed_ladder:
                             self.climbed_ladder = False
                             '''make sure the bot doesn't fall off ladders when they have an empty gap next to them'''
                             if not self.bot.left_bottom:
@@ -277,7 +277,7 @@ class Exploring(State):
 
                     self.walk_next_tile(x, y, bx, by)
                 else:
-                    x = bx - 1 if self.bot.walk_left else bx + 1
+                    # x = bx - 1 if self.bot.walk_left else bx + 1
                     self.walk_next_tile(x, y, bx, by)
 
     def walk_next_tile(self, x, y, bx, by):

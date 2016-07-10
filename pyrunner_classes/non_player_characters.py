@@ -26,7 +26,7 @@ class Bots(Player):
         # give humans a chance
         self.speed -= self.size / 30
         self.frame_counter = 0
-        self.frame_stop = self.fps // 5
+        self.frame_stop = 2
         self.spawning = True
         self.spawn_frame = 0
         # Sound
@@ -81,10 +81,10 @@ class Bots(Player):
     def network_movements(self, action):
         """handle all the bot movements"""
         try:
-            if self.previous_action != action:
-                #    self.previous_action = action
-                #    self.network_connector.server.send_bot_pos_and_data(self)
-                self.network_connector.server.send_bot_movement(action, self.pid)
+            # if self.previous_action != action:
+            #    self.previous_action = action
+            #    self.network_connector.server.send_bot_pos_and_data(self)
+            self.network_connector.server.send_bot_movement(action, self.pid)
         except (MastermindErrorServer, AttributeError):
             pass
 
@@ -128,6 +128,12 @@ class Bots(Player):
         """do the calculated actions"""
         Player.go_down(self)
 
+    def stop(self):
+        """add network connector to movement"""
+        if self.master:
+            self.network_movements(Action.STOP)
+            log.debug("move bot (" + str(self.pid) + ") stopped")
+
     def collect_gold(self, sprite):
         """remove one gold object and drop it on death"""
         self.robbed_gold = sprite
@@ -145,6 +151,7 @@ class Bots(Player):
 
     def death_actions(self):
         """special actions to execute on death which aren't needed for human players"""
+        self.send_network_update()
         self.restore_gold()
         self.level.sound_thread.play_sound(self.sfx_bot_kill, loop=False)
         self.level.bots_respawn.append((self.pid, datetime.now()))
@@ -153,7 +160,7 @@ class Bots(Player):
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
         if not self.direction == "Trapped":
-            if self.frame_counter > self.frame_stop:
+            if self.frame_counter >= self.frame_stop:
                 self.frame_counter = 0
                 '''don't think too fast'''
                 try:
