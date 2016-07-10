@@ -19,6 +19,7 @@ class Physics(object):
         '''sounds'''
         self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Collect_Point_01.wav'))
         self.sfx_coin_robbed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Robbed_Point_01.wav'))
+        self.sfx_player_portal = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('portal_exit.wav'))
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -110,6 +111,7 @@ class Physics(object):
                 '''remove the bottom sprite to the right'''
                 if right_bottom and right_bottom.removable and not right_tile:
                     right_bottom.kill()
+                    #  TODO add digging sound
             elif player.direction is "DL":
                 '''remove the bottom sprite to the left'''
                 if left_bottom and left_bottom.removable and not left_tile:
@@ -158,7 +160,8 @@ class Physics(object):
                         if not player.killed:
                             player.rect.center = sprite.rect.center
                             player.reached_exit = True
-                            # TODO sound when player exits game
+                            # Play Exit sound
+                            self.level.sound_thread.play_sound(self.sfx_player_portal, loop=False)
                             player.kill()
                 elif sprite.restoring:
                     player.kill()

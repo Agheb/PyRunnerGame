@@ -68,7 +68,7 @@ class PyRunner(object):
         self.loading_level = False
         self.game_over = False
         """sound variables"""
-        self.portal_sound = pygame.mixer.Sound(
+        self.sfx_portal_sound = pygame.mixer.Sound(
             self.music_thread.get_full_path_sfx('portal_sound.ogg'))
 
     def load_level(self, path=None):
@@ -224,7 +224,7 @@ class PyRunner(object):
                 self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
                 # TODO Portal sound in loop while portal is open
-                self.music_thread.play_sound(self.portal_sound, loop=True)
+                self.music_thread.play_sound(self.sfx_portal_sound, loop=True)
             except AttributeError:
                 for player in Player.humans:
                     player.reached_exit = True
