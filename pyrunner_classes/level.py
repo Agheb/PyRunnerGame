@@ -326,9 +326,9 @@ class Level(object):
         #         if tile_a is not tile_b:
         #             try:
         #                 self.graph.shortest_path(tile_a, tile_b)
-        #                 # print("Success: %s and %s" % (tile_a, tile_b))
+        #                 # log.info("Success: %s and %s" % (tile_a, tile_b))
         #             except KeyError:
-        #                 # print("Error %s and %s" % (tile_a, tile_b))
+        #                 # log.info("Error %s and %s" % (tile_a, tile_b))
         #                 pass
         #
         # intersections = [tile_id for tile_id in horizontals if tile_id in ladders]
@@ -340,9 +340,9 @@ class Level(object):
         #         if tile is not ladder:
         #             try:
         #                 self.graph.shortest_path(tile, ladder)
-        #                 print("Success: %s and %s" % (tile, ladder))
+        #                 log.info("Success: %s and %s" % (tile, ladder))
         #             except KeyError:
-        #                 # print("Error %s and %s" % (tile, ladder))
+        #                 # log.info("Error %s and %s" % (tile, ladder))
         #                 pass
 
     def get_is_path(self, a, b):
@@ -383,7 +383,7 @@ class Level(object):
             '''add the edges'''
             self.graph.add_edge(start_node, stop_node, length)
             self.graph.add_edge(stop_node, start_node, length)
-            print("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
+            log.info("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
 
             # for node_a in range(stop_a, stop_b):
             #         for node_b in range(stop_a, stop_b):
@@ -392,7 +392,7 @@ class Level(object):
             #                 length += 1
             #                 self.graph.add_edge(node_a, node_b, length)
             #                 # self.graph.add_edge(stop_node, start_node, length)
-            #                 print("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
+            #                 log.info("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
 
     def add_paths(self, node_list, horizontal=True):
         """find intersections between different levels"""

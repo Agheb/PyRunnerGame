@@ -4,8 +4,6 @@
 from __future__ import division
 import threading
 import logging
-from pprint import pprint
-import pdb
 from .controller import Controller
 from datetime import datetime
 from time import sleep, time
@@ -119,7 +117,7 @@ class NetworkConnector(object):
                         if self.port < START_PORT + 5:
                             self.port += 1
                             self.init_new_server()
-                            print("changing server and port to ", str(self.port))
+                            netlog.info("changing server and port to ", str(self.port))
                         else:
                             '''if it still fails give up'''
                             self.server.kill()
@@ -165,7 +163,7 @@ class NetworkConnector(object):
         self.client.start()
 
         if self.client and self.client.connected:
-            print("connected to %s" % self.ip)
+            netlog.info("connected to %s" % self.ip)
 
     def update(self):
         try:
@@ -443,8 +441,8 @@ class Server(threading.Thread, MastermindServerTCP):
             self.accepting_allow()
             self.connected = True
         except (OSError, MastermindErrorSocket):
-            print(str(OSError))
-            print(str(MastermindErrorSocket))
+            srvlog.info(str(OSError))
+            srvlog.info(str(MastermindErrorSocket))
             pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
         srvlog.info("server started and accepting connections on port %s" % self.port)

@@ -1,8 +1,11 @@
 from .player import Player
 from ast import literal_eval as make_tuple
 from datetime import datetime
+import logging
 import math
 import pygame
+
+log = logging.getLogger("States")
 
 
 class State(object):
@@ -13,8 +16,8 @@ class State(object):
         Bots are Instances of non_player_characters, inherited from player class.
     """
 
-    def __init__(self, statename, bot):
-        self.statename = statename
+    def __init__(self, name, bot):
+        self.name = name
         self.bot = bot
         self.bot_last_tile = None
         self.closest_player = None
@@ -72,7 +75,7 @@ class State(object):
         if self.bot.direction == "Trapped":
             return
 
-        # print("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
+        log.info("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
 
         if self.bot.on_ladder or self.bot.can_go_down:
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
@@ -139,7 +142,7 @@ class State(object):
         try:
             return self.bot.level.graph.shortest_path(own_tile, target_tile)
         except KeyError:
-            print("Error: ", str(own_tile), " ", str(target_tile))
+            log.info("Error: ", str(own_tile), " ", str(target_tile))
             return False
 
     def shortest_path(self):
@@ -226,10 +229,10 @@ class State(object):
                 note that all sprites that shouldn't collide with the bot are excluded in game_physics.py
             '''
             if self.bot.left_tile and not self.bot.left_tile.is_rope:
-                # print("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.is_rope))
+                # log.info("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = False
             elif self.bot.right_tile and not self.bot.right_tile.is_rope:
-                # print("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.is_rope))
+                # log.info("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = True
 
             if bx == self.bot.level.cols - 1:
@@ -287,7 +290,7 @@ class Exploring(State):
     def check_conditions(self):
         """as soon as a player is in sight switch to a hunting mode"""
         if self.check_player_in_range():
-            print("player found")
+            log.info("player found")
             return "shortest path"
 
     def entry_actions(self):
@@ -336,7 +339,7 @@ class ShortestPath(State):
                 '''get the next valid position / empty the path to create a new one'''
                 self.next_pos = self.get_next_position()
 
-                # print("trying to get a new position: ", str(self.next_pos), " old: ", str(self.old_pos))
+                # log.info("trying to get a new position: ", str(self.next_pos), " old: ", str(self.old_pos))
                 if self.next_pos is self.old_pos:
                     self.next_pos = self.old_pos = None
 

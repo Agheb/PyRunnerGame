@@ -176,9 +176,6 @@ class PyRunner(object):
                             if p2js:
                                 key2 = self.config.p2_key_map.get(str(event_dict))
 
-                            print(str(event_dict))
-                            print(str(key1))
-
                             if key1 == K_ESCAPE or key2 == K_ESCAPE:
                                 self.menu.show_menu(True)
                             else:
