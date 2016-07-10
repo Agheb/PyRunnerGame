@@ -188,6 +188,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.level = level
         self.target_ip = ip
         self.main = main
+        self.master = self.main.network_connector.master
         threading.Thread.__init__(self, daemon=True)
         MastermindClientTCP.__init__(self)
         self.timer = datetime.now()  # timer for the keep Alive
@@ -317,7 +318,7 @@ class Client(threading.Thread, MastermindClientTCP):
             
             if data['type'] == Message.type_comp_update_set:
                 player_id, normalized_pos, is_bot = data['data']
-                if player_id != self.player_id:
+                if (player_id != self.player_id) or (is_bot and not self.master):
                 #Dont set our own pos
                     clientlog.info("Got pos setter from server")
                     self.level.set_player_pos(player_id, normalized_pos, is_bot)
@@ -472,6 +473,7 @@ class Server(threading.Thread, MastermindServerTCP):
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             for bot in self.level.bots:
+                print("sending bot data")
                 player_info = self.level.get_normalized_pos(bot, True)
                 self.send_to_all_clients(Message.type_comp_update, player_info)
             self.send_to_all_clients(Message.type_comp_update)

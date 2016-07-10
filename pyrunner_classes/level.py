@@ -189,7 +189,7 @@ class Level(object):
     def create_bot(self, bid, location):
         """create a bot at location (x, y)"""
         bot = Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
-        Level.bots.append(bot)
+        self.bots.append(bot)
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -542,9 +542,9 @@ class Level(object):
         for player in group:
             if player.pid == int(player_id):
                 self.set_normalized_pos(player, player_pos)
-                log.info("Set Player {} position".format(player_id))
+                log.info("Set Player {} (bot: {}) position".format(player_id, is_bot))
                 return
-        log.info("Cant find player {} to set pos".format(player_id))
+        log.info("Cant find player {} (bot: {}) to set pos".format(player_id, is_bot))
     
     @staticmethod
     def get_level_info_json():
