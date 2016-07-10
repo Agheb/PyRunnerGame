@@ -3,7 +3,7 @@ import socket
 import time
 import threading
 
-import _mm_netutil as netutil
+from libs.Mastermind import _mm_netutil as netutil
 from ._mm_constants import *
 from ._mm_errors import *
 
