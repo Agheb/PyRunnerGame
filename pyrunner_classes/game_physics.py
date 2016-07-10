@@ -147,17 +147,18 @@ class Physics(object):
                         '''only human players can take gold'''
                         player.add_gold()
                         "Collect gold SFX"
-                        self.level.sound_thread.play_sound(self.sfx_coin_collected)
+                        self.level.sound_thread.play_sound(self.sfx_coin_collected, loop=False)
                         # remove it
                         sprite.kill()
                     elif not player.robbed_gold:
                         player.collect_gold(sprite)
-                        self.level.sound_thread.play_sound(self.sfx_coin_robbed)
+                        self.level.sound_thread.play_sound(self.sfx_coin_robbed, loop=False)
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:
                             player.rect.center = sprite.rect.center
                             player.reached_exit = True
+                            # TODO sound when player exits game
                             player.kill()
                 elif sprite.restoring:
                     player.kill()

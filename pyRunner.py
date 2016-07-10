@@ -31,7 +31,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/level1.tmx"
+    START_LEVEL = "./resources/levels/level1-less coins.tmx"
 
     def __init__(self):
         """initialize the game"""
@@ -67,6 +67,9 @@ class PyRunner(object):
         self.level_exit = False
         self.loading_level = False
         self.game_over = False
+        """sound variables"""
+        self.level_exit_sound = pygame.mixer.Sound(
+            self.music_thread.get_full_path_sfx('322059__bzourk__sci-fi-portal.ogg'))
 
     def load_level(self, path=None):
         """load another level"""
@@ -221,7 +224,7 @@ class PyRunner(object):
                 self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
                 # TODO Portal sound in loop while portal is open
-                # self.music_thread.play_sound("unscrew_lightbulb-mike-koenig.wav")
+                self.music_thread.play_sound(self.level_exit_sound, loop=True)
             except AttributeError:
                 for player in Player.humans:
                     player.reached_exit = True
@@ -252,6 +255,7 @@ class PyRunner(object):
                 score_str = "Player %s: %s coins" % (score.gid + 1, score.gold)
                 self.menu.game_over.add_item(MenuItem(score_str))
         self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
+
 
 if __name__ == "__main__":
     pyrunner = PyRunner()
