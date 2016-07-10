@@ -24,6 +24,8 @@ class Bots(Player):
         self.frame_counter = 0
         self.spawning = True
         self.spawn_frame = 0
+        # network
+        self.network_connector = level.network_connector
 
         Player.bots.add(self)
 
@@ -71,6 +73,34 @@ class Bots(Player):
         # spawn the player at the desired location
         self.rect.topleft = pos
 
+    def go_left(self):
+        """add network connector to movement"""
+        if self.network_connector.master:
+            pass
+            # self.network_connector
+        super(Player, self).go_left()
+
+    def go_right(self):
+        """add network connector to movement"""
+        if self.network_connector.master:
+            pass
+            # self.network_connector
+        super(Player, self).go_right()
+
+    def go_up(self):
+        """add network connector to movement"""
+        if self.network_connector.master:
+            pass
+            # self.network_connector
+        super(Player, self).go_up()
+
+    def go_down(self):
+        """add network connector to movement"""
+        if self.network_connector.master:
+            pass
+            # self.network_connector
+        super(Player, self).go_down()
+
     def collect_gold(self, sprite):
         """remove one gold object and drop it on death"""
         self.robbed_gold = sprite
@@ -104,3 +134,10 @@ class Bots(Player):
                     pass
             else:
                 self.frame_counter += 1
+
+    def update(self):
+        """add some bot only behaviour"""
+        if self.network_connector.master:
+            self.process()
+        
+        super(Player, self).update()

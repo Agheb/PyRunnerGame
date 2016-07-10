@@ -200,15 +200,8 @@ class Player(pygame.sprite.DirtySprite):
             self.direction = "DL"
             # self.player_collide()
 
-    def process(self):
-        """needed for the bots"""
-        pass
-
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
-        if not self.is_human:
-            self.process()
-
         if self.spawning:
             self.image = self.spawn_frames[self.spawn_frame]
             self.spawn_frame += 1

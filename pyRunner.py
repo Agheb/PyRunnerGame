@@ -86,7 +86,7 @@ class PyRunner(object):
             self.level_exit = False
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
-        self.level = Level(self.bg_surface, path, self.music_thread, self.fps)
+        self.level = Level(self.bg_surface, path, self.music_thread, self.network_connector, self.fps)
         '''bug fix for old background appearing on the screen'''
         WorldObject.group.clear(self.level.surface, self.level.background)
         '''change the dirty rect for fps display'''
@@ -98,6 +98,7 @@ class PyRunner(object):
 
         if not self.network_connector:
             self.network_connector = NetworkConnector(self, self.level)
+            self.level.network_connector = self.network_connector
             self.menu = MainMenu(self, self.network_connector)
         else:
             self.network_connector.level = self.level
