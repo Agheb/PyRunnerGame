@@ -4,13 +4,12 @@
 from __future__ import division
 import threading
 import logging
-
+import json
+import socket
 from .player import Player
 from .controller import Controller
 from datetime import datetime
-from time import sleep, time
-import json
-import socket
+from time import sleep
 from libs.Mastermind import *
 from .level_objecs import WorldObject
 from .zeroconf_bonjour import ZeroConfAdvertiser, ZeroConfListener
@@ -318,9 +317,7 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_comp_update:
                 clientlog.info("Sending own Pos to Server")
-                player = self.level.players[self.player_id]
-                player_info = self.level.get_normalized_pos_and_data(player, False)
-                self.send_data_to_server(Message.type_comp_update, player_info)
+                self.send_current_pos_and_data()
                 return
 
             if data['type'] == Message.type_comp_update_states:
@@ -349,6 +346,15 @@ class Client(threading.Thread, MastermindClientTCP):
                     self.level.set_player_data(player_id, normalized_pos, is_bot, info)
                 return
 
+    def send_current_pos_and_data(self):
+        """send the current position and state vars to the server"""
+        try:
+            player = self.level.players[self.player_id]
+            player_info = self.level.get_normalized_pos_and_data(player, False)
+            self.send_data_to_server(Message.type_comp_update, player_info)
+        except IndexError:
+            pass
+
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
         if (datetime.now() - self.timer).seconds > 4:
@@ -370,10 +376,8 @@ class Server(threading.Thread, MastermindServerTCP):
         self.known_clients = []
         self.own_client = None
         self.connected = False
-        # self.sync_time = (1 / self.main.fps) * 1000000  # microseconds
-        # self.last_update = datetime.now()
-        self.frame_counter = 0
-        self.update_interval = self.main.fps // 2
+        self.sync_interval = 10  # seconds
+        self.sync_time = datetime.now()
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -434,6 +438,16 @@ class Server(threading.Thread, MastermindServerTCP):
         for client in self.known_clients:
             if client != connection_object:
                 self.callback_client_send(client, data)
+
+        '''get the up to date player positions'''
+        self.send_to_all_clients(Message.type_comp_update)
+
+        '''and up to date bot positions'''
+        for bot in self.level.bots:
+            '''update the bot positions only on the clients'''
+            player_info = self.level.get_normalized_pos_and_data(bot, True)
+            srvlog.debug("sending bot data: ", player_info)
+            self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
         
         return super(MastermindServerTCP, self).callback_connect_client(connection_object)
 
@@ -445,7 +459,8 @@ class Server(threading.Thread, MastermindServerTCP):
         #kill the player of the disconnected client on all other clients
         self.send_to_all_clients(Message.type_client_dc, {'client_id': disconnected_client})
         self.known_clients.pop(disconnected_client)
-        return super(MastermindServerTCP, self).callback_disconnect_client(connection_object)
+        super(MastermindServerTCP, self).callback_disconnect_client(connection_object)
+        return self.send_to_all_clients(Message.type_comp_update)
 
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
@@ -505,31 +520,24 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def update(self):
         """update all clients"""
-        if len(self.known_clients) > 1:
-            full_pos = False
-            send_update = False
+        pass
+        # if len(self.known_clients) > 1:
+        #     if (datetime.now() - self.sync_time).seconds >= self.sync_interval:
+        #         '''sync all players every x seconds'''
+        #         srvlog.info("sending update data to clients")
+        #         for bot in self.level.bots:
+        #             '''update the bot positions only on the clients'''
+        #             player_info = self.level.get_normalized_pos_and_data(bot, True)
+        #             srvlog.debug("sending bot data: ", player_info)
+        #             self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
+        #         self.send_to_all_clients(Message.type_comp_update)
+        #         self.sync_time = datetime.now()
 
-            if self.frame_counter >= self.update_interval and len(self.known_clients) > 1:
-                self.frame_counter = 0
-                full_pos = True
-                send_update = True
-            elif self.frame_counter % self.update_interval is 0:
-                send_update = True
-
-            if send_update:
-                srvlog.info("sending update data to clients")
-                # change to requesting updates from each client
-                for bot in self.level.bots:
-                    '''update the bot positions only on the clients'''
-                    player_info = self.level.get_normalized_pos_and_data(bot, True, full_pos)
-                    srvlog.debug("sending bot data: ", player_info)
-                    self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
-                if full_pos:
-                    self.send_to_all_clients(Message.type_comp_update)
-                else:
-                    self.send_to_all_clients(Message.type_comp_update_states)
-
-            self.frame_counter += 1
+    def send_bot_pos_and_data(self, bot):
+        """send updated bot movements to all clients"""
+        player_info = self.level.get_normalized_pos_and_data(bot, True)
+        srvlog.debug("sending bot data: ", player_info)
+        self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
 
     def get_collected_data(self):
         collectedData = {}

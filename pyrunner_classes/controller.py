@@ -3,9 +3,6 @@
 """main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
-import pdb
-
-from .player import Player
 from .level import Level
 from libs.Mastermind import MastermindErrorClient
 from .actions import Action
@@ -23,6 +20,7 @@ class Controller(object):
         '''
         self.config = config
         self.network_connector = network_connector
+        self.previous_key = None
         self.player_1_movements = []
         self.player_2_movements = []
         '''only stop player if movement key got released'''
@@ -77,6 +75,10 @@ class Controller(object):
 
         if current_action:
             try:
+                if self.previous_key != key:
+                    self.previous_key = key
+                    '''update positions on direction changes'''
+                    self.network_connector.client.send_current_pos_and_data()
                 self.network_connector.client.send_key(current_action)
             except MastermindErrorClient:
                 for player in Level.players:
