@@ -65,9 +65,13 @@ class Physics(object):
 
             '''kill players touched by bots'''
             if not player.is_human and not player.direction == "Trapped":
-                if pygame.sprite.spritecollide(player, Player.humans, True,
-                                               collided=pygame.sprite.collide_rect_ratio(0.5)):
-                    self.level.sound_thread.play_sound(self.sfx_player_killed)
+                human_victims = pygame.sprite.spritecollide(player, Player.humans, False,
+                                                            collided=pygame.sprite.collide_rect_ratio(0.5))
+                if human_victims:
+                    for p in human_victims:
+                        if not p.killed:
+                            self.level.sound_thread.play_sound(self.sfx_player_killed)
+                            p.kill()
 
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)

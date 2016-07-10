@@ -265,10 +265,7 @@ class Player(pygame.sprite.DirtySprite):
 
             if self.direction != self.previous_direction:
                 self.previous_direction = self.direction
-                if self.is_human:
-                    self.network_connector.client.send_current_pos_and_data()
-                elif self.master:
-                    self.network_connector.server.send_bot_pos_and_data(self)
+                self.send_network_update()
 
             # Gravity
             self.calc_gravity()
@@ -280,6 +277,13 @@ class Player(pygame.sprite.DirtySprite):
                 if not self.is_human:
                     self.death_actions()
                 pygame.sprite.DirtySprite.kill(self)
+
+    def send_network_update(self):
+        """send all relevant data to the server"""
+        if self.is_human:
+            self.network_connector.client.send_current_pos_and_data()
+        elif self.master:
+            self.network_connector.server.send_bot_pos_and_data(self)
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """
