@@ -506,28 +506,48 @@ class Level(object):
         except (IndexError, AttributeError):
             return False
 
-    def get_normalized_pos(self, player, is_bot):
+    @staticmethod
+    def get_player_states(player):
+        """return the status vars of a specific player"""
+        return player.on_ground, player.on_ladder, player.on_rope, player.killed
+
+    def get_normalized_pos_and_data(self, player, is_bot, calc_pos=True):
         """returns the x/y coordinates independant of the screen resolution"""
-        normalized_pos = (player.pid, ((player.rect.x - self.margin_left) / player.size,
-                          (player.rect.y - self.margin_top) / player.size),
-                          is_bot)
-        return normalized_pos
+        if calc_pos:
+            '''and calculate the normalized position'''
+            pos_x = (player.rect.x - self.margin_left) / player.size
+            pos_y = (player.rect.y - self.margin_top) / player.size
+            calc_pos = pos_x, pos_y
 
-    def get_player_pos(self):
+        '''and return it to the server/client'''
+        return player.pid, calc_pos, is_bot, self.get_player_states(player)
+
+    def get_player_data(self):
         """resolution independent positions of all players in the map"""
-        players_pos = {}
-        player = Level.players[self.network_connector.client.player_id]
-        '''only update yourself'''
-        players_pos[player.pid] = self.get_normalized_pos(player, False)
+        try:
+            player = Level.players[self.network_connector.client.player_id]
 
-        return players_pos
+            '''only update yourself'''
+            return self.get_normalized_pos_and_data(player, False)
+        except IndexError:
+            pass
 
-    def get_all_bot_pos(self):
+    def get_all_bot_data(self):
         """resolution independent positions of all players in the map"""
         bot_pos = {}
         for bot in Level.bots:
-            bot_pos[bot.bid] = self.get_normalized_pos(bot, True)
+            bot_pos[bot.bid] = self.get_normalized_pos_and_data(bot, True)
         return bot_pos
+
+    @staticmethod
+    def set_player_states(player, info):
+        """set the state vars for a specific player"""
+        on_ground, on_ladder, on_rope, killed = info
+        player.on_ground = bool(on_ground)
+        player.on_ladder = bool(on_ladder)
+        player.on_rope = bool(on_rope)
+        player.killed = bool(killed)
+        return
 
     def set_normalized_pos(self, player, player_pos):
         """set the player position dependant to the screen resolution"""
@@ -535,13 +555,21 @@ class Level(object):
         player.rect.x = round(x * player.size + self.margin_left)
         player.rect.y = round(y * player.size + self.margin_top)
 
-    def set_player_pos(self, player_id, player_pos, is_bot):
+    def set_player_data(self, player_id, full_pos, is_bot, info):
         """set the player position for all players in the level according to the viewers screen resolution"""
         group = Level.bots if is_bot else Level.players
         try:
             player = group[int(player_id)]
+            '''set the position'''
+            try:
+                update_pos = bool(full_pos)
+            except TypeError:
+                update_pos = True
 
-            self.set_normalized_pos(player, player_pos)
+            if update_pos:
+                self.set_normalized_pos(player, full_pos)
+            '''set the player state vars'''
+            self.set_player_states(player, info)
             log.info("Set Player {} (bot: {}) position".format(player_id, is_bot))
             return
         except IndexError:
