@@ -25,6 +25,7 @@ class Bots(Player):
         # give humans a chance
         self.speed -= self.size / 30
         self.frame_counter = 0
+        self.frame_stop = self.fps // 5
         self.spawning = True
         self.spawn_frame = 0
         # network
@@ -147,7 +148,7 @@ class Bots(Player):
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
         if not self.direction == "Trapped":
-            if self.frame_counter & 1:
+            if self.frame_counter > self.frame_stop:
                 self.frame_counter = 0
                 '''don't think too fast'''
                 try:
