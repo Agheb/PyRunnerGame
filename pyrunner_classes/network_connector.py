@@ -305,9 +305,7 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_comp_update:
                 clientlog.info("Sending own Pos to Server")
                 player = self.level.players[int(self.player_id)]
-                normalized_pos = ((player.rect.x - self.level.margin_left) / player.size,
-                                  (player.rect.y - self.level.margin_top) / player.size)
-                player_info = (self.player_id, normalized_pos)
+                player_info = self.level.get_normalized_pos(player, False)
                 self.send_data_to_server(Message.type_comp_update, player_info)
                 return
             
@@ -318,15 +316,11 @@ class Client(threading.Thread, MastermindClientTCP):
                 return
             
             if data['type'] == Message.type_comp_update_set:
-                is_bot = False
-                player_id, normalized_pos = data['data']
+                player_id, normalized_pos, is_bot = data['data']
                 if player_id != self.player_id:
                 #Dont set our own pos
                     clientlog.info("Got pos setter from server")
-                    if is_bot:
-                        self.level.set_bot_pos(player_id, normalized_pos)
-                    else:
-                        self.level.set_player_pos(player_id, normalized_pos)
+                    self.level.set_player_pos(player_id, normalized_pos, is_bot)
                 return
 
     def send_keep_alive(self):
@@ -477,6 +471,9 @@ class Server(threading.Thread, MastermindServerTCP):
             srvlog.info("sending update data to clients")
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
+            for bot in self.level.bots:
+                player_info = self.level.get_normalized_pos(bot, True)
+                self.send_to_all_clients(Message.type_comp_update, player_info)
             self.send_to_all_clients(Message.type_comp_update)
             self.last_update = datetime.now()
 

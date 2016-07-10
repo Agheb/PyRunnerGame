@@ -13,7 +13,7 @@ class Bots(Player):
         Player.__init__(self, pos, sheet, None, 32, level, 25, True)
 
         # POSITIONAL RELATED
-        self.bid = bid
+        self.pid = bid
         self.destination = (0, 0)
         self.last_pos = (0, 0)
         self.left_tile = None
@@ -81,7 +81,7 @@ class Bots(Player):
     def network_movements(self, action):
         """handle all the bot movements"""
         try:
-            self.network_connector.server.send_bot_movement(action, self.bid)
+            self.network_connector.server.send_bot_movement(action, self.pid)
         except (MastermindErrorServer, AttributeError):
             pass
 
@@ -89,7 +89,7 @@ class Bots(Player):
         """add network connector to movement"""
         if self.master:
             self.network_movements(Action.LEFT)
-            log.debug("move bot (" + str(self.bid) + ") left")
+            log.debug("move bot (" + str(self.pid) + ") left")
 
     def move_left(self):
         """do the calculated actions"""
@@ -99,7 +99,7 @@ class Bots(Player):
         """add network connector to movement"""
         if self.master:
             self.network_movements(Action.RIGHT)
-            log.debug("move bot (" + str(self.bid) + ") right")
+            log.debug("move bot (" + str(self.pid) + ") right")
 
     def move_right(self):
         """do the calculated actions"""
@@ -109,7 +109,7 @@ class Bots(Player):
         """add network connector to movement"""
         if self.master:
             self.network_movements(Action.UP)
-            log.debug("move bot (" + str(self.bid) + ") up")
+            log.debug("move bot (" + str(self.pid) + ") up")
 
     def move_up(self):
         """do the calculated actions"""
@@ -119,7 +119,7 @@ class Bots(Player):
         """add network connector to movement"""
         if self.master:
             self.network_movements(Action.DOWN)
-            log.debug("move bot (" + str(self.bid) + ") down")
+            log.debug("move bot (" + str(self.pid) + ") down")
 
     def move_down(self):
         """do the calculated actions"""
@@ -143,7 +143,7 @@ class Bots(Player):
     def death_actions(self):
         """special actions to execute on death which aren't needed for human players"""
         self.restore_gold()
-        self.level.bots_respawn.append((self.bid, datetime.now()))
+        self.level.bots_respawn.append((self.pid, datetime.now()))
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
@@ -164,6 +164,6 @@ class Bots(Player):
         if self.master:
             '''only the server bots get a brain'''
             self.process()
-            log.debug("bot (" + str(self.bid) + ") thinks")
+            log.debug("bot (" + str(self.pid) + ") thinks")
 
         Player.update(self)
