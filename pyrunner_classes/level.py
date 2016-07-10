@@ -512,12 +512,13 @@ class Level(object):
             players_pos[Level.players.index(player)] = normalized_pos
         return players_pos
 
-    def set_player_pos(self, player_id, player_pos):
+    def set_player_pos(self, player_id, player_pos, extra):
         """set the player position for all players in the level according to the viewers screen resolution"""
         for player in Level.players:
             if player.pid == int(player_id):
                 player.rect.x = round(player_pos[0] * player.size + self.margin_left)
                 player.rect.y = round(player_pos[1] * player.size + self.margin_top)
+                player.on_rope, player.on_ladder, player.on_ground = extra
                 log.info("Set Player {} position".format(player_id))
                 return
         log.info("Cant find player {} to set pos".format(player_id))

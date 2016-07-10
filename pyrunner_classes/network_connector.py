@@ -31,6 +31,7 @@ class Message(object):
     type_comp_update_set = 'update_all_set'
     type_keep_alive = 'keep_alive'
     type_level_changed = 'level_changed'
+    type_gold_removed = 'gold_removed'
 
 
     #data fields
@@ -56,6 +57,7 @@ class NetworkConnector(object):
         self.server = None
         self.browser = None
         self.advertiser = None
+        self.register_physics_callback()
 
         '''get IP'''
         if socket_ip.startswith("127."):
@@ -91,6 +93,10 @@ class NetworkConnector(object):
         self.server = Server(self.ip, self.port, self.level, self.main, local_only)
         self.master = True
         self.server.start()
+
+    def register_physics_callback(self):
+        #adds the network connector to the physics
+        self.level.physics.register_callback(self)
 
     def start_local_game(self):
         """run a single player game"""
@@ -231,6 +237,10 @@ class Client(threading.Thread, MastermindClientTCP):
         else:
             raise Exception('Did not get init as first Package') 
 
+    def gold_removed(self, pos):
+        clientlog.info("Gold removed, notifing server")
+        self.send_data_to_server(Message.type_gold_removed, pos)
+
     def send_init_success(self):
         """let the server know the connection succeeded"""
         data = {'player_id': self.player_id}
@@ -295,7 +305,8 @@ class Client(threading.Thread, MastermindClientTCP):
                 player = self.level.players[int(self.player_id)]
                 normalized_pos = ((player.rect.x - self.level.margin_left) / player.size,
                                   (player.rect.y - self.level.margin_top) / player.size)
-                player_info = (self.player_id, normalized_pos)
+                player_status = (player.on_rope, player.on_ladder, player.on_ground)
+                player_info = (self.player_id, normalized_pos, player_status)
                 self.send_data_to_server(Message.type_comp_update, player_info)
                 return
             
@@ -306,12 +317,18 @@ class Client(threading.Thread, MastermindClientTCP):
                 return
             
             if data['type'] == Message.type_comp_update_set:
-                playerId, normalizedPos = data['data']
+                playerId, normalizedPos, extras = data['data']
                 if playerId != self.player_id:
                 #Dont set our own pos
                     clientlog.info("Got pos setter from server")
-                    self.level.set_player_pos(playerId, normalizedPos)
+                    self.level.set_player_pos(playerId, normalizedPos, extras)
                 return
+
+            if data['type'] == Message.type_gold_removed:
+                #Todo maybe remove gold if the sync is not working
+                clientlog.info("Gold removed rec, from server")
+                return
+                
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
@@ -364,10 +381,14 @@ class Server(threading.Thread, MastermindServerTCP):
         if data['type'] == Message.type_init:
             player_id = data['data']['player_id']
             srvlog.debug("Init succ for client {}".format(player_id))
-            for client in self.known_clients:
-                self.callback_client_send(client, json.dumps(data))
+            self.send_to_all_clients(Message.type_init, data['data'])
             return
-                
+
+        if data['type'] == Message.type_gold_removed:
+            srvlog.debug("Got gold removed from Client")
+            self.send_to_all_clients(Message.type_gold_removed, data['data'])
+            return
+
     def callback_connect_client(self, connection_object):
         """this methods gets called on initial connect of a client"""
         srvlog.info("New Client Connected %s" % str(connection_object.address))
@@ -472,6 +493,5 @@ class Server(threading.Thread, MastermindServerTCP):
     @level.setter
     def level(self, level):
         self._level = level
-
         for client_id in range(len(self.known_clients)):
             self.level.add_player(client_id)
