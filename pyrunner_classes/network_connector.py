@@ -4,13 +4,12 @@
 from __future__ import division
 import threading
 import logging
-
+import json
+import socket
 from .player import Player
 from .controller import Controller
 from datetime import datetime
-from time import sleep, time
-import json
-import socket
+from time import sleep
 from libs.Mastermind import *
 from .level_objecs import WorldObject
 from .zeroconf_bonjour import ZeroConfAdvertiser, ZeroConfListener
@@ -349,9 +348,12 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def send_current_pos_and_data(self):
         """send the current position and state vars to the server"""
-        player = self.level.players[self.player_id]
-        player_info = self.level.get_normalized_pos_and_data(player, False)
-        self.send_data_to_server(Message.type_comp_update, player_info)
+        try:
+            player = self.level.players[self.player_id]
+            player_info = self.level.get_normalized_pos_and_data(player, False)
+            self.send_data_to_server(Message.type_comp_update, player_info)
+        except IndexError:
+            pass
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
@@ -436,6 +438,16 @@ class Server(threading.Thread, MastermindServerTCP):
         for client in self.known_clients:
             if client != connection_object:
                 self.callback_client_send(client, data)
+
+        '''get the up to date player positions'''
+        self.send_to_all_clients(Message.type_comp_update)
+
+        '''and up to date bot positions'''
+        for bot in self.level.bots:
+            '''update the bot positions only on the clients'''
+            player_info = self.level.get_normalized_pos_and_data(bot, True)
+            srvlog.debug("sending bot data: ", player_info)
+            self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
         
         return super(MastermindServerTCP, self).callback_connect_client(connection_object)
 
@@ -447,7 +459,8 @@ class Server(threading.Thread, MastermindServerTCP):
         #kill the player of the disconnected client on all other clients
         self.send_to_all_clients(Message.type_client_dc, {'client_id': disconnected_client})
         self.known_clients.pop(disconnected_client)
-        return super(MastermindServerTCP, self).callback_disconnect_client(connection_object)
+        super(MastermindServerTCP, self).callback_disconnect_client(connection_object)
+        return self.send_to_all_clients(Message.type_comp_update)
 
     def send_key(self, key, player_id):
         """puts a passed key inside a json object and sends it to all clients"""
@@ -507,17 +520,18 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def update(self):
         """update all clients"""
-        if len(self.known_clients) > 1:
-            if (datetime.now() - self.sync_time).seconds >= self.sync_interval:
-                '''sync all players every x seconds'''
-                srvlog.info("sending update data to clients")
-                for bot in self.level.bots:
-                    '''update the bot positions only on the clients'''
-                    player_info = self.level.get_normalized_pos_and_data(bot, True)
-                    srvlog.debug("sending bot data: ", player_info)
-                    self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
-                self.send_to_all_clients(Message.type_comp_update)
-                self.sync_time = datetime.now()
+        pass
+        # if len(self.known_clients) > 1:
+        #     if (datetime.now() - self.sync_time).seconds >= self.sync_interval:
+        #         '''sync all players every x seconds'''
+        #         srvlog.info("sending update data to clients")
+        #         for bot in self.level.bots:
+        #             '''update the bot positions only on the clients'''
+        #             player_info = self.level.get_normalized_pos_and_data(bot, True)
+        #             srvlog.debug("sending bot data: ", player_info)
+        #             self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
+        #         self.send_to_all_clients(Message.type_comp_update)
+        #         self.sync_time = datetime.now()
 
     def send_bot_pos_and_data(self, bot):
         """send updated bot movements to all clients"""

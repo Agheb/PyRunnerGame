@@ -3,9 +3,6 @@
 """main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
-import pdb
-
-from .player import Player
 from .level import Level
 from libs.Mastermind import MastermindErrorClient
 from .actions import Action

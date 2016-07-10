@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 from libs.Mastermind import *
 from .state_machine import StateMachine
 from .npc_states import *
@@ -27,9 +29,6 @@ class Bots(Player):
         self.frame_stop = self.fps // 5
         self.spawning = True
         self.spawn_frame = 0
-        # network
-        self.network_connector = level.network_connector
-        self.master = True if self.network_connector and self.network_connector.master else False
         # Sound
         self.sfx_bot_kill = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('bot_kill.wav'))
 
@@ -83,9 +82,9 @@ class Bots(Player):
         """handle all the bot movements"""
         try:
             if self.previous_action != action:
-                self.previous_action = action
-                self.network_connector.server.send_bot_pos_and_data(self)
-            self.network_connector.server.send_bot_movement(action, self.pid)
+                #    self.previous_action = action
+                #    self.network_connector.server.send_bot_pos_and_data(self)
+                self.network_connector.server.send_bot_movement(action, self.pid)
         except (MastermindErrorServer, AttributeError):
             pass
 

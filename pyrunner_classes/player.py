@@ -33,6 +33,10 @@ class Player(pygame.sprite.DirtySprite):
         self.fps = fps
         self.is_human = True if not bot else False
         self.dirty = 2  # always repaint this sprite
+        # network
+        self.network_connector = level.network_connector
+        self.master = True if self.network_connector and self.network_connector.master else False
+        self.previous_direction = None
         # positional attributes
         self.x, self.y = pos
         self.on_tile = None
@@ -258,6 +262,13 @@ class Player(pygame.sprite.DirtySprite):
                 if self.digging_frame is len(self.digging_frames_l) * 4:
                     self.digging_frame = 0
                     self.direction = "Stop"
+
+            if self.direction != self.previous_direction:
+                self.previous_direction = self.direction
+                if self.is_human:
+                    self.network_connector.client.send_current_pos_and_data()
+                elif self.master:
+                    self.network_connector.server.send_bot_pos_and_data(self)
 
             # Gravity
             self.calc_gravity()
