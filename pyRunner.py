@@ -31,7 +31,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/level1.tmx"
+    START_LEVEL = "./resources/levels/level1-less coins.tmx"
 
     def __init__(self):
         """initialize the game"""
@@ -67,6 +67,9 @@ class PyRunner(object):
         self.level_exit = False
         self.loading_level = False
         self.game_over = False
+        """sound variables"""
+        self.sfx_portal_sound = pygame.mixer.Sound(
+            self.music_thread.get_full_path_sfx('portal_sound.ogg'))
 
     def load_level(self, path=None):
         """load another level"""
@@ -220,6 +223,7 @@ class PyRunner(object):
             try:
                 self.level_exit = ExitGate(self.level.next_level_pos, self.level.PLAYERS[0], 32,
                                            self.level.pixel_diff, self.fps)
+                self.music_thread.play_sound(self.sfx_portal_sound, loop=True)
             except AttributeError:
                 for player in Player.humans:
                     player.reached_exit = True
@@ -235,11 +239,17 @@ class PyRunner(object):
             else:
                 '''load the next level, recreate the players and bots etc.'''
                 self.load_level(self.level.next_level)
+                self.music_thread.clear_sounds()
 
         return rects
 
     def game_over_menu(self):
         """create the game over menu"""
+
+        '''stops backgroundmusic and plays GameOver SFX'''
+        self.music_thread.clear_background_music()
+
+        self.music_thread.play_sound("GameOver4.ogg", False)
         found_one = False
         self.menu.game_over.flush_all_items()
         for score in GoldScore.scores:
@@ -250,6 +260,7 @@ class PyRunner(object):
                 score_str = "Player %s: %s coins" % (score.gid + 1, score.gold)
                 self.menu.game_over.add_item(MenuItem(score_str))
         self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
+
 
 if __name__ == "__main__":
     pyrunner = PyRunner()

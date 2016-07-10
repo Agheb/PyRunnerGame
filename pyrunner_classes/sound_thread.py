@@ -70,19 +70,26 @@ class MusicMixer(threading.Thread):
         self.thread_is_running = False
         pygame.mixer.music.fadeout(1500)
 
-    def play_sound(self, file):
+    def play_sound(self, file, loop):
         """use this class to make this thread play a sound file.
            either pass a string containing the file name (the file must be located in SOUND_PATH)
            or a pygame.mixer.Sound file which will be passed on directly.
 
+
         Args:
             file (str or pygame.mixer.Sound): file which should be played (instantly)
+            :param file: name of the file that should be played
+            :param loop: Loop plays the file infinitily when True.
         """
+        loop = loop
+
         if self.play_sfx:
             try:
                 channel = pygame.mixer.find_channel()
-                if channel:
+                if channel and not loop:
                     channel.play(file)
+                elif channel and loop:
+                    channel.play(file, loops=-1)
                 else:
                     '''if there's no free channels we need to add some more'''
                     num_channels = old_channels = pygame.mixer.get_num_channels()
@@ -96,7 +103,8 @@ class MusicMixer(threading.Thread):
                     self.play_sound(file)
             except TypeError:
                 '''if necessary parse a filename string to a full path and load it as pygame.mixer.Sound'''
-                self.play_sound(pygame.mixer.Sound(self.get_full_path_sfx(file)))
+                # self.play_sound(pygame.mixer.Sound(self.get_full_path_sfx(file)))
+                # TODO: when this exception is called the game breaks
 
     @staticmethod
     def get_full_path_music(file):
@@ -124,8 +132,13 @@ class MusicMixer(threading.Thread):
         """helper function to stop all currently playing music and clearing the playlist
            should be used if you switch levels etc. and want to switch the atmosphere
         """
-        pygame.mixer.music.stop()
+        pygame.mixer.music.fadeout(50)
+         # pygame.mixer.music.stop()
         self._music = []
+
+    def clear_sounds(self):
+        """helper function to clear all sound effects. Music keeps playing until clear_background_music is called"""
+        pygame.mixer.stop()
 
     @property
     def background_music(self):
