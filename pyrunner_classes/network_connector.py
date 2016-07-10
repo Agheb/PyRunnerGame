@@ -168,9 +168,6 @@ class NetworkConnector(object):
         self.client = Client(self.ip, self.port, self.level, self.main, self.master)
         self.client.start()
 
-        if self.master:
-            self.server.own_client = self.client.player_id
-
         if self.client and self.client.connected:
             netlog.info("connected to %s" % self.ip)
 
@@ -223,7 +220,9 @@ class Client(threading.Thread, MastermindClientTCP):
         if data['type'] == 'init':
             clientlog.info("Client got init Data, creating new Player") 
             contents = data['data']
-            self.player_id = contents['player_id']
+            self.player_id = int(contents['player_id'])
+            if self.master:
+                self.main.network_connector.server.own_client = self.player_id
 
             for pl_center in contents['players']:
                 try:
@@ -307,7 +306,7 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_comp_update:
                 clientlog.info("Sending own Pos to Server")
-                player = self.level.players[int(self.player_id)]
+                player = self.level.players[self.player_id]
                 player_info = self.level.get_normalized_pos(player, False)
                 self.send_data_to_server(Message.type_comp_update, player_info)
                 return
@@ -320,13 +319,14 @@ class Client(threading.Thread, MastermindClientTCP):
             
             if data['type'] == Message.type_comp_update_set:
                 '''don't set the positions on the server'''
-                if not self.master:
-                    player_id, normalized_pos, is_bot = data['data']
+                player_id, normalized_pos, is_bot = data['data']
+                player_id = int(player_id)
+                is_bot = bool(int(is_bot))
+                if is_bot or player_id != self.player_id:
                     clientlog.debug("recieved player data: ", data['data'])
                     clientlog.info("Got pos setter from server")
                     clientlog.debug("setting player data: ", data['data'])
-                    if is_bot or int(player_id) != self.player_id:
-                        self.level.set_player_pos(player_id, normalized_pos, is_bot)
+                    self.level.set_player_pos(player_id, normalized_pos, is_bot)
                 return
 
     def send_keep_alive(self):
@@ -353,6 +353,7 @@ class Server(threading.Thread, MastermindServerTCP):
         # self.sync_time = (1 / self.main.fps) * 1000000  # microseconds
         # self.last_update = datetime.now()
         self.frame_counter = 0
+        self.update_interval = self.main.fps // 2
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -376,7 +377,8 @@ class Server(threading.Thread, MastermindServerTCP):
 
         if data['type'] == Message.type_comp_update:
             # sending the pos of the player to all the clients
-            self.send_to_all_clients(Message.type_comp_update_set, data['data']) 
+            print(data['data'])
+            self.send_to_all_clients(Message.type_comp_update_set, data['data'])
             return
         
         if data['type'] == Message.type_init:
@@ -448,9 +450,7 @@ class Server(threading.Thread, MastermindServerTCP):
         """send information to all clients except yourself"""
         json_data = json.dumps({'type': message, 'data': data})
         for index, client in enumerate(self.known_clients):
-            print("own client: ", str(self.own_client))
             if index != self.own_client:
-                print(str(index), " sent!")
                 self.callback_client_send(client, json_data)
 
     def kill(self):
@@ -487,11 +487,12 @@ class Server(threading.Thread, MastermindServerTCP):
         # microseconds = (datetime.now() - self.last_update).microseconds
 
         # if microseconds >= self.sync_time:
-        if self.frame_counter >= 10 and len(self.known_clients) > 1:
+        if self.frame_counter >= self.update_interval and len(self.known_clients) > 1:
             srvlog.info("sending update data to clients")
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             for bot in self.level.bots:
+                '''update the bot positions only on the clients'''
                 player_info = self.level.get_normalized_pos(bot, True)
                 srvlog.debug("sending bot data: ", player_info)
                 self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
