@@ -21,6 +21,7 @@ class Physics(object):
         self.sfx_coin_robbed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Robbed_Point_01.wav'))
         self.sfx_player_portal = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('portal_exit.wav'))
         self.sfx_player_killed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_kill.ogg'))
+        self.sfx_player_dig = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_dig.wav'))
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -113,11 +114,13 @@ class Physics(object):
                 '''remove the bottom sprite to the right'''
                 if right_bottom and right_bottom.removable and not right_tile:
                     right_bottom.kill()
+                    self.level.sound_thread.play_sound(self.sfx_player_dig, loop=False)
                     #  TODO add digging sound
             elif player.direction is "DL":
                 '''remove the bottom sprite to the left'''
                 if left_bottom and left_bottom.removable and not left_tile:
                     left_bottom.kill()
+                    self.level.sound_thread.play_sound(self.sfx_player_dig, loop=False)
             elif player.direction is "UD" and not player.on_ladder:
                 '''go down the top part of a solid ladder'''
                 if bottom_sprite and bottom_sprite.climbable or player.on_rope:
