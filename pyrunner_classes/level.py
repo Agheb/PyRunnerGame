@@ -508,8 +508,8 @@ class Level(object):
 
     def get_normalized_pos(self, player, is_bot):
         """returns the x/y coordinates independant of the screen resolution"""
-        normalized_pos = ((player.rect.x - self.margin_left) / player.size,
-                          (player.rect.y - self.margin_top) / player.size,
+        normalized_pos = (player.pid, ((player.rect.x - self.margin_left) / player.size,
+                          (player.rect.y - self.margin_top) / player.size),
                           is_bot)
         return normalized_pos
 
@@ -531,8 +531,9 @@ class Level(object):
 
     def set_normalized_pos(self, player, player_pos):
         """set the player position dependant to the screen resolution"""
-        player.rect.x = round(player_pos[0] * player.size + self.margin_left)
-        player.rect.y = round(player_pos[1] * player.size + self.margin_top)
+        x, y = player_pos
+        player.rect.x = round(x * player.size + self.margin_left)
+        player.rect.y = round(y * player.size + self.margin_top)
 
     def set_player_pos(self, player_id, player_pos, is_bot):
         """set the player position for all players in the level according to the viewers screen resolution"""
