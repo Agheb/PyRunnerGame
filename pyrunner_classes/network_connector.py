@@ -165,8 +165,7 @@ class NetworkConnector(object):
             '''disconnect from other servers first'''
             self.client.disconnect()
 
-        self.client = Client(self.ip, self.port, self.level, self.main)
-        self.master = False
+        self.client = Client(self.ip, self.port, self.level, self.main, self.master)
         self.client.start()
 
         if self.client and self.client.connected:
@@ -183,12 +182,12 @@ class NetworkConnector(object):
 class Client(threading.Thread, MastermindClientTCP):
 
     """the network client"""
-    def __init__(self, ip, port, level, main):
+    def __init__(self, ip, port, level, main, master):
         self.port = port
         self.level = level
         self.target_ip = ip
         self.main = main
-        self.master = self.main.network_connector.master
+        self.master = master
         threading.Thread.__init__(self, daemon=True)
         MastermindClientTCP.__init__(self)
         self.timer = datetime.now()  # timer for the keep Alive
