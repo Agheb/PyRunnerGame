@@ -74,10 +74,12 @@ class MusicMixer(threading.Thread):
         """use this class to make this thread play a sound file.
            either pass a string containing the file name (the file must be located in SOUND_PATH)
            or a pygame.mixer.Sound file which will be passed on directly.
-           Loop plays the file infinitily when True.
+
 
         Args:
             file (str or pygame.mixer.Sound): file which should be played (instantly)
+            :param file: name of the file that should be played
+            :param loop: Loop plays the file infinitily when True.
         """
         loop = loop
 
@@ -132,6 +134,10 @@ class MusicMixer(threading.Thread):
         pygame.mixer.music.fadeout(50)
          # pygame.mixer.music.stop()
         self._music = []
+
+    def clear_sounds(self):
+        """helper function to clear all sound effects. Music keeps playing until clear_background_music is called"""
+        pygame.mixer.stop()
 
     @property
     def background_music(self):
