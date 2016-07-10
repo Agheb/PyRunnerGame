@@ -10,7 +10,6 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 # Python 2 related fixes
 from __future__ import division
 import pygame
-
 from .spritesheet_handling import SpriteSheet
 from .player_objects import GoldScore
 

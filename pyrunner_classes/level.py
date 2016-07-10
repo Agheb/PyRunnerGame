@@ -41,6 +41,7 @@ class Level(object):
 
     levels = []
     players = []
+    bots = []
 
     def __init__(self, surface, path, sound_thread, network_connector, fps=25):
         self.surface = surface
@@ -187,7 +188,8 @@ class Level(object):
 
     def create_bot(self, bid, location):
         """create a bot at location (x, y)"""
-        Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
+        bot = Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
+        Level.bots.append(bot)
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""

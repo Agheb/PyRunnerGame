@@ -4,6 +4,8 @@
 from __future__ import division
 import threading
 import logging
+
+from .player import Player
 from .controller import Controller
 from datetime import datetime
 from time import sleep, time
@@ -11,7 +13,7 @@ import json
 import socket
 from libs.Mastermind import *
 from .level_objecs import WorldObject
-from.zeroconf_bonjour import ZeroConfAdvertiser, ZeroConfListener
+from .zeroconf_bonjour import ZeroConfAdvertiser, ZeroConfListener
 
 netlog = logging.getLogger("Network")
 srvlog = netlog.getChild("Server")
@@ -26,6 +28,7 @@ class Message(object):
     #types
     type_client_dc = "client_disconnected"
     type_key_update = "key_update"
+    type_bot_update = "bot_update"
     type_init = 'init_succ'
     type_comp_update = 'update_all'
     type_comp_update_set = 'update_all_set'
@@ -133,6 +136,10 @@ class NetworkConnector(object):
 
         if self.server and self.server.connected:
             self.join_server_prompt((self.ip, self.port))
+            '''give the bots their brain'''
+            for bot in Player.bots:
+                bot.master = True
+                bot.network_connector = self
             if not local_only:
                 '''propagate server over zeroconf'''
                 self.advertiser = ZeroConfAdvertiser(self.external_ip, self.port)
@@ -269,6 +276,11 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_key_update:
                 clientlog.info("got key_update from server")
                 Controller.do_action(data['data']['key'], data['data']['player_id'])
+                return
+
+            if data['type'] == Message.type_bot_update:
+                clientlog.info("got bot_update from server")
+                Controller.bot_action(data['data']['key'], data['data']['bot_id'])
                 return
             
             if data['type'] == Message.type_init:
@@ -411,6 +423,11 @@ class Server(threading.Thread, MastermindServerTCP):
         """puts a passed key inside a json object and sends it to all clients"""
         srvlog.info("Sending key {} to Client with id {}".format(str(key), str(player_id)))
         self.send_to_all_clients(Message.type_key_update, {'key': str(key), 'player_id': str(player_id)})
+
+    def send_bot_movement(self, action, bot_id):
+        """puts a passed key inside a json object and sends it to all clients"""
+        srvlog.info("Sending key {} to Client with id {}".format(str(action), str(bot_id)))
+        self.send_to_all_clients(Message.type_bot_update, {'key': str(action), 'bot_id': str(bot_id)})
 
     def notify_level_changed(self, level):
         data = {Message.field_level_name: level}
