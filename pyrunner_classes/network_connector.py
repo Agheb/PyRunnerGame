@@ -62,7 +62,19 @@ class NetworkConnector(object):
 
         '''get IP'''
         if socket_ip.startswith("127."):
-            self.external_ip = network_ip if not network_ip.startswith("127.") else socket.gethostbyname(socket.getfqdn())
+            if not network_ip.startswith("127."):
+                self.external_ip = network_ip
+            else:
+                try:
+                    self.external_ip = socket.gethostbyname(socket.getfqdn())
+                except OSError:
+                    try:
+                        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                        s.connect(('8.8.8.8', 0))
+                        self.external_ip = s.getsockname()[0]
+                    except OSError:
+                        self.external_ip = "0.0.0.0"
+
 
     @staticmethod
     def get_network_ip():

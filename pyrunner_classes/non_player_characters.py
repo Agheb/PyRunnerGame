@@ -29,6 +29,8 @@ class Bots(Player):
         # network
         self.network_connector = level.network_connector
         self.master = True if self.network_connector and self.network_connector.master else False
+        # Sound
+        self.sfx_bot_kill = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('bot_kill.wav'))
 
         Player.bots.add(self)
 
@@ -141,6 +143,7 @@ class Bots(Player):
     def death_actions(self):
         """special actions to execute on death which aren't needed for human players"""
         self.restore_gold()
+        self.level.sound_thread.play_sound(self.sfx_bot_kill, loop=False)
         self.level.bots_respawn.append((self.pid, datetime.now()))
         self.level.bots.remove(self)
 
