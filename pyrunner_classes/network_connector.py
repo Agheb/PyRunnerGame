@@ -318,9 +318,7 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_comp_update:
                 clientlog.info("Sending own Pos to Server")
-                player = self.level.players[self.player_id]
-                player_info = self.level.get_normalized_pos_and_data(player, False)
-                self.send_data_to_server(Message.type_comp_update, player_info)
+                self.send_current_pos_and_data()
                 return
 
             if data['type'] == Message.type_comp_update_states:
@@ -348,6 +346,12 @@ class Client(threading.Thread, MastermindClientTCP):
                     clientlog.debug("setting player data: ", data['data'])
                     self.level.set_player_data(player_id, normalized_pos, is_bot, info)
                 return
+
+    def send_current_pos_and_data(self):
+        """send the current position and state vars to the server"""
+        player = self.level.players[self.player_id]
+        player_info = self.level.get_normalized_pos_and_data(player, False)
+        self.send_data_to_server(Message.type_comp_update, player_info)
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
@@ -505,31 +509,13 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def update(self):
         """update all clients"""
-        if len(self.known_clients) > 1:
-            full_pos = False
-            send_update = False
+        pass
 
-            if self.frame_counter >= self.update_interval and len(self.known_clients) > 1:
-                self.frame_counter = 0
-                full_pos = True
-                send_update = True
-            elif self.frame_counter % self.update_interval is 0:
-                send_update = True
-
-            if send_update:
-                srvlog.info("sending update data to clients")
-                # change to requesting updates from each client
-                for bot in self.level.bots:
-                    '''update the bot positions only on the clients'''
-                    player_info = self.level.get_normalized_pos_and_data(bot, True, full_pos)
-                    srvlog.debug("sending bot data: ", player_info)
-                    self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
-                if full_pos:
-                    self.send_to_all_clients(Message.type_comp_update)
-                else:
-                    self.send_to_all_clients(Message.type_comp_update_states)
-
-            self.frame_counter += 1
+    def send_bot_pos_and_data(self, bot):
+        """send updated bot movements to all clients"""
+        player_info = self.level.get_normalized_pos_and_data(bot, True)
+        srvlog.debug("sending bot data: ", player_info)
+        self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
 
     def get_collected_data(self):
         collectedData = {}

@@ -19,6 +19,7 @@ class Bots(Player):
         self.right_tile = None
         self.right_bottom = None
         self.walk_left = True
+        self.previous_action = None
         self.robbed_gold = None
         # give humans a chance
         self.speed -= self.size / 30
@@ -81,6 +82,9 @@ class Bots(Player):
     def network_movements(self, action):
         """handle all the bot movements"""
         try:
+            if self.previous_action != action:
+                self.previous_action = action
+                self.network_connector.server.send_bot_pos_and_data(self)
             self.network_connector.server.send_bot_movement(action, self.pid)
         except (MastermindErrorServer, AttributeError):
             pass
