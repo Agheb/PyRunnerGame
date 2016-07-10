@@ -83,6 +83,7 @@ class Bots(Player):
         if self.robbed_gold:
             '''restore robbed gold'''
             self.robbed_gold.rect.bottomleft = self.rect.topleft
+            self.robbed_gold.got_dropped = True
             self.robbed_gold.dirty = 1
 
     def death_actions(self):
