@@ -47,10 +47,8 @@ class Player(pygame.sprite.DirtySprite):
         self.can_go_down = False
         self._stop_on_ground = False
         # movement related
-        self._change_x = 0
-        self._change_y = 0
-        self._prev_x = 0
-        self._prev_y = 0
+        self.change_x = 0
+        self.change_y = 0
         self.speed = (self.size / 10) * 2
         # lists holding the image for movement. Up and down movement uses the same sprites.
         self.spawn_frames = []
@@ -175,35 +173,6 @@ class Player(pygame.sprite.DirtySprite):
                 self.change_y = self.speed
 
     @property
-    def change_x(self):
-        return self._change_x
-
-    @change_x.setter
-    def change_x(self, value):
-        self._change_x = value
-        if not value and value != self._prev_x:
-            self._prev_x = value
-            self.previous_direction = "Stop"
-            # if not self.is_human:
-            #     self.stop()
-        return
-
-    @property
-    def change_y(self):
-        return self._change_y
-
-    @change_y.setter
-    def change_y(self, value):
-        """notice speed changes for bots"""
-        self._change_y = value
-        if not value and value != self._prev_y:
-            self._prev_y = value
-            self.previous_direction = "Stop"
-            # if not self.is_human:
-            #     self.stop()
-        return
-
-    @property
     def stop_on_ground(self):
         """get if the player is scheduled to stop on the next tile"""
         return self._stop_on_ground
@@ -295,6 +264,7 @@ class Player(pygame.sprite.DirtySprite):
                     self.direction = "Stop"
 
             if self.direction != self.previous_direction:
+                '''completely sync players each time they change direction'''
                 self.previous_direction = self.direction
                 self.send_network_update()
 
