@@ -67,7 +67,7 @@ class Physics(object):
             if not player.is_human and not player.direction == "Trapped":
                 if pygame.sprite.spritecollide(player, Player.humans, True,
                                                collided=pygame.sprite.collide_rect_ratio(0.5)):
-                    self.level.sound_thread.play_sound(self.sfx_player_killed, loop=False)
+                    self.level.sound_thread.play_sound(self.sfx_player_killed)
 
             '''find collisions with removed blocks'''
             removed_collision = self.find_collision(player.rect.centerx, player.rect.top, WorldObject.removed)
@@ -114,13 +114,13 @@ class Physics(object):
                 '''remove the bottom sprite to the right'''
                 if right_bottom and right_bottom.removable and not right_tile:
                     right_bottom.kill()
-                    self.level.sound_thread.play_sound(self.sfx_player_dig, loop=False)
+                    self.level.sound_thread.play_sound(self.sfx_player_dig)
                     #  TODO add digging sound
             elif player.direction is "DL":
                 '''remove the bottom sprite to the left'''
                 if left_bottom and left_bottom.removable and not left_tile:
                     left_bottom.kill()
-                    self.level.sound_thread.play_sound(self.sfx_player_dig, loop=False)
+                    self.level.sound_thread.play_sound(self.sfx_player_dig)
             elif player.direction is "UD" and not player.on_ladder:
                 '''go down the top part of a solid ladder'''
                 if bottom_sprite and bottom_sprite.climbable or player.on_rope:
@@ -154,20 +154,20 @@ class Physics(object):
                         '''only human players can take gold'''
                         player.add_gold()
                         "Collect gold SFX"
-                        self.level.sound_thread.play_sound(self.sfx_coin_collected, loop=False)
+                        self.level.sound_thread.play_sound(self.sfx_coin_collected)
                         # remove it
                         sprite.kill()
                     elif not player.robbed_gold:
                         player.collect_gold(sprite)
                         # play sound when collecting gold
-                        self.level.sound_thread.play_sound(self.sfx_coin_robbed, loop=False)
+                        self.level.sound_thread.play_sound(self.sfx_coin_robbed)
                 elif sprite.exit:
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:
                             player.rect.center = sprite.rect.center
                             player.reached_exit = True
                             # Play Exit sound
-                            self.level.sound_thread.play_sound(self.sfx_player_portal, loop=False)
+                            self.level.sound_thread.play_sound(self.sfx_player_portal)
                             player.kill()
                 elif sprite.restoring:
                     player.kill()

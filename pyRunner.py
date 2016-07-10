@@ -31,7 +31,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/level1-less coins.tmx"
+    START_LEVEL = "./resources/levels/level1.tmx"
 
     def __init__(self):
         """initialize the game"""
