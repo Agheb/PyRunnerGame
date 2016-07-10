@@ -10,7 +10,6 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 # Python 2 related fixes
 from __future__ import division
 import pygame
-
 from .spritesheet_handling import SpriteSheet
 from .player_objects import GoldScore
 
@@ -200,15 +199,8 @@ class Player(pygame.sprite.DirtySprite):
             self.direction = "DL"
             # self.player_collide()
 
-    def process(self):
-        """needed for the bots"""
-        pass
-
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
-        if not self.is_human:
-            self.process()
-
         if self.spawning:
             self.image = self.spawn_frames[self.spawn_frame]
             self.spawn_frame += 1
