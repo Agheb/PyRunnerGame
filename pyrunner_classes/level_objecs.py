@@ -5,6 +5,9 @@
 from __future__ import division
 from .spritesheet_handling import *
 from datetime import datetime
+import logging
+
+log = logging.getLogger("World Objects")
 
 
 class WorldObject(pygame.sprite.DirtySprite):
@@ -35,6 +38,9 @@ class WorldObject(pygame.sprite.DirtySprite):
         self.collectible = False
         self.killed = False
         self.restoring = restoring
+        self.restore_change_x, self.restore_change_y = int(round(self.size[0] / 16)), int(round(self.size[1] / 16))
+        self.change_coll_x, self.change_coll_y = int(round(self.size[0] / 8)), int(round(self.size[1] / 8))
+        self.change_coll_w, self.change_coll_h = self.change_coll_x * 2, self.change_coll_y * 2
         self.exit = False
 
         if restoring:
@@ -50,16 +56,16 @@ class WorldObject(pygame.sprite.DirtySprite):
             x, y = self.rect.topleft
             w, h = self.rect.size
             if self.restoring:
-                y -= 2
-                h += 2
+                y -= self.restore_change_x
+                h += self.restore_change_y
             elif self.removable:
-                y += 2
-                h -= 2
+                y += self.restore_change_x
+                h -= self.restore_change_y
             elif self.collectible:
-                x += 4
-                y += 4
-                w -= 8
-                h -= 8
+                x += self.change_coll_x
+                y += self.change_coll_y
+                w -= self.change_coll_w
+                h -= self.change_coll_h
 
             if (h <= 0 or w <= 0) and self.killed:
                 self.super_kill()
@@ -128,6 +134,50 @@ class Collectible(WorldObject):
     def __init__(self, tile, size, tile_id, fps):
         WorldObject.__init__(self, tile, size, tile_id, fps)
         self.collectible = True
+        self.speed = (self.size[0] / 10) * 2
+        self.change_y = 0
+        self.got_dropped = True
+        self.frame_counter = 0
+        self.ground = None
+
+    def update(self):
+        """fall down to the ground"""
+        if self.got_dropped:
+            on_ground = False
+
+            for tile in WorldObject.group:
+                if tile != self:
+                    if self.rect.collidepoint(tile.rect.centerx, tile.rect.top - self.change_coll_h):
+                        on_ground = True
+                        self.rect.bottom = tile.rect.top - self.change_coll_h
+                        self.change_y = 0
+                        self.ground = tile
+                        log.debug("ground sprite = " + str(tile.rect) + " self: " + str(self.rect))
+                        break
+
+            if not on_ground:
+                self.ground = None
+                log.debug("falling down")
+                '''increase the speed as fast as a player falls down'''
+                if self.speed <= self.change_y <= self.speed * 2.5:
+                    self.change_y += .35
+                else:
+                    self.change_y = self.speed
+
+                self.rect.y += self.change_y
+                self.dirty = 1
+            else:
+                if self.frame_counter >= self.fps * 2 and self.change_y is 0:
+                    '''turn it off again if the bottom block got restored and the restore animation is over'''
+                    self.got_dropped = False
+                    self.frame_counter = 0
+                    log.debug("stopping refresh")
+                else:
+                    self.rect.bottom = self.ground.rect.top - self.change_coll_h
+                    self.frame_counter += 1
+                    log.debug(str(self.rect.bottom) + " vs " + str(self.ground.rect.top))
+
+        super(Collectible, self).update()
 
 
 class RemovedBlock(pygame.sprite.DirtySprite):

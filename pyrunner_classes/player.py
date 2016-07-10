@@ -10,7 +10,6 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 # Python 2 related fixes
 from __future__ import division
 import pygame
-
 from .spritesheet_handling import SpriteSheet
 from .player_objects import GoldScore
 
@@ -34,6 +33,10 @@ class Player(pygame.sprite.DirtySprite):
         self.fps = fps
         self.is_human = True if not bot else False
         self.dirty = 2  # always repaint this sprite
+        # network
+        self.network_connector = level.network_connector
+        self.master = True if self.network_connector and self.network_connector.master else False
+        self.previous_direction = None
         # positional attributes
         self.x, self.y = pos
         self.on_tile = None
@@ -200,15 +203,8 @@ class Player(pygame.sprite.DirtySprite):
             self.direction = "DL"
             # self.player_collide()
 
-    def process(self):
-        """needed for the bots"""
-        pass
-
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
-        if not self.is_human:
-            self.process()
-
         if self.spawning:
             self.image = self.spawn_frames[self.spawn_frame]
             self.spawn_frame += 1
@@ -267,6 +263,11 @@ class Player(pygame.sprite.DirtySprite):
                     self.digging_frame = 0
                     self.direction = "Stop"
 
+            if self.direction != self.previous_direction:
+                '''completely sync players each time they change direction'''
+                self.previous_direction = self.direction
+                self.send_network_update()
+
             # Gravity
             self.calc_gravity()
         else:
@@ -277,6 +278,13 @@ class Player(pygame.sprite.DirtySprite):
                 if not self.is_human:
                     self.death_actions()
                 pygame.sprite.DirtySprite.kill(self)
+
+    def send_network_update(self):
+        """send all relevant data to the server"""
+        if self.is_human:
+            self.network_connector.client.send_current_pos_and_data()
+        elif self.master:
+            self.network_connector.server.send_bot_pos_and_data(self)
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """

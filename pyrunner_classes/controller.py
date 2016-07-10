@@ -3,20 +3,9 @@
 """main pyRunner class which initializes all sub classes and threads"""
 # Python 2 related fixes
 from __future__ import division
-import pdb
 from .level import Level
 from libs.Mastermind import MastermindErrorClient
-
-
-class Action(object):
-    """store all available actions"""
-    LEFT = "go_left"
-    RIGHT = "go_right"
-    UP = "go_up"
-    DOWN = "go_down"
-    STOP = "stop"
-    DIG_LEFT = "dig_left"
-    DIG_RIGHT = "dig_right"
+from .actions import Action
 
 
 class Controller(object):
@@ -31,6 +20,7 @@ class Controller(object):
         '''
         self.config = config
         self.network_connector = network_connector
+        self.previous_key = None
         self.player_1_movements = []
         self.player_2_movements = []
         '''only stop player if movement key got released'''
@@ -85,6 +75,10 @@ class Controller(object):
 
         if current_action:
             try:
+                if self.previous_key != key:
+                    self.previous_key = key
+                    '''update positions on direction changes'''
+                    self.network_connector.client.send_current_pos_and_data()
                 self.network_connector.client.send_key(current_action)
             except MastermindErrorClient:
                 for player in Level.players:
@@ -128,3 +122,20 @@ class Controller(object):
                 Level.players[player_num].dig_right()
             elif action == Action.STOP:
                 Level.players[player_num].stop_on_ground = True
+
+    @staticmethod
+    def bot_action(action, bot_num):
+        """perform an action for each player"""
+        bot_num = int(bot_num)
+
+        if bot_num < len(Level.bots):
+            if action == Action.LEFT:
+                Level.bots[bot_num].move_left()
+            elif action == Action.RIGHT:
+                Level.bots[bot_num].move_right()
+            elif action == Action.UP:
+                Level.bots[bot_num].move_up()
+            elif action == Action.DOWN:
+                Level.bots[bot_num].move_down()
+            elif action == Action.STOP:
+                Level.bots[bot_num].stop_on_ground = True

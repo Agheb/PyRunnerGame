@@ -16,12 +16,13 @@ from .player_objects import GoldScore
 from .game_physics import Physics
 from .controller import Controller
 from .network_connector import NetworkConnector
+from .actions import Action
 
 
 __all__ = ['BLUE', 'YELLOW', 'RED', 'BLACK', 'BACKGROUND', 'GRAY', 'WHITE',
            'MainConfig', 'Menu', 'MenuItem', 'MainMenu', 'RenderThread', 'MusicMixer',
            'Level', 'Physics', 'Controller', 'NetworkConnector',
-           'Player', 'GoldScore', 'WorldObject', 'ExitGate']
+           'Player', 'GoldScore', 'WorldObject', 'ExitGate', 'Action']
 
 __version__ = '0.1.3'
 __author__ = 'Team pyBerries'
