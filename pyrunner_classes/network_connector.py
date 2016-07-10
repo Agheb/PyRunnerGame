@@ -194,7 +194,7 @@ class Client(threading.Thread, MastermindClientTCP):
         threading.Thread.__init__(self, daemon=True)
         MastermindClientTCP.__init__(self)
         self.timer = datetime.now()  # timer for the keep Alive
-        self.player_id = 0
+        self.player_id = None
         self.connected = False
 
     def send_key(self, key):
@@ -325,7 +325,7 @@ class Client(threading.Thread, MastermindClientTCP):
                     clientlog.debug("recieved player data: ", data['data'])
                     clientlog.info("Got pos setter from server")
                     clientlog.debug("setting player data: ", data['data'])
-                    if is_bot or int(player_id) is not self.player_id:
+                    if is_bot or int(player_id) != self.player_id:
                         self.level.set_player_pos(player_id, normalized_pos, is_bot)
                 return
 
