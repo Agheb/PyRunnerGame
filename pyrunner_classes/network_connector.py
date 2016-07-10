@@ -170,6 +170,8 @@ class NetworkConnector(object):
 
         if self.client and self.client.connected:
             netlog.info("connected to %s" % self.ip)
+            if self.master:
+                self.server.own_client = self.client.player_id
 
     def update(self):
         try:
@@ -316,13 +318,14 @@ class Client(threading.Thread, MastermindClientTCP):
                 return
             
             if data['type'] == Message.type_comp_update_set:
-                player_id, normalized_pos, is_bot = data['data']
-                clientlog.debug("recieved player data: ", data['data'])
-                if (player_id != self.player_id) or (is_bot and not self.master):
-                #Dont set our own pos
+                '''don't set the positions on the server'''
+                if not self.master:
+                    player_id, normalized_pos, is_bot = data['data']
+                    clientlog.debug("recieved player data: ", data['data'])
                     clientlog.info("Got pos setter from server")
                     clientlog.debug("setting player data: ", data['data'])
-                    self.level.set_player_pos(player_id, normalized_pos, is_bot)
+                    if is_bot or int(player_id) is not self.player_id:
+                        self.level.set_player_pos(player_id, normalized_pos, is_bot)
                 return
 
     def send_keep_alive(self):
@@ -344,9 +347,11 @@ class Server(threading.Thread, MastermindServerTCP):
         self.main = main
         self.local_only = local_only
         self.known_clients = []
+        self.own_client = None
         self.connected = False
-        self.sync_time = 1
-        self.last_update = datetime.now()
+        # self.sync_time = (1 / self.main.fps) * 1000000  # microseconds
+        # self.last_update = datetime.now()
+        self.frame_counter = 0
         threading.Thread.__init__(self, daemon=True)
         MastermindServerTCP.__init__(self)
 
@@ -396,7 +401,7 @@ class Server(threading.Thread, MastermindServerTCP):
         for d in (level_info, misc_info):
             combined.update(d)
         
-        data = json.dumps({'type': 'init','data': combined})
+        data = json.dumps({'type': 'init', 'data': combined})
 
         self.callback_client_send(connection_object, data)
 
@@ -438,6 +443,13 @@ class Server(threading.Thread, MastermindServerTCP):
         for client in self.known_clients:
             self.callback_client_send(client, json_data)
 
+    def send_to_all_clients_except_self(self, message, data=None):
+        """send information to all clients except yourself"""
+        json_data = json.dumps({'type': message, 'data': data})
+        for client in self.known_clients:
+            if client.player_id != self.own_client:
+                self.callback_client_send(client, json_data)
+
     def kill(self):
         try:
             self.accepting_disallow()
@@ -469,16 +481,22 @@ class Server(threading.Thread, MastermindServerTCP):
         return super(MastermindServerTCP, self).callback_disconnect()
 
     def update(self):
-        if (datetime.now() - self.last_update).seconds >= self.sync_time:
+        # microseconds = (datetime.now() - self.last_update).microseconds
+
+        # if microseconds >= self.sync_time:
+        if self.frame_counter > 5 and len(self.known_clients) > 1:
             srvlog.info("sending update data to clients")
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
             for bot in self.level.bots:
                 player_info = self.level.get_normalized_pos(bot, True)
                 srvlog.debug("sending bot data: ", player_info)
-                self.send_to_all_clients(Message.type_comp_update_set, player_info)
+                self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
             self.send_to_all_clients(Message.type_comp_update)
-            self.last_update = datetime.now()
+            self.frame_counter = 0
+            # self.last_update = datetime.now()
+        else:
+            self.frame_counter += 1
 
     def get_collected_data(self):
         collectedData = {}

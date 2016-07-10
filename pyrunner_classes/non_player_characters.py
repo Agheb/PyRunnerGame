@@ -10,10 +10,8 @@ class Bots(Player):
     """the next generation AI"""
 
     def __init__(self, bid, pos, sheet, level):
-        Player.__init__(self, pos, sheet, None, 32, level, 25, True)
-
+        Player.__init__(self, pos, sheet, bid, 32, level, 25, True)
         # POSITIONAL RELATED
-        self.pid = bid
         self.destination = (0, 0)
         self.last_pos = (0, 0)
         self.left_tile = None

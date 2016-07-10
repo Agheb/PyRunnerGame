@@ -189,7 +189,7 @@ class Level(object):
     def create_bot(self, bid, location):
         """create a bot at location (x, y)"""
         bot = Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
-        self.bots.append(bot)
+        Level.bots.append(bot)
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -538,13 +538,14 @@ class Level(object):
     def set_player_pos(self, player_id, player_pos, is_bot):
         """set the player position for all players in the level according to the viewers screen resolution"""
         group = Level.bots if is_bot else Level.players
+        try:
+            player = group[int(player_id)]
 
-        for player in group:
-            if player.pid == int(player_id):
-                self.set_normalized_pos(player, player_pos)
-                log.info("Set Player {} (bot: {}) position".format(player_id, is_bot))
-                return
-        log.info("Cant find player {} (bot: {}) to set pos".format(player_id, is_bot))
+            self.set_normalized_pos(player, player_pos)
+            log.info("Set Player {} (bot: {}) position".format(player_id, is_bot))
+            return
+        except IndexError:
+            log.info("Cant find player {} (bot: {}) to set pos".format(player_id, is_bot))
     
     @staticmethod
     def get_level_info_json():
