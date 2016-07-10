@@ -129,7 +129,8 @@ class MusicMixer(threading.Thread):
         """helper function to stop all currently playing music and clearing the playlist
            should be used if you switch levels etc. and want to switch the atmosphere
         """
-        pygame.mixer.music.stop()
+        pygame.mixer.music.fadeout(50)
+         # pygame.mixer.music.stop()
         self._music = []
 
     @property

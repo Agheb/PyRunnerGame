@@ -245,6 +245,11 @@ class PyRunner(object):
 
     def game_over_menu(self):
         """create the game over menu"""
+
+        '''stops backgroundmusic and plays GameOver SFX'''
+        self.music_thread.clear_background_music()
+
+        self.music_thread.play_sound("GameOver4.ogg")
         found_one = False
         self.menu.game_over.flush_all_items()
         for score in GoldScore.scores:
