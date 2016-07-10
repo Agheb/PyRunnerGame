@@ -142,6 +142,7 @@ class Bots(Player):
         """special actions to execute on death which aren't needed for human players"""
         self.restore_gold()
         self.level.bots_respawn.append((self.pid, datetime.now()))
+        self.level.bots.remove(self)
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""

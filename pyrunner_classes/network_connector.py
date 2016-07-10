@@ -168,10 +168,11 @@ class NetworkConnector(object):
         self.client = Client(self.ip, self.port, self.level, self.main, self.master)
         self.client.start()
 
+        if self.master:
+            self.server.own_client = self.client.player_id
+
         if self.client and self.client.connected:
             netlog.info("connected to %s" % self.ip)
-            if self.master:
-                self.server.own_client = self.client.player_id
 
     def update(self):
         try:
@@ -446,8 +447,10 @@ class Server(threading.Thread, MastermindServerTCP):
     def send_to_all_clients_except_self(self, message, data=None):
         """send information to all clients except yourself"""
         json_data = json.dumps({'type': message, 'data': data})
-        for client in self.known_clients:
-            if client.player_id != self.own_client:
+        for index, client in enumerate(self.known_clients):
+            print("own client: ", str(self.own_client))
+            if index != self.own_client:
+                print(str(index), " sent!")
                 self.callback_client_send(client, json_data)
 
     def kill(self):
@@ -484,7 +487,7 @@ class Server(threading.Thread, MastermindServerTCP):
         # microseconds = (datetime.now() - self.last_update).microseconds
 
         # if microseconds >= self.sync_time:
-        if self.frame_counter > 5 and len(self.known_clients) > 1:
+        if self.frame_counter >= 10 and len(self.known_clients) > 1:
             srvlog.info("sending update data to clients")
             #change to requesting updates from each client 
             #self.send_to_all_clients(Message.type_comp_update, self.get_collected_data())
