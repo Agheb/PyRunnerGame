@@ -6,7 +6,7 @@ import logging
 import math
 import pygame
 
-log = logging.getLogger("States")
+log = logging.getLogger("Npc States")
 
 
 class State(object):
@@ -76,7 +76,7 @@ class State(object):
         if self.bot.direction == "Trapped":
             return
 
-        log.info("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
+        log.debug("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
 
         if y != by and (self.bot.on_ladder or self.bot.can_go_down):
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:

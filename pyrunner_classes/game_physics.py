@@ -23,6 +23,10 @@ class Physics(object):
         self.sfx_player_killed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_kill.ogg'))
         self.sfx_player_dig = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_dig.wav'))
 
+    def register_callback(self, network):
+        #creates a link to the network connector, this is needed to notify the network of canged blocks
+        self.network_connector = network
+
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
         '''player'''
@@ -41,7 +45,7 @@ class Physics(object):
             player.rect.x = right
         elif x < left:
             player.rect.x = left
-
+            
     @staticmethod
     def find_collision(x, y, group=WorldObject.group):
         """find a sprite that has no direct collision with the player sprite"""
@@ -50,6 +54,13 @@ class Physics(object):
                 return sprite
         return None
 
+    @staticmethod
+    def remove_sprites_by_id(spriteIds):
+        log.info("removing sprites")
+        for sprite in WorldObject.group:
+            if sprite.tile_id in spriteIds:
+                sprite.kill()
+    
     def check_collisions(self):
         """calculates collision for players and sprites using the rectangles of the sprites"""
         for player in Player.group:
@@ -159,6 +170,8 @@ class Physics(object):
                         player.add_gold()
                         "Collect gold SFX"
                         self.level.sound_thread.play_sound(self.sfx_coin_collected)
+                        #notify the server
+                        self.network_connector.client.gold_removed(sprite.tile_id)
                         # remove it
                         sprite.kill()
                     elif not player.robbed_gold:
