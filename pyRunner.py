@@ -198,7 +198,6 @@ class PyRunner(object):
                 """send keep alive"""
                 self.network_connector.client.send_keep_alive()
 
-
             clock.tick(self.fps)
 
     def render_game(self):
@@ -225,28 +224,29 @@ class PyRunner(object):
             except AttributeError:
                 for player in Player.humans:
                     player.reached_exit = True
-
-                self.game_over = True
+                self.game_over_menu()
 
         '''check if all players are still alive'''
         if not len(Player.humans) or self.game_over:
             if not self.level_exit:
                 '''show the game over menu with player gold scores'''
-                self.game_over = True
                 self.game_over_menu()
             else:
                 '''load the next level, recreate the players and bots etc.'''
-                self.load_level(self.level.next_level)
-                self.music_thread.clear_sounds()
+                for player in Player.humans:
+                    if player.reached_exit:
+                        self.load_level(self.level.next_level)
+                        self.music_thread.clear_sounds()
+                        return
+                self.game_over_menu()
 
         return rects
 
     def game_over_menu(self):
         """create the game over menu"""
-
-        '''stops backgroundmusic and plays GameOver SFX'''
+        self.game_over = True
+        '''stops background music and plays GameOver SFX'''
         self.music_thread.clear_background_music()
-
         self.music_thread.play_sound("GameOver4.ogg", False)
         found_one = False
         self.menu.game_over.flush_all_items()

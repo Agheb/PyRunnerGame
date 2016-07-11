@@ -180,7 +180,8 @@ class Physics(object):
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:
                             player.rect.center = sprite.rect.center
-                            player.reached_exit = True
+                            if player.is_human:
+                                player.reached_exit = True
                             # Play Exit sound
                             self.level.sound_thread.play_sound(self.sfx_player_portal)
                             player.kill()
