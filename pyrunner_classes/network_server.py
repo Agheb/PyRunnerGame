@@ -27,8 +27,7 @@ class Server(threading.Thread, MastermindServerTCP):
         self.sync_time = datetime.now()
         self.sprites_removed = []
         threading.Thread.__init__(self, daemon=True)
-        MastermindServerTCP.__init__(self, time_server_refresh=1, time_connection_refresh=1,
-                                     time_connection_timeout=5.0)
+        MastermindServerTCP.__init__(self, 1, 1, 5.0)
 
     def callback_client_handle(self, connection_object, data):
         """Initial point of data arrival. Data is received and passed on"""

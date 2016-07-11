@@ -147,12 +147,14 @@ class Menu(object):
         # if margin_top:
         #    menu_item.rect.centery = margin_top
         menu_item.hovered = True if (index is 0 or index is pos) and menu_item.action else False
-        # overwrite the old rendering
         if menu_item.prev_rect:
-            old_rect = self._clear_rect(menu_item.prev_rect)
             if not margin_top:
                 margin_top = menu_item.prev_rect.top
-        # self._clear_rect(menu_item.get_rect())
+            '''clear the old rendering'''
+            old_rect = self._clear_rect(menu_item.prev_rect, margin_top)
+
+        '''and clear the new rect'''
+        self._clear_rect(menu_item.get_rect(), margin_top)
         # draw the new rendering
         new_rect = menu_item.draw(margin_top)
 
@@ -161,8 +163,10 @@ class Menu(object):
 
         return new_rect if new_rect.contains(old_rect) else old_rect
 
-    def _clear_rect(self, rect):
+    def _clear_rect(self, rect, margin_top):
         """clear a menu item rect"""
+        rect.top = margin_top
+        rect.centerx = self.surface.get_rect().centerx
         return pygame.draw.rect(self.surface, BACKGROUND, rect)
 
     def print_menu(self, new_pos=1, old_pos=1, complete=True, start_pos=1, rects=list()):

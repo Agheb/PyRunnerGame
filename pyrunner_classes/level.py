@@ -190,6 +190,29 @@ class Level(object):
         bot = Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
         Level.bots.append(bot)
 
+    def kill_bot(self, bot):
+        """remove a specific bot an death and add it to the respawn list"""
+        self.bots_respawn.append((bot.pid, datetime.now()))
+        Level.bots.remove(bot)
+
+    def prepare_level_change(self):
+        """call this function before switching to a new level"""
+        '''clear all old sprites'''
+        Level.bots.clear()
+        Player.group.empty()
+        Player.humans.empty()
+        Player.bots.empty()
+        WorldObject.group.empty()
+        WorldObject.removed.empty()
+        self.physics = None
+        self.network_connector = None
+        self.sound_thread = None
+
+    @staticmethod
+    def flush_network_players():
+        """remove all network players e.g. if the server is restarted"""
+        Level.players.clear()
+
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
         x, y = pos_pixel
