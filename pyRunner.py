@@ -132,6 +132,9 @@ class PyRunner(object):
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.quit_game()
+                elif event.type == ACTIVEEVENT and event.state is 2:
+                    '''redraw screen content after minimizing'''
+                    self.render_thread.refresh_screen(True)
                 elif event.type == KEYDOWN:
                     key = event.key
                     '''key pressing events'''
