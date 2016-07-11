@@ -1,10 +1,11 @@
-from .player import Player
-from ast import literal_eval as make_tuple
-from datetime import datetime
-from .actions import Action
-import logging
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""States for the State Machine"""
+
 import math
-import pygame
+from ast import literal_eval as make_tuple
+from pyrunner_classes import logging, datetime, pygame
+from pyrunner_classes.player import Player
 
 log = logging.getLogger("Npc States")
 

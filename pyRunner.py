@@ -1,15 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """main pyRunner class which initializes all sub classes and threads"""
-# Python 2 related fixes
-from __future__ import division
 # universal imports
-import pygame
-from pygame.locals import *
 import sys
 import os
 import argparse
-import logging
+# PyGame
+from pygame.locals import *
 # pyRunner subclasses
 from pyrunner_classes import *
 

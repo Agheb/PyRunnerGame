@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
-# Python 2 related fixes
-from __future__ import division
-import pygame
-from .spritesheet_handling import SpriteSheet
+"""Player related sprite (gold counter)"""
+
+from pyrunner_classes import pygame
+from pyrunner_classes.spritesheet_handling import SpriteSheet
 
 
 class GoldScore(pygame.sprite.DirtySprite):

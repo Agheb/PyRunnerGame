@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """reads and writes the game configuration to the disk"""
-# Python 2 related fixes
-from __future__ import division
+
 try:
     # noinspection PyUnresolvedReferences
     import configparser    # Python 3
