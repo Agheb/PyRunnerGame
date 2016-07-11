@@ -1,15 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """main pyRunner class which initializes all sub classes and threads"""
-# Python 2 related fixes
-from __future__ import division
 # universal imports
-import pygame
-from pygame.locals import *
 import sys
 import os
 import argparse
-import logging
+# PyGame
+from pygame.locals import *
 # pyRunner subclasses
 from pyrunner_classes import *
 
@@ -80,12 +77,7 @@ class PyRunner(object):
             self.current_level_path = path
         '''clear all sprites from an old level if present'''
         if self.level:
-            '''clear all old sprites'''
-            Player.group.empty()
-            Player.humans.empty()
-            Player.bots.empty()
-            WorldObject.group.empty()
-            WorldObject.removed.empty()
+            self.level.prepare_level_change()
             self.level_exit = False
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
@@ -100,14 +92,16 @@ class PyRunner(object):
         self.render_thread.refresh_screen(True)
 
         if not self.network_connector:
-            self.network_connector = NetworkConnector(self, self.level)
+            self.network_connector = NetworkConnector(self)
             self.level.network_connector = self.network_connector
+
+        if not self.menu:
             self.menu = MainMenu(self, self.network_connector)
-        else:
-            self.network_connector.level = self.level
 
         '''and the controller instance'''
-        self.controller = Controller(self.config, self.network_connector)
+        if not self.controller:
+            self.controller = Controller(self.config, self.network_connector)
+
         self.level_exit = None
         self.game_over = False
         self.loading_level = False
@@ -196,11 +190,13 @@ class PyRunner(object):
             # save cpu resources
             if not self.menu.in_menu and not self.loading_level:
                 self.render_thread.add_rect_to_update(self.render_game())
+                self.network_connector.update()
 
                 if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
-
-            self.network_connector.update()
+            elif self.network_connector.client:
+                """send keep alive"""
+                self.network_connector.client.send_keep_alive()
 
             clock.tick(self.fps)
 
@@ -228,28 +224,29 @@ class PyRunner(object):
             except AttributeError:
                 for player in Player.humans:
                     player.reached_exit = True
-
-                self.game_over = True
+                self.game_over_menu()
 
         '''check if all players are still alive'''
         if not len(Player.humans) or self.game_over:
             if not self.level_exit:
                 '''show the game over menu with player gold scores'''
-                self.game_over = True
                 self.game_over_menu()
             else:
                 '''load the next level, recreate the players and bots etc.'''
-                self.load_level(self.level.next_level)
-                self.music_thread.clear_sounds()
+                for player in Player.humans:
+                    if player.reached_exit:
+                        self.load_level(self.level.next_level)
+                        self.music_thread.clear_sounds()
+                        return
+                self.game_over_menu()
 
         return rects
 
     def game_over_menu(self):
         """create the game over menu"""
-
-        '''stops backgroundmusic and plays GameOver SFX'''
+        self.game_over = True
+        '''stops background music and plays GameOver SFX'''
         self.music_thread.clear_background_music()
-
         self.music_thread.play_sound("GameOver4.ogg", False)
         found_one = False
         self.menu.game_over.flush_all_items()

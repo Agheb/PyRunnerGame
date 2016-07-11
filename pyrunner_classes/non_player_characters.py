@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from libs.Mastermind import *
-from .state_machine import StateMachine
-from .npc_states import *
-from .actions import Action
+"""Computer Controlled Players"""
+
+from pyrunner_classes.npc_state_machine import StateMachine
+from pyrunner_classes.npc_states import *
+from pyrunner_classes.network_shared import *
 
 SPRITE_SHEET_PATH = "./resources/sprites/"
+log = logging.getLogger("Bots")
 
 
 class Bots(Player):
@@ -23,10 +25,13 @@ class Bots(Player):
         self.walk_left = True
         self.previous_action = None
         self.robbed_gold = None
+        # network related
+        self.update_counter = 0
+        self.update_refresh = 15  # update less than two times a second
         # give humans a chance
         self.speed -= self.size / 30
         self.frame_counter = 0
-        self.frame_stop = 2
+        self.frame_stop = 3  # the brain is faster than the feet
         self.spawning = True
         self.spawn_frame = 0
         # Sound
@@ -81,18 +86,20 @@ class Bots(Player):
     def network_movements(self, action):
         """handle all the bot movements"""
         try:
-            # if self.previous_action != action:
-            #    self.previous_action = action
-            #    self.network_connector.server.send_bot_pos_and_data(self)
-            self.network_connector.server.send_bot_movement(action, self.pid)
+            if self.level.network_connector.server:
+                if self.update_counter >= self.update_refresh or self.previous_action != action:
+                    self.update_counter = 0
+                    self.previous_action = action
+                    self.level.network_connector.server.send_bot_movement(action, self.pid)
+                else:
+                    self.update_counter += 1
         except (MastermindErrorServer, AttributeError):
             pass
 
     def go_left(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.LEFT)
-            log.debug("move bot (" + str(self.pid) + ") left")
+        self.network_movements(Action.LEFT)
+        log.debug("move bot (" + str(self.pid) + ") left")
 
     def move_left(self):
         """do the calculated actions"""
@@ -100,9 +107,8 @@ class Bots(Player):
 
     def go_right(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.RIGHT)
-            log.debug("move bot (" + str(self.pid) + ") right")
+        self.network_movements(Action.RIGHT)
+        log.debug("move bot (" + str(self.pid) + ") right")
 
     def move_right(self):
         """do the calculated actions"""
@@ -110,9 +116,8 @@ class Bots(Player):
 
     def go_up(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.UP)
-            log.debug("move bot (" + str(self.pid) + ") up")
+        self.network_movements(Action.UP)
+        log.debug("move bot (" + str(self.pid) + ") up")
 
     def move_up(self):
         """do the calculated actions"""
@@ -120,9 +125,8 @@ class Bots(Player):
 
     def go_down(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.DOWN)
-            log.debug("move bot (" + str(self.pid) + ") down")
+        self.network_movements(Action.DOWN)
+        log.debug("move bot (" + str(self.pid) + ") down")
 
     def move_down(self):
         """do the calculated actions"""
@@ -130,9 +134,8 @@ class Bots(Player):
 
     def stop(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.STOP)
-            log.debug("move bot (" + str(self.pid) + ") stopped")
+        self.network_movements(Action.STOP)
+        log.debug("move bot (" + str(self.pid) + ") stopped")
 
     def collect_gold(self, sprite):
         """remove one gold object and drop it on death"""
@@ -154,8 +157,7 @@ class Bots(Player):
         self.send_network_update()
         self.restore_gold()
         self.level.sound_thread.play_sound(self.sfx_bot_kill, loop=False)
-        self.level.bots_respawn.append((self.pid, datetime.now()))
-        self.level.bots.remove(self)
+        self.level.kill_bot(self)
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
@@ -173,7 +175,7 @@ class Bots(Player):
 
     def update(self):
         """add some bot only behaviour"""
-        if self.master:
+        if self.level.network_connector.server:
             '''only the server bots get a brain'''
             self.process()
             log.debug("bot (" + str(self.pid) + ") thinks")

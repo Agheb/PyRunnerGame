@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""State Machinery for NPs"""
 import logging
 
 log = logging.getLogger("State Machine")

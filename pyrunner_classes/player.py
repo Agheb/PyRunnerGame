@@ -34,8 +34,6 @@ class Player(pygame.sprite.DirtySprite):
         self.is_human = True if not bot else False
         self.dirty = 2  # always repaint this sprite
         # network
-        self.network_connector = level.network_connector
-        self.master = True if self.network_connector and self.network_connector.master else False
         self.previous_direction = None
         # positional attributes
         self.x, self.y = pos
@@ -282,9 +280,9 @@ class Player(pygame.sprite.DirtySprite):
     def send_network_update(self):
         """send all relevant data to the server"""
         if self.is_human:
-            self.network_connector.client.send_current_pos_and_data()
-        elif self.master:
-            self.network_connector.server.send_bot_pos_and_data(self)
+            self.level.network_connector.client.send_current_pos_and_data()
+        if self.level.network_connector.master:
+            self.level.network_connector.server.send_bot_pos_and_data(self)
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """

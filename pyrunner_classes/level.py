@@ -1,19 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
+"""Level Class that creates all required sprites including bots and players"""
 # Python 2 related fixes
 from __future__ import division
+
 import pytmx
 from pytmx.util_pygame import load_pygame
-
-from .game_physics import Physics
-from .level_objecs import *
-from .player import Player, GoldScore
-from .non_player_characters import Bots
-import pdb
 from operator import itemgetter
-from .dijkstra import Graph
-import logging
+from pyrunner_classes.player import Player
+from pyrunner_classes.player_objects import GoldScore
+from pyrunner_classes.non_player_characters import Bots
+from pyrunner_classes.dijkstra import Graph
+from pyrunner_classes.level_objecs import *
+from pyrunner_classes.game_physics import Physics
 
 log = logging.getLogger("Level")
 LEVEL_PATH = "./resources/levels/"
@@ -191,6 +190,29 @@ class Level(object):
         bot = Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
         Level.bots.append(bot)
 
+    def kill_bot(self, bot):
+        """remove a specific bot an death and add it to the respawn list"""
+        self.bots_respawn.append((bot.pid, datetime.now()))
+        Level.bots.remove(bot)
+
+    def prepare_level_change(self):
+        """call this function before switching to a new level"""
+        '''clear all old sprites'''
+        Level.bots.clear()
+        Player.group.empty()
+        Player.humans.empty()
+        Player.bots.empty()
+        WorldObject.group.empty()
+        WorldObject.removed.empty()
+        self.physics = None
+        self.network_connector = None
+        self.sound_thread = None
+
+    @staticmethod
+    def flush_network_players():
+        """remove all network players e.g. if the server is restarted"""
+        Level.players.clear()
+
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
         x, y = pos_pixel
@@ -297,7 +319,7 @@ class Level(object):
         self.walkable_list.sort(key=itemgetter(0))
         self.walkable_list.sort(key=itemgetter(1))
 
-        horizontals = self.add_paths(self.walkable_list, True)    # horizontals =
+        self.add_paths(self.walkable_list, True)    # horizontals =
 
         '''find all ladders'''
         # remove duplicate entries
@@ -395,7 +417,7 @@ class Level(object):
             #                 length += 1
             #                 self.graph.add_edge(node_a, node_b, length)
             #                 # self.graph.add_edge(stop_node, start_node, length)
-            #                 log.info("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
+            #             log.info("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
 
     def add_paths(self, node_list, horizontal=True):
         """find intersections between different levels"""
@@ -435,7 +457,8 @@ class Level(object):
                 add_node(x, y, current_x_y)
                 stop = current_x_y
             else:
-                self.add_long_path(start, stop, locked_x_y, horizontal, tuple_list)  # add_long_path does the sanity check
+                # add_long_path does the sanity check
+                self.add_long_path(start, stop, locked_x_y, horizontal, tuple_list)
                 '''continue next loop with the current values'''
                 start = stop = x if horizontal else y
                 locked_x_y = y if horizontal else x
@@ -581,6 +604,7 @@ class Level(object):
     
     @staticmethod
     def get_level_info_json():
+        """get current level status information"""
         # TODO: finish me
         a = []
         for d in Level.players:
@@ -590,4 +614,5 @@ class Level(object):
 
     @staticmethod
     def set_level_info_via_json(self, json):
+        """set level status information"""
         pass

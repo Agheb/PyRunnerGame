@@ -1,11 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
-# Python 2 related fixes
-from __future__ import division
-from .level import Level
-from libs.Mastermind import MastermindErrorClient
-from .actions import Action
+"""controller class that translates key presses into actions (and vice versa) and sends them to the server"""
+from pyrunner_classes.network_shared import *
+from pyrunner_classes.level import Level
 
 
 class Controller(object):

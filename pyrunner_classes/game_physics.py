@@ -1,12 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Python 2 related fixes
-from __future__ import division
-from .level_objecs import WorldObject
-from .player import *
-import pygame
-import logging
-import pdb
+"""class that handles all sprite collisions"""
+from pyrunner_classes import logging, pygame
+from pyrunner_classes.player import Player
+from pyrunner_classes.level_objecs import WorldObject
 
 log = logging.getLogger("Physics")
 
@@ -24,8 +21,8 @@ class Physics(object):
         self.sfx_player_dig = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_dig.wav'))
 
     def register_callback(self, network):
-        #creates a link to the network connector, this is needed to notify the network of canged blocks
-        self.network_connector = network
+        """creates a link to the network connector, this is needed to notify the network of canged blocks"""
+        self.level.network_connector = network
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -55,10 +52,11 @@ class Physics(object):
         return None
 
     @staticmethod
-    def remove_sprites_by_id(spriteIds):
+    def remove_sprites_by_id(sprite_ids):
+        """remove a specific sprite"""
         log.info("removing sprites")
         for sprite in WorldObject.group:
-            if sprite.tile_id in spriteIds:
+            if sprite.tile_id in sprite_ids:
                 sprite.kill()
     
     def check_collisions(self):
@@ -170,8 +168,8 @@ class Physics(object):
                         player.add_gold()
                         "Collect gold SFX"
                         self.level.sound_thread.play_sound(self.sfx_coin_collected)
-                        #notify the server
-                        self.network_connector.client.gold_removed(sprite.tile_id)
+                        '''notify the server'''
+                        self.level.network_connector.client.gold_removed(sprite.tile_id)
                         # remove it
                         sprite.kill()
                     elif not player.robbed_gold:
@@ -182,7 +180,8 @@ class Physics(object):
                     if sprite.rect.left < player.rect.centerx < sprite.rect.right:
                         if not player.killed:
                             player.rect.center = sprite.rect.center
-                            player.reached_exit = True
+                            if player.is_human:
+                                player.reached_exit = True
                             # Play Exit sound
                             self.level.sound_thread.play_sound(self.sfx_player_portal)
                             player.kill()
