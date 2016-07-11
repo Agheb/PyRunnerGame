@@ -6,6 +6,7 @@
 from time import sleep
 from pygame.locals import *
 from pyrunner_classes import *
+from pyrunner_classes.level import Level
 
 
 class MainMenu(object):
