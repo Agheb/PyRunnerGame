@@ -1,22 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
-# Python 2 related fixes
-from __future__ import division
-import pdb
-from .level import Level
-from Mastermind import MastermindErrorClient
-
-
-class Action(object):
-    """store all available actions"""
-    LEFT = "go_left"
-    RIGHT = "go_right"
-    UP = "go_up"
-    DOWN = "go_down"
-    STOP = "stop"
-    DIG_LEFT = "dig_left"
-    DIG_RIGHT = "dig_right"
+"""controller class that translates key presses into actions (and vice versa) and sends them to the server"""
+from pyrunner_classes.network_shared import *
+from pyrunner_classes.level import Level
 
 
 class Controller(object):
@@ -31,10 +17,9 @@ class Controller(object):
         '''
         self.config = config
         self.network_connector = network_connector
+        self.previous_key = None
         self.player_1_movements = []
         self.player_2_movements = []
-        self.current_action = None
-
         '''only stop player if movement key got released'''
         self.player_1_movements.append(self.config.p1_left)
         self.player_1_movements.append(self.config.p1_right)
@@ -47,25 +32,25 @@ class Controller(object):
 
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
+        current_action = None
+
         # TODO move both players
         if key == self.config.p1_left:
-            self.current_action = Action.LEFT
+            current_action = Action.LEFT
         elif key == self.config.p1_right:
-            self.current_action = Action.RIGHT
+            current_action = Action.RIGHT
         elif key == self.config.p1_up:
-            self.current_action = Action.UP
+            current_action = Action.UP
         elif key == self.config.p1_down:
-            self.current_action = Action.DOWN
+            current_action = Action.DOWN
         elif key == self.config.p1_action_l:
-            self.current_action = Action.DIG_LEFT
+            current_action = Action.DIG_LEFT
         elif key == self.config.p1_action_r:
-            self.current_action = Action.DIG_RIGHT
+            current_action = Action.DIG_RIGHT
         elif key == self.config.p1_interact:
             print("Player 1 interacts")
         elif key == self.config.p1_taunt:
             print("Player 1 taunts")
-        elif key == self.config.p1_jump:
-            pass
         # TODO the same for player 2
         elif key == self.config.p2_left:
             print("Player 2 moves left")
@@ -85,15 +70,20 @@ class Controller(object):
         elif key == self.config.p2_taunt:
             print("Player 2 taunts")
 
-        try:
-            self.network_connector.client.send_key(self.current_action)
-        except MastermindErrorClient:
-            for player in Level.players:
-                player.kill()
-        # command, playerNum = self.network_connector.client.get_last_command()
-        # self.do_action(self.current_action, 0)
+        if current_action:
+            try:
+                if self.previous_key != key:
+                    self.previous_key = key
+                    '''update positions on direction changes'''
+                    self.network_connector.client.send_current_pos_and_data()
+                self.network_connector.client.send_key(current_action)
+            except MastermindErrorClient:
+                for player in Level.players:
+                    player.kill()
+            # command, playerNum = self.network_connector.client.get_last_command()
+            # self.do_action(self.current_action, 0)
 
-    def release_key(self, key):
+    def release_key(self, key=None):
         """stop walking"""
         '''
         if self.player_1 and key in self.player_1_movements:
@@ -129,3 +119,20 @@ class Controller(object):
                 Level.players[player_num].dig_right()
             elif action == Action.STOP:
                 Level.players[player_num].stop_on_ground = True
+
+    @staticmethod
+    def bot_action(action, bot_num):
+        """perform an action for each player"""
+        bot_num = int(bot_num)
+
+        if bot_num < len(Level.bots):
+            if action == Action.LEFT:
+                Level.bots[bot_num].move_left()
+            elif action == Action.RIGHT:
+                Level.bots[bot_num].move_right()
+            elif action == Action.UP:
+                Level.bots[bot_num].move_up()
+            elif action == Action.DOWN:
+                Level.bots[bot_num].move_down()
+            elif action == Action.STOP:
+                Level.bots[bot_num].stop_on_ground = True

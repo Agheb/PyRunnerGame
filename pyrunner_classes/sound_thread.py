@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """thread taking care of all sound output"""
-# Python 2 related fixes
-from __future__ import division
+
 # universal imports
 import threading
 import pygame
@@ -70,19 +69,25 @@ class MusicMixer(threading.Thread):
         self.thread_is_running = False
         pygame.mixer.music.fadeout(1500)
 
-    def play_sound(self, file):
+    def play_sound(self, file, loop=False):
         """use this class to make this thread play a sound file.
            either pass a string containing the file name (the file must be located in SOUND_PATH)
            or a pygame.mixer.Sound file which will be passed on directly.
 
+
         Args:
             file (str or pygame.mixer.Sound): file which should be played (instantly)
+            loop (bool): plays the file infinitily when True.
         """
+
         if self.play_sfx:
             try:
                 channel = pygame.mixer.find_channel()
                 if channel:
-                    channel.play(file)
+                    if loop:
+                        channel.play(file, loops=-1)
+                    else:
+                        channel.play(file)
                 else:
                     '''if there's no free channels we need to add some more'''
                     num_channels = old_channels = pygame.mixer.get_num_channels()
@@ -96,7 +101,8 @@ class MusicMixer(threading.Thread):
                     self.play_sound(file)
             except TypeError:
                 '''if necessary parse a filename string to a full path and load it as pygame.mixer.Sound'''
-                self.play_sound(pygame.mixer.Sound(self.get_full_path_sfx(file)))
+                self.play_sound(pygame.mixer.Sound(self.get_full_path_sfx(file)), loop)
+                # TODO: when this exception is called the game breaks
 
     @staticmethod
     def get_full_path_music(file):
@@ -124,8 +130,14 @@ class MusicMixer(threading.Thread):
         """helper function to stop all currently playing music and clearing the playlist
            should be used if you switch levels etc. and want to switch the atmosphere
         """
+        # pygame.mixer.music.fadeout(50)
         pygame.mixer.music.stop()
         self._music = []
+
+    @staticmethod
+    def clear_sounds():
+        """helper function to clear all sound effects. Music keeps playing until clear_background_music is called"""
+        pygame.mixer.stop()
 
     @property
     def background_music(self):
@@ -168,7 +180,7 @@ class MusicMixer(threading.Thread):
                     # pygame.mixer.music.load(self._background_music)
             except pygame.error:
                 print("Error loading music file %s" % file)
-                # pass the exact error
+                self._music.remove(file_loops)
                 # raise
 
     @property

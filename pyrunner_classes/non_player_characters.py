@@ -1,16 +1,21 @@
-from .state_machine import StateMachine
-from .npc_states import *
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""Computer Controlled Players"""
+
+from pyrunner_classes.npc_state_machine import StateMachine
+from pyrunner_classes.npc_states import *
+from pyrunner_classes.network_shared import *
 
 SPRITE_SHEET_PATH = "./resources/sprites/"
+log = logging.getLogger("Bots")
 
 
 class Bots(Player):
+    """the next generation AI"""
 
     def __init__(self, bid, pos, sheet, level):
-        Player.__init__(self, pos, sheet, None, 32, level, 25, True)
-
+        Player.__init__(self, pos, sheet, bid, 32, level, 25, True)
         # POSITIONAL RELATED
-        self.bid = bid
         self.destination = (0, 0)
         self.last_pos = (0, 0)
         self.left_tile = None
@@ -18,12 +23,19 @@ class Bots(Player):
         self.right_tile = None
         self.right_bottom = None
         self.walk_left = True
+        self.previous_action = None
         self.robbed_gold = None
+        # network related
+        self.update_counter = 0
+        self.update_refresh = 15  # update less than two times a second
         # give humans a chance
-        self.speed -= 1
+        self.speed -= self.size / 30
         self.frame_counter = 0
+        self.frame_stop = 3  # the brain is faster than the feet
         self.spawning = True
         self.spawn_frame = 0
+        # Sound
+        self.sfx_bot_kill = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('bot_kill.wav'))
 
         Player.bots.add(self)
 
@@ -71,6 +83,60 @@ class Bots(Player):
         # spawn the player at the desired location
         self.rect.topleft = pos
 
+    def network_movements(self, action):
+        """handle all the bot movements"""
+        try:
+            if self.level.network_connector.server:
+                if self.update_counter >= self.update_refresh or self.previous_action != action:
+                    self.update_counter = 0
+                    self.previous_action = action
+                    self.level.network_connector.server.send_bot_movement(action, self.pid)
+                else:
+                    self.update_counter += 1
+        except (MastermindErrorServer, AttributeError):
+            pass
+
+    def go_left(self):
+        """add network connector to movement"""
+        self.network_movements(Action.LEFT)
+        log.debug("move bot (" + str(self.pid) + ") left")
+
+    def move_left(self):
+        """do the calculated actions"""
+        Player.go_left(self)
+
+    def go_right(self):
+        """add network connector to movement"""
+        self.network_movements(Action.RIGHT)
+        log.debug("move bot (" + str(self.pid) + ") right")
+
+    def move_right(self):
+        """do the calculated actions"""
+        Player.go_right(self)
+
+    def go_up(self):
+        """add network connector to movement"""
+        self.network_movements(Action.UP)
+        log.debug("move bot (" + str(self.pid) + ") up")
+
+    def move_up(self):
+        """do the calculated actions"""
+        Player.go_up(self)
+
+    def go_down(self):
+        """add network connector to movement"""
+        self.network_movements(Action.DOWN)
+        log.debug("move bot (" + str(self.pid) + ") down")
+
+    def move_down(self):
+        """do the calculated actions"""
+        Player.go_down(self)
+
+    def stop(self):
+        """add network connector to movement"""
+        self.network_movements(Action.STOP)
+        log.debug("move bot (" + str(self.pid) + ") stopped")
+
     def collect_gold(self, sprite):
         """remove one gold object and drop it on death"""
         self.robbed_gold = sprite
@@ -83,17 +149,20 @@ class Bots(Player):
         if self.robbed_gold:
             '''restore robbed gold'''
             self.robbed_gold.rect.bottomleft = self.rect.topleft
+            self.robbed_gold.got_dropped = True
             self.robbed_gold.dirty = 1
 
     def death_actions(self):
         """special actions to execute on death which aren't needed for human players"""
+        self.send_network_update()
         self.restore_gold()
-        self.level.bots_respawn.append((self.bid, datetime.now()))
+        self.level.sound_thread.play_sound(self.sfx_bot_kill, loop=False)
+        self.level.kill_bot(self)
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
         if not self.direction == "Trapped":
-            if self.frame_counter & 1:
+            if self.frame_counter >= self.frame_stop:
                 self.frame_counter = 0
                 '''don't think too fast'''
                 try:
@@ -103,3 +172,12 @@ class Bots(Player):
                     pass
             else:
                 self.frame_counter += 1
+
+    def update(self):
+        """add some bot only behaviour"""
+        if self.level.network_connector.server:
+            '''only the server bots get a brain'''
+            self.process()
+            log.debug("bot (" + str(self.pid) + ") thinks")
+
+        Player.update(self)

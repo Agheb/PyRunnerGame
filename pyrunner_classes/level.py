@@ -1,20 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
+"""Level Class that creates all required sprites including bots and players"""
 # Python 2 related fixes
 from __future__ import division
+
 import pytmx
 from pytmx.util_pygame import load_pygame
-
-from .game_physics import Physics
-from .level_objecs import *
-from .player import Player, GoldScore
-from .non_player_characters import Bots
-from random import randint
-import pdb
 from operator import itemgetter
-from .dijkstra import Graph
-import logging
+from pyrunner_classes.player import Player
+from pyrunner_classes.player_objects import GoldScore
+from pyrunner_classes.non_player_characters import Bots
+from pyrunner_classes.dijkstra import Graph
+from pyrunner_classes.level_objecs import *
+from pyrunner_classes.game_physics import Physics
 
 log = logging.getLogger("Level")
 LEVEL_PATH = "./resources/levels/"
@@ -42,11 +40,14 @@ class Level(object):
 
     levels = []
     players = []
+    bots = []
 
-    def __init__(self, surface, path, fps=25):
+    def __init__(self, surface, path, sound_thread, network_connector, fps=25):
         self.surface = surface
         self.background = self.surface.copy()
         self.path = path
+        self.sound_thread = sound_thread
+        self.network_connector = network_connector
         self.fps = fps
         self.physics = Physics(self)
         self.graph = None
@@ -186,7 +187,31 @@ class Level(object):
 
     def create_bot(self, bid, location):
         """create a bot at location (x, y)"""
-        Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
+        bot = Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
+        Level.bots.append(bot)
+
+    def kill_bot(self, bot):
+        """remove a specific bot an death and add it to the respawn list"""
+        self.bots_respawn.append((bot.pid, datetime.now()))
+        Level.bots.remove(bot)
+
+    def prepare_level_change(self):
+        """call this function before switching to a new level"""
+        '''clear all old sprites'''
+        Level.bots.clear()
+        Player.group.empty()
+        Player.humans.empty()
+        Player.bots.empty()
+        WorldObject.group.empty()
+        WorldObject.removed.empty()
+        self.physics = None
+        self.network_connector = None
+        self.sound_thread = None
+
+    @staticmethod
+    def flush_network_players():
+        """remove all network players e.g. if the server is restarted"""
+        Level.players.clear()
 
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
@@ -218,7 +243,7 @@ class Level(object):
         def resize_tile_to_fit(tile, target_size):
             """resize tile to fit the screen size and position"""
             pos_x, pos_y, image = tile
-            pos_id = pos_x, pos_y
+            pos_id = (pos_x, pos_y)
 
             pos_x = self.margin_left + (width * pos_x)
             pos_y = self.margin_top + (height * pos_y)
@@ -237,18 +262,15 @@ class Level(object):
         size = width, height
 
         for layer in self.tm.visible_layers:
-            if layer.name == "Background":
-                if isinstance(layer, pytmx.TiledTileLayer):
+            if isinstance(layer, pytmx.TiledTileLayer):
+                if layer.name == "Background":
                     for a in layer.tiles():
                         a, tile_id = resize_tile_to_fit(a, size)
 
                         '''create a blank copy of the background layer'''
                         self.render_tile(self.background, a)
                         self.render_tile(self.surface, a)
-
-        for layer in self.tm.visible_layers:
-            if isinstance(layer, pytmx.TiledTileLayer):
-                if layer.name != "Background":
+                else:
                     '''first check all layer properties'''
                     ladder = check_property(layer, 'climbable')
                     rope = check_property(layer, 'rope')
@@ -297,7 +319,7 @@ class Level(object):
         self.walkable_list.sort(key=itemgetter(0))
         self.walkable_list.sort(key=itemgetter(1))
 
-        horizontals = self.add_paths(self.walkable_list, True)    # horizontals =
+        self.add_paths(self.walkable_list, True)    # horizontals =
 
         '''find all ladders'''
         # remove duplicate entries
@@ -329,9 +351,9 @@ class Level(object):
         #         if tile_a is not tile_b:
         #             try:
         #                 self.graph.shortest_path(tile_a, tile_b)
-        #                 # print("Success: %s and %s" % (tile_a, tile_b))
+        #                 # log.info("Success: %s and %s" % (tile_a, tile_b))
         #             except KeyError:
-        #                 # print("Error %s and %s" % (tile_a, tile_b))
+        #                 # log.info("Error %s and %s" % (tile_a, tile_b))
         #                 pass
         #
         # intersections = [tile_id for tile_id in horizontals if tile_id in ladders]
@@ -343,9 +365,9 @@ class Level(object):
         #         if tile is not ladder:
         #             try:
         #                 self.graph.shortest_path(tile, ladder)
-        #                 print("Success: %s and %s" % (tile, ladder))
+        #                 log.info("Success: %s and %s" % (tile, ladder))
         #             except KeyError:
-        #                 # print("Error %s and %s" % (tile, ladder))
+        #                 # log.info("Error %s and %s" % (tile, ladder))
         #                 pass
 
     def get_is_path(self, a, b):
@@ -386,7 +408,7 @@ class Level(object):
             '''add the edges'''
             self.graph.add_edge(start_node, stop_node, length)
             self.graph.add_edge(stop_node, start_node, length)
-            print("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
+            log.info("adding path from %(start_node)s to %(stop_node)s with a length of %(length)s" % locals())
 
             # for node_a in range(stop_a, stop_b):
             #         for node_b in range(stop_a, stop_b):
@@ -395,7 +417,7 @@ class Level(object):
             #                 length += 1
             #                 self.graph.add_edge(node_a, node_b, length)
             #                 # self.graph.add_edge(stop_node, start_node, length)
-            #                 print("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
+            #             log.info("adding path from %(node_a)s to %(node_b)s with a length of %(length)s" % locals())
 
     def add_paths(self, node_list, horizontal=True):
         """find intersections between different levels"""
@@ -435,7 +457,8 @@ class Level(object):
                 add_node(x, y, current_x_y)
                 stop = current_x_y
             else:
-                self.add_long_path(start, stop, locked_x_y, horizontal, tuple_list)  # add_long_path does the sanity check
+                # add_long_path does the sanity check
+                self.add_long_path(start, stop, locked_x_y, horizontal, tuple_list)
                 '''continue next loop with the current values'''
                 start = stop = x if horizontal else y
                 locked_x_y = y if horizontal else x
@@ -494,33 +517,94 @@ class Level(object):
         Level.players.append(new_player)
         log.info("Added Player. Players {}".format(Level.players))
 
-    def remove_player(self, pid):
-
+    @staticmethod
+    def remove_player(pid):
+        """remove a player from the game"""
         try:
             for player in Level.players:
                 if player.pid == pid:
                     player.kill()
                     Level.players.remove(player)
             return True
-        except:
+        except (IndexError, AttributeError):
             return False
 
-    def get_all_player_pos(self):
-        players_pos = {}
-        for player in Level.players:
-            normalized_pos = (player.rect.topleft[0] / player.size , player.rect.topleft[1] / player.size ) 
-            players_pos[Level.players.index(player)] = normalized_pos
-        return players_pos
+    @staticmethod
+    def get_player_states(player):
+        """return the status vars of a specific player"""
+        return player.on_ground, player.on_ladder, player.on_rope, player.killed, \
+            player.change_x, player.change_y, player.direction
 
-    def set_players_pos(self, playerPos):
-        for player in Level.players:
-            player_id = str(player.pid)
-            
-            player.rect.topleft = (round(playerPos[player_id][0] * player.size), round(playerPos[player_id][1] * player.size)) 
-        pass
+    def get_normalized_pos_and_data(self, player, is_bot, calc_pos=True):
+        """returns the x/y coordinates independant of the screen resolution"""
+        if calc_pos:
+            '''and calculate the normalized position'''
+            pos_x = (player.rect.x - self.margin_left) / player.size
+            pos_y = (player.rect.y - self.margin_top) / player.size
+            calc_pos = pos_x, pos_y
+
+        '''and return it to the server/client'''
+        return player.pid, calc_pos, is_bot, self.get_player_states(player)
+
+    def get_player_data(self):
+        """resolution independent positions of all players in the map"""
+        try:
+            player = Level.players[self.network_connector.client.player_id]
+
+            '''only update yourself'''
+            return self.get_normalized_pos_and_data(player, False)
+        except IndexError:
+            pass
+
+    def get_all_bot_data(self):
+        """resolution independent positions of all players in the map"""
+        bot_pos = {}
+        for bot in Level.bots:
+            bot_pos[bot.bid] = self.get_normalized_pos_and_data(bot, True)
+        return bot_pos
+
+    @staticmethod
+    def set_player_states(player, info):
+        """set the state vars for a specific player"""
+        on_ground, on_ladder, on_rope, killed, change_x, change_y, direction = info
+        player.on_ground = bool(on_ground)
+        player.on_ladder = bool(on_ladder)
+        player.on_rope = bool(on_rope)
+        player.killed = bool(killed)
+        player.change_x = float(change_x)
+        player.change_y = float(change_y)
+        player.direction = direction
+        return
+
+    def set_normalized_pos(self, player, player_pos):
+        """set the player position dependant to the screen resolution"""
+        x, y = player_pos
+        player.rect.x = round(x * player.size + self.margin_left)
+        player.rect.y = round(y * player.size + self.margin_top)
+
+    def set_player_data(self, player_id, full_pos, is_bot, info):
+        """set the player position for all players in the level according to the viewers screen resolution"""
+        group = Level.bots if is_bot else Level.players
+        try:
+            player = group[int(player_id)]
+            '''set the position'''
+            try:
+                update_pos = bool(full_pos)
+            except TypeError:
+                update_pos = True
+
+            if update_pos:
+                self.set_normalized_pos(player, full_pos)
+            '''set the player state vars'''
+            self.set_player_states(player, info)
+            log.info("Set Player {} (bot: {}) position".format(player_id, is_bot))
+            return
+        except IndexError:
+            log.info("Cant find player {} (bot: {}) to set pos".format(player_id, is_bot))
     
     @staticmethod
     def get_level_info_json():
+        """get current level status information"""
         # TODO: finish me
         a = []
         for d in Level.players:
@@ -530,4 +614,5 @@ class Level(object):
 
     @staticmethod
     def set_level_info_via_json(self, json):
+        """set level status information"""
         pass

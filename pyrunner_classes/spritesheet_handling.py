@@ -1,10 +1,8 @@
 """
 This module is used to pull individual sprites from sprite sheets.
 """
-import pygame
-from .constants import *
+from pyrunner_classes import *
 from pygame.locals import *
-
 
 SPRITE_SHEET_PATH = "./resources/sprites/"
 

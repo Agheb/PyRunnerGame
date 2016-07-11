@@ -1,8 +1,13 @@
-from .player import Player
-from ast import literal_eval as make_tuple
-from datetime import datetime
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""States for the State Machine"""
+
 import math
-import pygame
+from ast import literal_eval as make_tuple
+from pyrunner_classes import logging, datetime, pygame
+from pyrunner_classes.player import Player
+
+log = logging.getLogger("Npc States")
 
 
 class State(object):
@@ -13,8 +18,8 @@ class State(object):
         Bots are Instances of non_player_characters, inherited from player class.
     """
 
-    def __init__(self, statename, bot):
-        self.statename = statename
+    def __init__(self, name, bot):
+        self.name = name
         self.bot = bot
         self.bot_last_tile = None
         self.closest_player = None
@@ -72,9 +77,9 @@ class State(object):
         if self.bot.direction == "Trapped":
             return
 
-        # print("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
+        log.debug("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
 
-        if self.bot.on_ladder or self.bot.can_go_down:
+        if y != by and (self.bot.on_ladder or self.bot.can_go_down):
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
                 '''climb on ropes which are connected to ladders etc. left of the player'''
                 # self.bot.stop_on_ground = True
@@ -99,9 +104,8 @@ class State(object):
                 self.bot.walk_left = False
             elif y > by and (self.bot.can_go_down or self.bot.on_ladder):
                 '''use ladders solid top spots to climb down'''
-                if self.bot.can_go_down:
-                    self.bot.stop_on_ground = True
-                    self.bot.go_down()
+                self.bot.change_x = 0
+                self.bot.go_down()
             elif y < by and self.bot.on_ladder:
                 '''or simply climb up'''
                 self.bot.change_x = 0
@@ -123,7 +127,7 @@ class State(object):
             if jump_down:
                 self.bot.change_x = 0
                 self.bot.go_down()
-        if x < bx:
+        elif x < bx:
             '''else simply go to the left if the player is on the left or we hit the right border'''
             self.bot.go_left()
             self.bot.walk_left = True
@@ -139,7 +143,7 @@ class State(object):
         try:
             return self.bot.level.graph.shortest_path(own_tile, target_tile)
         except KeyError:
-            print("Error: ", str(own_tile), " ", str(target_tile))
+            log.info("Error: ", str(own_tile), " ", str(target_tile))
             return False
 
     def shortest_path(self):
@@ -226,10 +230,10 @@ class State(object):
                 note that all sprites that shouldn't collide with the bot are excluded in game_physics.py
             '''
             if self.bot.left_tile and not self.bot.left_tile.is_rope:
-                # print("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.is_rope))
+                # log.info("collision: ", str(self.bot.left_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = False
             elif self.bot.right_tile and not self.bot.right_tile.is_rope:
-                # print("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.is_rope))
+                # log.info("collision: ", str(self.bot.right_tile), " ", str(self.bot.left_tile.is_rope))
                 self.bot.walk_left = True
 
             if bx == self.bot.level.cols - 1:
@@ -262,7 +266,7 @@ class Exploring(State):
                             self.bot.stop_on_ground = True
                             y = by + 1
 
-                        if not self.bot.change_y and not self.bot.change_x and self.climbed_ladder:
+                        if not self.bot.change_y and self.climbed_ladder:
                             self.climbed_ladder = False
                             '''make sure the bot doesn't fall off ladders when they have an empty gap next to them'''
                             if not self.bot.left_bottom:
@@ -274,7 +278,7 @@ class Exploring(State):
 
                     self.walk_next_tile(x, y, bx, by)
                 else:
-                    x = bx - 1 if self.bot.walk_left else bx + 1
+                    # x = bx - 1 if self.bot.walk_left else bx + 1
                     self.walk_next_tile(x, y, bx, by)
 
     def walk_next_tile(self, x, y, bx, by):
@@ -287,7 +291,7 @@ class Exploring(State):
     def check_conditions(self):
         """as soon as a player is in sight switch to a hunting mode"""
         if self.check_player_in_range():
-            print("player found")
+            log.info("player found")
             return "shortest path"
 
     def entry_actions(self):
@@ -336,7 +340,7 @@ class ShortestPath(State):
                 '''get the next valid position / empty the path to create a new one'''
                 self.next_pos = self.get_next_position()
 
-                # print("trying to get a new position: ", str(self.next_pos), " old: ", str(self.old_pos))
+                # log.info("trying to get a new position: ", str(self.next_pos), " old: ", str(self.old_pos))
                 if self.next_pos is self.old_pos:
                     self.next_pos = self.old_pos = None
 

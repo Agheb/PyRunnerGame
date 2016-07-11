@@ -10,7 +10,6 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 # Python 2 related fixes
 from __future__ import division
 import pygame
-
 from .spritesheet_handling import SpriteSheet
 from .player_objects import GoldScore
 
@@ -18,9 +17,11 @@ from .player_objects import GoldScore
 class Player(pygame.sprite.DirtySprite):
     """defines the main  player and bots"""
 
+    '''render group'''
     group = pygame.sprite.LayeredDirty(default_layer=1)
-    humans = pygame.sprite.LayeredDirty(default_layer=1)
-    bots = pygame.sprite.LayeredDirty(default_layer=1)
+    '''collision test groups'''
+    humans = pygame.sprite.Group()
+    bots = pygame.sprite.Group()
 
     def __init__(self, pos, sheet, pid=1, tile_size=32, level=None, fps=25, bot=False):
         pygame.sprite.DirtySprite.__init__(self, Player.group)
@@ -32,6 +33,8 @@ class Player(pygame.sprite.DirtySprite):
         self.fps = fps
         self.is_human = True if not bot else False
         self.dirty = 2  # always repaint this sprite
+        # network
+        self.previous_direction = None
         # positional attributes
         self.x, self.y = pos
         self.on_tile = None
@@ -44,7 +47,7 @@ class Player(pygame.sprite.DirtySprite):
         # movement related
         self.change_x = 0
         self.change_y = 0
-        self.speed = self.size // 10 * 2
+        self.speed = (self.size / 10) * 2
         # lists holding the image for movement. Up and down movement uses the same sprites.
         self.spawn_frames = []
         self.walking_frames_l = []
@@ -198,15 +201,8 @@ class Player(pygame.sprite.DirtySprite):
             self.direction = "DL"
             # self.player_collide()
 
-    def process(self):
-        """needed for the bots"""
-        pass
-
     def update(self):  # updates the images and creates motion with sprites
         """ Move the player. """
-        if not self.is_human:
-            self.process()
-
         if self.spawning:
             self.image = self.spawn_frames[self.spawn_frame]
             self.spawn_frame += 1
@@ -265,6 +261,11 @@ class Player(pygame.sprite.DirtySprite):
                     self.digging_frame = 0
                     self.direction = "Stop"
 
+            if self.direction != self.previous_direction:
+                '''completely sync players each time they change direction'''
+                self.previous_direction = self.direction
+                self.send_network_update()
+
             # Gravity
             self.calc_gravity()
         else:
@@ -275,6 +276,13 @@ class Player(pygame.sprite.DirtySprite):
                 if not self.is_human:
                     self.death_actions()
                 pygame.sprite.DirtySprite.kill(self)
+
+    def send_network_update(self):
+        """send all relevant data to the server"""
+        if self.is_human:
+            self.level.network_connector.client.send_current_pos_and_data()
+        if self.level.network_connector.master:
+            self.level.network_connector.server.send_bot_pos_and_data(self)
 
     def calc_gravity(self):
         """ Calculate effect of gravity. """

@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Python 2 related fixes
-from __future__ import division
+"""advertise the server over the network using Bonjour/Zeroconf"""
+
 import threading
 import socket
 from zeroconf import ServiceBrowser, ServiceStateChange, ServiceInfo, Zeroconf
 from zeroconf import NonUniqueNameException, BadTypeInNameException
 from time import sleep
-from .menu import MenuItem
+from pyrunner_classes import MenuItem
 
 
 class ZeroConfAdvertiser(object):

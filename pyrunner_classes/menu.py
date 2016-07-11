@@ -1,13 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """Menu and MenuItem class to create a new (Sub)Menu"""
-# Python 2 related fixes
-from __future__ import division
+
 # universal imports
-import pygame
 import textwrap
-from pygame.locals import *
-from .constants import *
+
+from pyrunner_classes import *
 
 '''constants'''
 # including 2 for the header
@@ -145,15 +143,31 @@ class Menu(object):
         Returns: pygame.Rect
         """
         menu_item.rect.centerx = self.surface.get_rect().centerx
-        if margin_top:
-            menu_item.rect.centery = margin_top
+        old_rect = None
+        # if margin_top:
+        #    menu_item.rect.centery = margin_top
         menu_item.hovered = True if (index is 0 or index is pos) and menu_item.action else False
-        # overwrite the old rendering
-        pygame.draw.rect(self.surface, BACKGROUND, menu_item.get_rect())
-        # draw the new rendering
-        menu_item.draw()
+        if menu_item.prev_rect:
+            if not margin_top:
+                margin_top = menu_item.prev_rect.top
+            '''clear the old rendering'''
+            old_rect = self._clear_rect(menu_item.prev_rect, margin_top)
 
-        return menu_item.get_rect()
+        '''and clear the new rect'''
+        self._clear_rect(menu_item.get_rect(), margin_top)
+        # draw the new rendering
+        new_rect = menu_item.draw(margin_top)
+
+        if not old_rect:
+            old_rect = new_rect
+
+        return new_rect if new_rect.contains(old_rect) else old_rect
+
+    def _clear_rect(self, rect, margin_top):
+        """clear a menu item rect"""
+        rect.top = margin_top
+        rect.centerx = self.surface.get_rect().centerx
+        return pygame.draw.rect(self.surface, BACKGROUND, rect)
 
     def print_menu(self, new_pos=1, old_pos=1, complete=True, start_pos=1, rects=list()):
         """Print the whole menu or individual menu items
@@ -209,7 +223,7 @@ class Menu(object):
             new_option = self.menu_items[new_pos]
             old_option = self.menu_items[old_pos]
 
-            if length > MAX_ITEMS_NO_SCROLL:
+            if length > MAX_ITEMS_NO_SCROLL and not new_pos == old_pos:
                 if new_pos < old_pos:
                     # if the cursor moves up
                     if new_pos % max_items_view is 0:
@@ -325,7 +339,7 @@ class MenuItem(object):
 
     def __init__(self, name, action=None, **kwargs):
         self.menu = None
-        self.name = name
+        self._name = name
         self.id = None
         self.size = None
         self.action = action
@@ -333,15 +347,16 @@ class MenuItem(object):
         self.font = None
         self.font_renderer = None
         self.rect = None
-        self.val = None
+        self._val = None
         self.bar = None
+        self.prev_rect = None
 
         # parse additional values
         for name, value in kwargs.items():
             if name == "vars":
                 self._action_values = value
             elif name == "val":
-                self.val = value
+                self._val = value
             elif name == "bar":
                 self.bar = value
 
@@ -360,13 +375,17 @@ class MenuItem(object):
                 self.action()
         except TypeError:
             '''if the action is invalid/uninitialized just ignore it'''
-            print("invalid action %s in %s/%s" % (self.action, self.menu.name, self.name))
+            print("invalid action %s in %s/%s" % (self.action, self.menu.name, self._name))
             pass
 
-    def draw(self):
+    def draw(self, margin_top=None):
         """(re)draw this item"""
         self.set_renderer()
+        if margin_top:
+            self.rect.top = margin_top
         self.menu.surface.blit(self.font_renderer, self.rect)
+
+        return self.rect
 
     def get_rect(self):
         """returns the rendered pygame.Rect
@@ -377,19 +396,50 @@ class MenuItem(object):
 
     def set_renderer(self):
         """set the font renderer"""
+        self.prev_rect = self.rect if self.rect else None
         self.font_renderer = self.font.render(self.text, True, self.get_color())
 
     @property
     def text(self):
         """get a full menu item text representation"""
-        if self.val is not None:
+        if self._val is not None:
             if self.bar is not None:
-                return '{:<14s} {:<5s} {:10s}'.format(self.name, self.bool_to_string(self.val),
+                '''music/sound volume bars'''
+                return '{:<14s} {:<5s} {:10s}'.format(self._name, self.bool_to_string(self._val),
                                                       self.print_bar(self.bar))
+
+            if isinstance(self._val, str):
+                return '{:<10s}: {:>20s}'.format(self._name, self._val)
+            elif self._val > 1 and isinstance(self._val, int):
+                '''key setups'''
+                return '{:>16s}  :  {:<16s}'.format(self._name, pygame.key.name(self._val))
             else:
-                return '{:<28s} {:>6s}'.format(self.name, self.bool_to_string(self.val))
+                '''music/sound on/off etc'''
+                return '{:<28s} {:>6s}'.format(self._name, self.bool_to_string(self._val))
         else:
-            return self.name
+            return self._name
+
+    @property
+    def name(self):
+        """return the item text name"""
+        return self._name
+
+    @name.setter
+    def name(self, new_name):
+        """change the item name and rerender the font"""
+        self._name = new_name
+        self.set_rect()
+
+    @property
+    def val(self):
+        """return the current item value"""
+        return self._val
+
+    @val.setter
+    def val(self, new_val):
+        """set the value to a new value"""
+        self._val = new_val
+        self.set_rect()
 
     def get_color(self):
         """get the current Color of this Item
