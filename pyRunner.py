@@ -77,12 +77,7 @@ class PyRunner(object):
             self.current_level_path = path
         '''clear all sprites from an old level if present'''
         if self.level:
-            '''clear all old sprites'''
-            Player.group.empty()
-            Player.humans.empty()
-            Player.bots.empty()
-            WorldObject.group.empty()
-            WorldObject.removed.empty()
+            self.level.prepare_level_change()
             self.level_exit = False
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''

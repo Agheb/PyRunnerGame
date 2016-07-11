@@ -157,8 +157,7 @@ class Bots(Player):
         self.send_network_update()
         self.restore_gold()
         self.level.sound_thread.play_sound(self.sfx_bot_kill, loop=False)
-        self.level.bots_respawn.append((self.pid, datetime.now()))
-        self.level.bots.remove(self)
+        self.level.kill_bot(self)
 
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
