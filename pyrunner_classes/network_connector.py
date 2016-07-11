@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # Python 2 related fixes
 from __future__ import division
+
+import pdb
 import threading
 import logging
 import json
@@ -361,15 +363,6 @@ class Client(threading.Thread, MastermindClientTCP):
                     self.level.set_player_data(player_id, normalized_pos, is_bot, info)
                 return
 
-    def send_current_pos_and_data(self):
-        """send the current position and state vars to the server"""
-        try:
-            player = self.level.players[self.player_id]
-            player_info = self.level.get_normalized_pos_and_data(player, False)
-            self.send_data_to_server(Message.type_comp_update, player_info)
-        except IndexError:
-            pass
-
             if data['type'] == Message.type_gold_removed:
                 #Todo maybe remove gold if the sync is not working
                 clientlog.info("Gold removed recieved from server, killing gold")
@@ -382,6 +375,15 @@ class Client(threading.Thread, MastermindClientTCP):
                 for player in self.level.players:
                     if player.player_id == data['data']:
                         player.kill()
+
+    def send_current_pos_and_data(self):
+        """send the current position and state vars to the server"""
+        try:
+            player = self.level.players[self.player_id]
+            player_info = self.level.get_normalized_pos_and_data(player, False)
+            self.send_data_to_server(Message.type_comp_update, player_info)
+        except IndexError:
+            pass
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
