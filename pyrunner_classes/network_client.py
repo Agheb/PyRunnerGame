@@ -205,8 +205,11 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
-        if (datetime.now() - self.timer).seconds > 4:
+        if (datetime.now() - self.timer).seconds > 4 and self.connected:
             data = json.dumps({'type': Message.type_keep_alive})
-            self.send(data, compression=COMPRESSION)
+            try:
+                self.send(data, compression=COMPRESSION)
+            except MastermindErrorClient:
+                self.main.menu.print_error("An error occurred while trying to send data to the server.")
             self.timer = datetime.now()
         pass
