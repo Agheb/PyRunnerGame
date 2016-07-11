@@ -210,6 +210,6 @@ class Client(threading.Thread, MastermindClientTCP):
             try:
                 self.send(data, compression=COMPRESSION)
             except MastermindErrorClient:
-                self.main.menu.print_error("An error occurred while trying to send data to the server.")
+                self.main.menu.network.print_error("An error occurred while trying to send data to the server.")
             self.timer = datetime.now()
         pass
