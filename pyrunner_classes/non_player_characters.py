@@ -83,18 +83,15 @@ class Bots(Player):
     def network_movements(self, action):
         """handle all the bot movements"""
         try:
-            # if self.previous_action != action:
-            #    self.previous_action = action
-            #    self.network_connector.server.send_bot_pos_and_data(self)
-            self.network_connector.server.send_bot_movement(action, self.pid)
+            if self.level.network_connector.server:
+                self.level.network_connector.server.send_bot_movement(action, self.pid)
         except (MastermindErrorServer, AttributeError):
             pass
 
     def go_left(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.LEFT)
-            log.debug("move bot (" + str(self.pid) + ") left")
+        self.network_movements(Action.LEFT)
+        log.debug("move bot (" + str(self.pid) + ") left")
 
     def move_left(self):
         """do the calculated actions"""
@@ -102,9 +99,8 @@ class Bots(Player):
 
     def go_right(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.RIGHT)
-            log.debug("move bot (" + str(self.pid) + ") right")
+        self.network_movements(Action.RIGHT)
+        log.debug("move bot (" + str(self.pid) + ") right")
 
     def move_right(self):
         """do the calculated actions"""
@@ -112,9 +108,8 @@ class Bots(Player):
 
     def go_up(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.UP)
-            log.debug("move bot (" + str(self.pid) + ") up")
+        self.network_movements(Action.UP)
+        log.debug("move bot (" + str(self.pid) + ") up")
 
     def move_up(self):
         """do the calculated actions"""
@@ -122,9 +117,8 @@ class Bots(Player):
 
     def go_down(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.DOWN)
-            log.debug("move bot (" + str(self.pid) + ") down")
+        self.network_movements(Action.DOWN)
+        log.debug("move bot (" + str(self.pid) + ") down")
 
     def move_down(self):
         """do the calculated actions"""
@@ -132,9 +126,8 @@ class Bots(Player):
 
     def stop(self):
         """add network connector to movement"""
-        if self.master:
-            self.network_movements(Action.STOP)
-            log.debug("move bot (" + str(self.pid) + ") stopped")
+        self.network_movements(Action.STOP)
+        log.debug("move bot (" + str(self.pid) + ") stopped")
 
     def collect_gold(self, sprite):
         """remove one gold object and drop it on death"""
@@ -175,7 +168,7 @@ class Bots(Player):
 
     def update(self):
         """add some bot only behaviour"""
-        if self.master:
+        if self.level.network_connector.master:
             '''only the server bots get a brain'''
             self.process()
             log.debug("bot (" + str(self.pid) + ") thinks")

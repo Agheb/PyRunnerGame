@@ -97,14 +97,16 @@ class PyRunner(object):
         self.render_thread.refresh_screen(True)
 
         if not self.network_connector:
-            self.network_connector = NetworkConnector(self, self.level)
+            self.network_connector = NetworkConnector(self)
             self.level.network_connector = self.network_connector
+
+        if not self.menu:
             self.menu = MainMenu(self, self.network_connector)
-        else:
-            self.network_connector.level = self.level
 
         '''and the controller instance'''
-        self.controller = Controller(self.config, self.network_connector)
+        if not self.controller:
+            self.controller = Controller(self.config, self.network_connector)
+
         self.level_exit = None
         self.game_over = False
         self.loading_level = False
@@ -193,11 +195,14 @@ class PyRunner(object):
             # save cpu resources
             if not self.menu.in_menu and not self.loading_level:
                 self.render_thread.add_rect_to_update(self.render_game())
+                self.network_connector.update()
 
                 if self.game_over:
                     self.menu.set_current_menu(self.menu.game_over)
+            elif self.network_connector.client:
+                """send keep alive"""
+                self.network_connector.client.send_keep_alive()
 
-            self.network_connector.update()
 
             clock.tick(self.fps)
 

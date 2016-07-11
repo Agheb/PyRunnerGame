@@ -13,7 +13,6 @@ class Physics(object):
 
     def __init__(self, level):
         self.level = level
-        self.network_connector = None
         '''sounds'''
         self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Collect_Point_01.wav'))
         self.sfx_coin_robbed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Robbed_Point_01.wav'))
@@ -23,7 +22,7 @@ class Physics(object):
 
     def register_callback(self, network):
         """creates a link to the network connector, this is needed to notify the network of canged blocks"""
-        self.network_connector = network
+        self.level.network_connector = network
 
     def check_world_boundaries(self, player):
         """make sure the player stays on the screen"""
@@ -170,7 +169,7 @@ class Physics(object):
                         "Collect gold SFX"
                         self.level.sound_thread.play_sound(self.sfx_coin_collected)
                         '''notify the server'''
-                        self.network_connector.client.gold_removed(sprite.tile_id)
+                        self.level.network_connector.client.gold_removed(sprite.tile_id)
                         # remove it
                         sprite.kill()
                     elif not player.robbed_gold:

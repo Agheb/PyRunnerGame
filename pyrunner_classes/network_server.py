@@ -15,10 +15,9 @@ srvlog = net_log.getChild("Server")
 class Server(threading.Thread, MastermindServerTCP):
     """main network server"""
 
-    def __init__(self, ip, port, level, main, local_only=False):
+    def __init__(self, ip, port, main, local_only=False):
         self.ip = ip
         self.port = port
-        self._level = level
         self.main = main
         self.local_only = local_only
         self.known_clients = []
@@ -79,7 +78,7 @@ class Server(threading.Thread, MastermindServerTCP):
             srvlog.debug("Added client to known clients")
             self.known_clients.append(connection_object)
         # sending initial Data, to all clients so everyone is on the same page. TODO:  add info about enemies
-        level_info = self.level.get_level_info_json()
+        level_info = self.main.level.get_level_info_json()
         # the clients id
         misc_info = {'player_id': str(self.known_clients.index(connection_object)),
                      Message.field_removed_sprites: self.sprites_removed}
@@ -102,9 +101,9 @@ class Server(threading.Thread, MastermindServerTCP):
         self.send_to_all_clients(Message.type_comp_update)
 
         '''and up to date bot positions'''
-        for bot in self.level.bots:
+        for bot in self.main.level.bots:
             '''update the bot positions only on the clients'''
-            player_info = self.level.get_normalized_pos_and_data(bot, True)
+            player_info = self.main.level.get_normalized_pos_and_data(bot, True)
             srvlog.debug("sending bot data: ", player_info)
             self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
 
@@ -199,14 +198,14 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def send_bot_pos_and_data(self, bot):
         """send updated bot movements to all clients"""
-        player_info = self.level.get_normalized_pos_and_data(bot, True)
+        player_info = self.main.level.get_normalized_pos_and_data(bot, True)
         srvlog.debug("sending bot data: ", player_info)
         self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
 
     def get_collected_data(self):
         """gather collected data"""
         collected_data = {}
-        collected_data[Message.field_player_locations] = self.level.get_player_data()
+        collected_data[Message.field_player_locations] = self.main.level.get_player_data()
         return collected_data
 
     @property
@@ -219,4 +218,4 @@ class Server(threading.Thread, MastermindServerTCP):
         """set the current level"""
         self._level = level
         for client_id in range(len(self.known_clients)):
-            self.level.add_player(client_id)
+            self.main.level.add_player(client_id)

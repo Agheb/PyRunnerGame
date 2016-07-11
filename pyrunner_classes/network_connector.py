@@ -20,13 +20,12 @@ net_log = logging.getLogger("Network")
 class NetworkConnector(object):
     """the main network class"""
 
-    def __init__(self, main, level):
+    def __init__(self, main):
         self.ip = "0.0.0.0"
         socket_ip = socket.gethostbyname(socket.gethostname())
         network_ip = self.get_network_ip()
         self.external_ip = socket_ip
         self.main = main
-        self.level = level
         self.port = START_PORT
         self.master = False
         self.client = None
@@ -77,13 +76,13 @@ class NetworkConnector(object):
         if self.server:
             self.server.kill()
 
-        self.server = Server(self.ip, self.port, self.level, self.main, local_only)
+        self.server = Server(self.ip, self.port, self.main, local_only)
         self.master = True
         self.server.start()
 
     def register_physics_callback(self):
         """adds the network connector to the physics"""
-        self.level.physics.register_callback(self)
+        self.main.level.physics.register_callback(self)
 
     def start_local_game(self):
         """run a single player game"""
@@ -155,7 +154,7 @@ class NetworkConnector(object):
             '''disconnect from other servers first'''
             self.client.disconnect()
 
-        self.client = Client(self.ip, self.port, self.level, self.main, self.master)
+        self.client = Client(self.ip, self.port, self.main, self.master)
         self.client.start()
 
         if self.client and self.client.connected:
