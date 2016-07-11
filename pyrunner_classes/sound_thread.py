@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """thread taking care of all sound output"""
-# Python 2 related fixes
-from __future__ import division
+
 # universal imports
 import threading
 import pygame

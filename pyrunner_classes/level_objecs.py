@@ -1,11 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""main pyRunner class which initializes all sub classes and threads"""
-# Python 2 related fixes
-from __future__ import division
-from .spritesheet_handling import *
-from datetime import datetime
-import logging
+"""Collection of classes that are used as Level Sprites (Blocks, Ropes, Ladders, Gold etc)"""
+
+from pygame.locals import *
+from pyrunner_classes import logging, pygame, datetime
+from pyrunner_classes.spritesheet_handling import SpriteSheet
 
 log = logging.getLogger("World Objects")
 

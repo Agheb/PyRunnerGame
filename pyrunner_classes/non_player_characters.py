@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from libs.Mastermind import *
-from .state_machine import StateMachine
-from .npc_states import *
-from .actions import Action
+"""Computer Controlled Players"""
+
+from pyrunner_classes.npc_state_machine import StateMachine
+from pyrunner_classes.npc_states import *
+from pyrunner_classes.network_shared import *
 
 SPRITE_SHEET_PATH = "./resources/sprites/"
+log = logging.getLogger("Bots")
 
 
 class Bots(Player):

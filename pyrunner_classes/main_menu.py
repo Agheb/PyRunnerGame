@@ -1,14 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """creates the main menu and handles all menu actions"""
-# Python 2 related fixes
-from __future__ import division
+
 # universal imports
-import pygame
-from pygame.locals import *
 from time import sleep
-from .menu import Menu, MenuItem
-from .level import Level
+from pygame.locals import *
+from pyrunner_classes import *
 
 
 class MainMenu(object):

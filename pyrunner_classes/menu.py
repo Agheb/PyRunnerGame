@@ -1,13 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """Menu and MenuItem class to create a new (Sub)Menu"""
-# Python 2 related fixes
-from __future__ import division
+
 # universal imports
-import pygame
 import textwrap
-from pygame.locals import *
-from .constants import *
+
+from pyrunner_classes import *
 
 '''constants'''
 # including 2 for the header
