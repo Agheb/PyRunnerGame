@@ -32,6 +32,7 @@ class NetworkConnector(object):
         self.server = None
         self.browser = None
         self.advertiser = None
+        self.local_game = False
         self.register_physics_callback()
 
         '''get IP'''
@@ -99,6 +100,7 @@ class NetworkConnector(object):
         """starting a network server from the main menu"""
         self.ip = "0.0.0.0" if not local_only else "127.0.0.1"
         self.port = port if port else START_PORT
+        self.local_game = local_only
 
         def start_server():
             """try to start a server"""
@@ -146,7 +148,8 @@ class NetworkConnector(object):
             '''let the computer resolve the hostname to an ip'''
             ip = socket.gethostbyname(ip)
 
-        if self.client and (self.client.target_ip == ip or self.external_ip == ip) and self.port == port:
+        if self.client and (self.client.target_ip == ip or self.external_ip == ip)\
+                and self.port == port and not self.local_game:
             self.main.menu.network.print_error("You are already connected to this server")
             return
 
