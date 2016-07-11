@@ -27,11 +27,11 @@ class Bots(Player):
         self.robbed_gold = None
         # network related
         self.update_counter = 0
-        self.update_refresh = self.level.fps // 1.5   # update two times a second
+        self.update_refresh = 15  # update less than two times a second
         # give humans a chance
         self.speed -= self.size / 30
         self.frame_counter = 0
-        self.frame_stop = 2
+        self.frame_stop = 3  # the brain is faster than the feet
         self.spawning = True
         self.spawn_frame = 0
         # Sound
@@ -176,7 +176,7 @@ class Bots(Player):
 
     def update(self):
         """add some bot only behaviour"""
-        if self.level.network_connector.master:
+        if self.level.network_connector.server:
             '''only the server bots get a brain'''
             self.process()
             log.debug("bot (" + str(self.pid) + ") thinks")
