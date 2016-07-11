@@ -25,6 +25,9 @@ class Bots(Player):
         self.walk_left = True
         self.previous_action = None
         self.robbed_gold = None
+        # network related
+        self.update_counter = 0
+        self.update_refresh = self.level.fps // 1.5   # update two times a second
         # give humans a chance
         self.speed -= self.size / 30
         self.frame_counter = 0
@@ -84,7 +87,12 @@ class Bots(Player):
         """handle all the bot movements"""
         try:
             if self.level.network_connector.server:
-                self.level.network_connector.server.send_bot_movement(action, self.pid)
+                if self.update_counter >= self.update_refresh or self.previous_action != action:
+                    self.update_counter = 0
+                    self.previous_action = action
+                    self.level.network_connector.server.send_bot_movement(action, self.pid)
+                else:
+                    self.update_counter += 1
         except (MastermindErrorServer, AttributeError):
             pass
 
