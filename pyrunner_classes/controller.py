@@ -17,7 +17,6 @@ class Controller(object):
         '''
         self.config = config
         self.network_connector = network_connector
-        self.previous_key = None
         self.player_1_movements = []
         self.player_2_movements = []
         '''only stop player if movement key got released'''
@@ -72,10 +71,6 @@ class Controller(object):
 
         if current_action:
             try:
-                if self.previous_key != key:
-                    self.previous_key = key
-                    '''update positions on direction changes'''
-                    self.network_connector.client.send_current_pos_and_data()
                 self.network_connector.client.send_key(current_action)
             except MastermindErrorClient:
                 for player in Level.players:
@@ -93,7 +88,8 @@ class Controller(object):
         '''
         try:
             # if player.pid == 0 and key in self.player_1_movements:
-            self.network_connector.client.send_key(Action.STOP)
+            if key in self.player_1_movements or self.player_2_movements:
+                self.network_connector.client.send_key(Action.STOP)
         except MastermindErrorClient:
             for player in Level.players:
                 player.kill()
