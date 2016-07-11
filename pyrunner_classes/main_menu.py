@@ -83,11 +83,14 @@ class MainMenu(object):
         if self.configure_js:
             self.set_joystick_controls(event)
         else:
-            string = str(event.__dict__)
-            if self.config.p1_use_joystick:
-                self.key_actions(self.config.p1_menu_map.get(string))
-            elif self.config.p2_use_joystick:
-                self.key_actions(self.config.p2_menu_map.get(string))
+            try:
+                string = str(event.__dict__)
+                if self.config.p1_use_joystick:
+                    self.key_actions(self.config.p1_menu_map.get(string))
+                elif self.config.p2_use_joystick:
+                    self.key_actions(self.config.p2_menu_map.get(string))
+            except (AttributeError, TypeError):
+                pass
 
     def init_menu(self):
         """initialize the whole main menu structure
