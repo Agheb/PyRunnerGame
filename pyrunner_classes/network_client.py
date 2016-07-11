@@ -18,9 +18,8 @@ client_log = net_log.getChild("Client")
 class Client(threading.Thread, MastermindClientTCP):
     """the network client"""
 
-    def __init__(self, ip, port, level, main, master):
+    def __init__(self, ip, port, main, master):
         self.port = port
-        self.level = level
         self.target_ip = ip
         self.main = main
         self.master = master
@@ -66,11 +65,11 @@ class Client(threading.Thread, MastermindClientTCP):
                 try:
                     pid = int(pl_center.index('player_id'))
                 except ValueError:
-                    pid = len(self.level.players)
+                    pid = len(self.main.level.players)
                 # add the others
-                self.level.add_player(pid, pl_center)
+                self.main.level.add_player(pid, pl_center)
             # add ourself
-            self.level.add_player(self.player_id)
+            self.main.level.add_player(self.player_id)
 
             # kill removed sprites_removed
             removed_sprite_ids_list = contents[Message.field_removed_sprites]
@@ -78,7 +77,7 @@ class Client(threading.Thread, MastermindClientTCP):
             for a in removed_sprite_ids_list:
                 tupeld.append((a[0], a[1]))
 
-            self.level.physics.remove_sprites_by_id(tupeld)
+            self.main.level.physics.remove_sprites_by_id(tupeld)
 
             # tell the server that the client is init
             self.send_init_success()
@@ -135,17 +134,17 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_init:
                 client_log.info("got init succ")
                 try:
-                    self.level.players[int(data['data']['player_id'])]
+                    self.main.level.players[int(data['data']['player_id'])]
                 except IndexError:
-                    pid = len(self.level.players)
-                    self.level.add_player(pid)
+                    pid = len(self.main.level.players)
+                    self.main.level.add_player(pid)
                 self.main.menu.show_menu(False)
                 return
 
             if data['type'] == Message.type_client_dc:
                 client_log.info("A client disconnected, removing from game")
                 pid = data['data']['client_id']
-                if not self.level.remove_player(pid):
+                if not self.main.level.remove_player(pid):
                     client_log.error("Could not remove player form player list!")
                 else:
                     client_log.info("removed player form playerlist")
@@ -158,15 +157,15 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_comp_update_states:
                 client_log.info("Sending own states to Server")
-                player = self.level.players[self.player_id]
-                player_info = self.level.get_normalized_pos_and_data(player, False, False)
+                player = self.main.level.players[self.player_id]
+                player_info = self.main.level.get_normalized_pos_and_data(player, False, False)
                 self.send_data_to_server(Message.type_comp_update, player_info)
                 return
 
             if data['type'] == Message.type_level_changed:
                 client_log.info("Got change level from Server")
                 level_name = data[Message.field_level_name]
-                self.level.load_level(level_name)
+                self.main.level.load_level(level_name)
                 return
 
             if data['type'] == Message.type_comp_update_set:
@@ -179,7 +178,7 @@ class Client(threading.Thread, MastermindClientTCP):
                     client_log.debug("recieved player data: ", data['data'])
                     client_log.info("Got pos setter from server")
                     client_log.debug("setting player data: ", data['data'])
-                    self.level.set_player_data(player_id, normalized_pos, is_bot, info)
+                    self.main.level.set_player_data(player_id, normalized_pos, is_bot, info)
                 return
 
             if data['type'] == Message.type_gold_removed:
@@ -191,15 +190,15 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_player_killed:
                 client_log.info("Got player killed from Server")
                 pdb.set_trace()
-                for player in self.level.players:
+                for player in self.main.level.players:
                     if player.player_id == data['data']:
                         player.kill()
 
     def send_current_pos_and_data(self):
         """send the current position and state vars to the server"""
         try:
-            player = self.level.players[self.player_id]
-            player_info = self.level.get_normalized_pos_and_data(player, False)
+            player = self.main.level.players[self.player_id]
+            player_info = self.main.level.get_normalized_pos_and_data(player, False)
             self.send_data_to_server(Message.type_comp_update, player_info)
         except IndexError:
             pass
