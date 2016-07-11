@@ -88,7 +88,7 @@ class Controller(object):
         '''
         try:
             # if player.pid == 0 and key in self.player_1_movements:
-            if key in self.player_1_movements or self.player_2_movements:
+            if key in self.player_1_movements or key in self.player_2_movements:
                 self.network_connector.client.send_key(Action.STOP)
         except MastermindErrorClient:
             for player in Level.players:
