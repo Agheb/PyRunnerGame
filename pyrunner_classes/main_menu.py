@@ -481,7 +481,11 @@ class MainMenu(object):
 
         self.current_menu.get_item(self.menu_pos).val = new_key
         '''reinit the maps if there are changes made to the config'''
-        self.config.setup_joystick()
+        try:
+            self.config.setup_joystick()
+        except TypeError:
+            """if not all buttons are configured (initial setup) it will fail to map them to all keys"""
+            pass
         self.navigate_menu(self.menu_pos)
         self.configure_js = False
 
