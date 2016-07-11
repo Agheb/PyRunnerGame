@@ -208,6 +208,11 @@ class Level(object):
         self.network_connector = None
         self.sound_thread = None
 
+    @staticmethod
+    def flush_network_players():
+        """remove all network players e.g. if the server is restarted"""
+        Level.players.clear()
+
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
         x, y = pos_pixel

@@ -75,6 +75,9 @@ class NetworkConnector(object):
         """start a new server thread"""
         if self.server:
             self.server.kill()
+            self.main.level.flush_network_players()
+            self.main.level.prepare_level_change()
+            self.main.load_level()
 
         self.server = Server(self.ip, self.port, self.main, local_only)
         self.master = True
@@ -95,30 +98,22 @@ class NetworkConnector(object):
 
         def start_server():
             """try to start a server"""
+            self.init_new_server(local_only)
 
-            if not self.server:
+            while not self.server.connected:
+                '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
+                sleep(0.25)
 
-                self.init_new_server(local_only)
-
-                while not self.server.connected:
-                    '''give the thread 0.25 seconds to start (warning: this locks the main process)'''
-                    sleep(0.25)
-
-                    if not self.server.connected:
-                        '''if it fails (e.g. port still in use) switch the port up to 5 times'''
-                        if self.port < START_PORT + 5:
-                            self.port += 1
-                            self.init_new_server()
-                            net_log.info("changing server and port to ", str(self.port))
-                        else:
-                            '''if it still fails give up'''
-                            self.server.kill()
-                            break
-            else:
-                if local_only:
-                    self.server.kill()
-                self.join_server_prompt((self.ip, self.port))
-                # self.main.load_level(self.main.START_LEVEL)
+                if not self.server.connected:
+                    '''if it fails (e.g. port still in use) switch the port up to 5 times'''
+                    if self.port < START_PORT + 5:
+                        self.port += 1
+                        self.init_new_server()
+                        net_log.info("changing server and port to ", str(self.port))
+                    else:
+                        '''if it still fails give up'''
+                        self.server.kill()
+                        break
 
         '''starting server'''
         start_server()
