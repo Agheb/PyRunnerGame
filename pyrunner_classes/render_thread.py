@@ -3,6 +3,8 @@
 """thread taking care of all pygame.display.update()'s etc."""
 
 # universal imports
+import sys
+import ctypes
 import threading
 import pygame
 from pygame.locals import *
@@ -89,6 +91,14 @@ class RenderThread(threading.Thread):
         self._check_display_modes()
         # set the window title
         self.caption = caption
+
+        """Linux multi threading GUI crash workaround"""
+        if sys.platform.startswith('linux'):
+            try:
+                x11 = ctypes.cdll.LoadLibrary('libX11.so')
+                x11.XInitThreads()
+            except:
+                print("failed to lock screen rendering %s" % str(Exception))
 
     def run(self):
         """Thread main run function
