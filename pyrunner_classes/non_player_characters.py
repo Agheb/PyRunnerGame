@@ -86,7 +86,7 @@ class Bots(Player):
     def network_movements(self, action):
         """handle all the bot movements"""
         try:
-            if self.level.network_connector.server:
+            if self.level.network_connector.master:
                 if self.update_counter >= self.update_refresh or self.previous_action != action:
                     self.update_counter = 0
                     self.previous_action = action

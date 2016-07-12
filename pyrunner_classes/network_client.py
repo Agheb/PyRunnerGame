@@ -180,7 +180,7 @@ class Client(threading.Thread, MastermindClientTCP):
                 '''don't set the positions on the server'''
                 player_id, normalized_pos, is_bot, info = data['data']
                 player_id = int(player_id)
-                is_bot = bool(int(is_bot))
+                is_bot = bool(is_bot)
 
                 if is_bot or player_id != self.player_id:
                     client_log.debug("received player data: ", data['data'])

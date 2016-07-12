@@ -281,7 +281,7 @@ class Player(pygame.sprite.DirtySprite):
         """send all relevant data to the server"""
         if self.is_human:
             self.level.network_connector.client.send_current_pos_and_data()
-        if self.level.network_connector.master:
+        if not self.is_human and self.level.network_connector.master:
             self.level.network_connector.server.send_bot_pos_and_data(self)
 
     def calc_gravity(self):
