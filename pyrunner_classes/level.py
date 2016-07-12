@@ -48,7 +48,7 @@ class Level(object):
         self.background = self.surface.copy()
         self.path = path
         self.sound_thread = sound_thread
-        self.lvl_music_name = None
+        self.background_music = None
         self.network_connector = network_connector
         self.fps = fps
         self.physics = Physics(self)
@@ -120,8 +120,6 @@ class Level(object):
             bot2_pos = (self.width - 100, 0)  # randint(0, self.width), 0
         try:
             next_level = self.tm.get_object_by_name("Exit_Gate")
-            lvl_music_name = next_level.type
-            self.lvl_music_name = lvl_music_name + LEVEL_EXT_MUSIC
             self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
             self.next_level = LEVEL_PATH + next_level.type + LEVEL_EXT
         except ValueError:
@@ -268,6 +266,12 @@ class Level(object):
         for layer in self.tm.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 if layer.name == "Background":
+                    try:
+                        self.background_music = layer.properties.get("music")
+                        print(str(self.background_music))
+                    except AttributeError:
+                        pass
+
                     for a in layer.tiles():
                         a, tile_id = resize_tile_to_fit(a, size)
 

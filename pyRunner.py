@@ -29,6 +29,7 @@ class PyRunner(object):
     """main PyRunner Class"""
 
     START_LEVEL = "./resources/levels/level1.tmx"
+    THEME_MUSIC = "thememusic.ogg"
 
     def __init__(self):
         """initialize the game"""
@@ -40,7 +41,7 @@ class PyRunner(object):
         '''init the audio subsystem prior to anything else'''
         self.music_thread = MusicMixer(self.config.play_music, self.config.vol_music,
                                        self.config.play_sfx, self.config.vol_sfx, self.fps)
-        self.music_thread.background_music = ('thememusic.ogg', 1)
+        self.music_thread.background_music = (self.THEME_MUSIC, 1)
         self.music_thread.start()
         '''init the main screen'''
         self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.fps,
@@ -65,8 +66,15 @@ class PyRunner(object):
         self.loading_level = False
         self.game_over = False
         """sound variables"""
-        self.sfx_portal_sound = pygame.mixer.Sound(
-            self.music_thread.get_full_path_sfx('portal_sound.ogg'))
+        self.sfx_portal_sound = pygame.mixer.Sound(self.music_thread.get_full_path_sfx('portal_sound.ogg'))
+
+    def switch_music(self, main_theme=False):
+        """switch the music according to each level"""
+        music = self.THEME_MUSIC if main_theme or not self.level.background_music else self.level.background_music
+        '''play the new song'''
+        self.music_thread.clear_background_music()
+        self.music_thread.background_music = (music, 1)
+        self.music_thread.play_music = True
 
     def load_level(self, path=None):
         """load another level"""
@@ -80,9 +88,7 @@ class PyRunner(object):
             self.level.prepare_level_change()
             self.level_exit = False
             "new music for level change"
-            self.music_thread.clear_background_music()
-            self.music_thread.background_music = (self.level.lvl_music_name, 1)
-            self.music_thread.play_music = True
+            self.switch_music()
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.music_thread, self.network_connector, self.fps)
@@ -131,8 +137,6 @@ class PyRunner(object):
         """main game loop"""
         # Main loop relevant vars
         clock = pygame.time.Clock()
-
-        self.music_thread.background_music = ('thememusic.ogg', 1)
 
         while self.game_is_running:
             for event in pygame.event.get():
@@ -233,7 +237,7 @@ class PyRunner(object):
             except AttributeError:
                 for player in Player.humans:
                     player.reached_exit = True
-                self.game_over_menu()
+                self.game_over = True
 
         '''check if all players are still alive'''
         if not len(Player.humans) or self.game_over:
@@ -267,6 +271,7 @@ class PyRunner(object):
                 score_str = "Player %s: %s coins" % (score.gid + 1, score.gold)
                 self.menu.game_over.add_item(MenuItem(score_str))
         self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
+        self.menu.game_over.add_item(MenuItem("Restart Game", self.menu.reload_level, vars=True))
 
 
 if __name__ == "__main__":
