@@ -52,6 +52,7 @@ class Level(object):
         self.network_connector = network_connector
         self.fps = fps
         self.physics = Physics(self)
+        self.reached_next_level = False
         self.graph = None
         self.climbable_list = []
         self.walkable_list = []
@@ -513,7 +514,7 @@ class Level(object):
         
         sheet = self.PLAYERS[pid % len(self.PLAYERS)]
 
-        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps, False)
 
         return new_player
 

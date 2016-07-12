@@ -84,13 +84,16 @@ class PyRunner(object):
             self.current_level_path = path
         '''clear all sprites from an old level if present'''
         if self.level:
+            self.music_thread.clear_sounds()
             self.level.prepare_level_change()
             self.level_exit = False
-            "new music for level change"
-            self.switch_music()
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.music_thread, self.network_connector, self.fps)
+        '''switch the music after loading the new level but not on game startup'''
+        if self.level:
+            "new music for level change"
+            self.switch_music()
         '''bug fix for old background appearing on the screen'''
         WorldObject.group.clear(self.level.surface, self.level.background)
         '''change the dirty rect for fps display'''
@@ -235,7 +238,7 @@ class PyRunner(object):
                 self.music_thread.play_sound(self.sfx_portal_sound, loop=True)
             except AttributeError:
                 for player in Player.humans:
-                    '''mark players as survivors'''
+                    '''mark players as survivors so they keep their score'''
                     player.reached_exit = True
                 self.game_over = True
 
@@ -246,12 +249,10 @@ class PyRunner(object):
                 self.game_over_menu()
             else:
                 '''load the next level, recreate the players and bots etc.'''
-                for player in Player.humans:
-                    if player.reached_exit:
-                        self.load_level(self.level.next_level)
-                        self.music_thread.clear_sounds()
-                        return
-                self.game_over_menu()
+                if self.level.reached_next_level:
+                    self.load_level(self.level.next_level)
+                else:
+                    self.game_over_menu()
 
         return rects
 

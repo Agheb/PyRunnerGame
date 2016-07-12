@@ -181,7 +181,8 @@ class Physics(object):
                         if not player.killed:
                             player.rect.center = sprite.rect.center
                             if player.is_human:
-                                player.reached_exit = True
+                                self.level.reached_next_level = True
+                                player.reached_exit = True  # keep his gold coins
                             # Play Exit sound
                             self.level.sound_thread.play_sound(self.sfx_player_portal)
                             player.kill()
