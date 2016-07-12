@@ -83,11 +83,14 @@ class MainMenu(object):
         if self.configure_js:
             self.set_joystick_controls(event)
         else:
-            string = str(event.__dict__)
-            if self.config.p1_use_joystick:
-                self.key_actions(self.config.p1_menu_map.get(string))
-            elif self.config.p2_use_joystick:
-                self.key_actions(self.config.p2_menu_map.get(string))
+            try:
+                string = str(event.__dict__)
+                if self.config.p1_use_joystick:
+                    self.key_actions(self.config.p1_menu_map.get(string))
+                elif self.config.p2_use_joystick:
+                    self.key_actions(self.config.p2_menu_map.get(string))
+            except (AttributeError, TypeError):
+                pass
 
     def init_menu(self):
         """initialize the whole main menu structure
@@ -481,7 +484,11 @@ class MainMenu(object):
 
         self.current_menu.get_item(self.menu_pos).val = new_key
         '''reinit the maps if there are changes made to the config'''
-        self.config.setup_joystick()
+        try:
+            self.config.setup_joystick()
+        except TypeError:
+            """if not all buttons are configured (initial setup) it will fail to map them to all keys"""
+            pass
         self.navigate_menu(self.menu_pos)
         self.configure_js = False
 

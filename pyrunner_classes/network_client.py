@@ -175,7 +175,7 @@ class Client(threading.Thread, MastermindClientTCP):
                 is_bot = bool(int(is_bot))
 
                 if is_bot or player_id != self.player_id:
-                    client_log.debug("recieved player data: ", data['data'])
+                    client_log.debug("received player data: ", data['data'])
                     client_log.info("Got pos setter from server")
                     client_log.debug("setting player data: ", data['data'])
                     self.main.level.set_player_data(player_id, normalized_pos, is_bot, info)
@@ -183,7 +183,7 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_gold_removed:
                 # Todo maybe remove gold if the sync is not working
-                client_log.info("Gold removed recieved from server, killing gold")
+                client_log.info("Gold removed received from server, killing gold")
                 WorldObject.kill_world_object(data['data'])
                 return
 
@@ -205,8 +205,11 @@ class Client(threading.Thread, MastermindClientTCP):
 
     def send_keep_alive(self):
         """send keep alive if last was x seconds ago"""
-        if (datetime.now() - self.timer).seconds > 4:
+        if (datetime.now() - self.timer).seconds > 4 and self.connected:
             data = json.dumps({'type': Message.type_keep_alive})
-            self.send(data, compression=COMPRESSION)
+            try:
+                self.send(data, compression=COMPRESSION)
+            except MastermindErrorClient:
+                self.main.menu.network.print_error("An error occurred while trying to send data to the server.")
             self.timer = datetime.now()
         pass
