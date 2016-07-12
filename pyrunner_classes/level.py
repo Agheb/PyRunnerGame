@@ -611,14 +611,13 @@ class Level(object):
         except IndexError:
             log.info("Cant find player {} (bot: {}) to set pos".format(player_id, is_bot))
     
-    @staticmethod
-    def get_level_info_json():
+    def get_level_info_json(self):
         """get current level status information"""
         # TODO: finish me
         a = []
         for d in Level.players:
             a.append(d.rect.topleft)
-        data = {'players': a}
+        data = {'level': self.path, 'players': a}
         return data
 
     @staticmethod
