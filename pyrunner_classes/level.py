@@ -268,7 +268,7 @@ class Level(object):
                 if layer.name == "Background":
                     try:
                         self.background_music = layer.properties.get("music")
-                        print(str(self.background_music))
+                        log.info(self.background_music)
                     except AttributeError:
                         pass
 

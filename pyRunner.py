@@ -41,7 +41,6 @@ class PyRunner(object):
         '''init the audio subsystem prior to anything else'''
         self.music_thread = MusicMixer(self.config.play_music, self.config.vol_music,
                                        self.config.play_sfx, self.config.vol_sfx, self.fps)
-        self.music_thread.background_music = (self.THEME_MUSIC, 1)
         self.music_thread.start()
         '''init the main screen'''
         self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.fps,
@@ -236,6 +235,7 @@ class PyRunner(object):
                 self.music_thread.play_sound(self.sfx_portal_sound, loop=True)
             except AttributeError:
                 for player in Player.humans:
+                    '''mark players as survivors'''
                     player.reached_exit = True
                 self.game_over = True
 
