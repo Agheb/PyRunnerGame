@@ -71,9 +71,10 @@ class PyRunner(object):
         """switch the music according to each level"""
         music = self.THEME_MUSIC if main_theme or not self.level.background_music else self.level.background_music
         '''play the new song'''
-        self.music_thread.clear_background_music()
-        self.music_thread.background_music = (music, 1)
-        self.music_thread.play_music = True
+        if not self.music_thread.background_music or not self.music_thread.background_music.endswith(music):
+            self.music_thread.clear_background_music()
+            self.music_thread.background_music = (music, 1)
+            self.music_thread.play_music = True
 
     def load_level(self, path=None):
         """load another level"""
