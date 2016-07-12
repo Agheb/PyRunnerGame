@@ -78,6 +78,13 @@ class RenderThread(threading.Thread):
         self._fps_margin = None
         self._fps_font_size = width >> 5  # results in 25 pt at 800x600, 32 at 1024x768
         self.show_framerate = False
+        """Linux multi threading GUI crash workaround"""
+        if sys.platform.startswith('linux'):
+            try:
+                x11 = ctypes.cdll.LoadLibrary('libX11.so')
+                x11.XInitThreads()
+            except:
+                print("failed to lock screen rendering %s" % str(Exception))
         if self.switch_resolution:
             self._surface = None
         # initialize pygame in case it's not already
@@ -91,14 +98,6 @@ class RenderThread(threading.Thread):
         self._check_display_modes()
         # set the window title
         self.caption = caption
-
-        """Linux multi threading GUI crash workaround"""
-        if sys.platform.startswith('linux'):
-            try:
-                x11 = ctypes.cdll.LoadLibrary('libX11.so')
-                x11.XInitThreads()
-            except:
-                print("failed to lock screen rendering %s" % str(Exception))
 
     def run(self):
         """Thread main run function
