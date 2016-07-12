@@ -37,7 +37,7 @@ class SpriteSheet(object):
         if self.use_colorkey:
             image = image.convert()
             # Assuming black works as the transparent color
-            image.set_colorkey((255,0,255), RLEACCEL)
+            image.set_colorkey(BLACK, RLEACCEL)
         else:
             image = image.convert_alpha()
 
