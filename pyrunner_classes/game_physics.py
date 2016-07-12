@@ -14,11 +14,11 @@ class Physics(object):
     def __init__(self, level):
         self.level = level
         '''sounds'''
-        self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Collect_Point_01.wav'))
+        self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_collect.wav'))
         self.sfx_coin_robbed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Robbed_Point_01.wav'))
         self.sfx_player_portal = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('portal_exit.wav'))
         self.sfx_player_killed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_kill.ogg'))
-        self.sfx_player_dig = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_dig.wav'))
+        self.sfx_player_dig = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('sfx_sounds_interaction24.wav'))
 
     def register_callback(self, network):
         """creates a link to the network connector, this is needed to notify the network of canged blocks"""
