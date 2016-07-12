@@ -11,10 +11,6 @@ class Controller(object):
 
     def __init__(self, config, network_connector):
         """initialize the controller class"""
-        '''
-        self.player_1 = level.player_1
-        self.player_2 = level.player_2
-        '''
         self.config = config
         self.network_connector = network_connector
         self.player_1_movements = []
@@ -75,25 +71,15 @@ class Controller(object):
             except MastermindErrorClient:
                 for player in Level.players:
                     player.kill()
-            # command, playerNum = self.network_connector.client.get_last_command()
-            # self.do_action(self.current_action, 0)
 
     def release_key(self, key=None):
         """stop walking"""
-        '''
-        if self.player_1 and key in self.player_1_movements:
-            self.player_1.stop_on_ground = True
-        if self.player_2 and key in self.player_2_movements:
-            self.player_2.stop_on_ground = True
-        '''
         try:
-            # if player.pid == 0 and key in self.player_1_movements:
             if key in self.player_1_movements or key in self.player_2_movements:
                 self.network_connector.client.send_key(Action.STOP)
         except MastermindErrorClient:
             for player in Level.players:
                 player.kill()
-        # self.do_action(Action.STOP, 0)
 
     @staticmethod
     def do_action(action, player_num):

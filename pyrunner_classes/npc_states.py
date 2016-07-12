@@ -82,8 +82,8 @@ class State(object):
         if y != by and (self.bot.on_ladder or self.bot.can_go_down):
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
                 '''climb on ropes which are connected to ladders etc. left of the player'''
-                # self.bot.stop_on_ground = True
-                self.bot.change_y = 0
+                if self.bot.change_y:
+                    self.bot.change_y = 0
                 # get past ground collisions
                 self.bot.on_rope = True
                 self.bot.rect.y = self.bot.left_tile.rect.y
@@ -93,8 +93,8 @@ class State(object):
                 self.bot.walk_left = True
             elif self.bot.right_tile and self.bot.right_tile.is_rope and bx < x:
                 '''climb on ropes which are connected to ladders etc. right of the player'''
-                # self.bot.stop_on_ground = True
-                self.bot.change_y = 0
+                if self.bot.change_y:
+                    self.bot.change_y = 0
                 # get past ground collisions
                 self.bot.on_rope = True
                 self.bot.rect.y = self.bot.right_tile.rect.y
@@ -102,13 +102,15 @@ class State(object):
                 # go right
                 self.bot.go_right()
                 self.bot.walk_left = False
-            elif y > by and (self.bot.can_go_down or self.bot.on_ladder):
+            elif y > by and (self.bot.can_go_down or not self.bot.on_ground):
                 '''use ladders solid top spots to climb down'''
-                self.bot.change_x = 0
+                if self.bot.change_x:
+                    self.bot.change_x = 0
                 self.bot.go_down()
             elif y < by and self.bot.on_ladder:
                 '''or simply climb up'''
-                self.bot.change_x = 0
+                if self.bot.change_x:
+                    self.bot.change_x = 0
                 self.bot.go_up()
         elif y > by and self.bot.on_rope and (x - 2 <= bx <= x + 2 or not self.bot.change_x):
             '''jump down of ropes if the player is walking below the bot'''
@@ -127,7 +129,7 @@ class State(object):
             if jump_down:
                 self.bot.change_x = 0
                 self.bot.go_down()
-        if x < bx:
+        elif x < bx:
             '''else simply go to the left if the player is on the left or we hit the right border'''
             self.bot.go_left()
             self.bot.walk_left = True

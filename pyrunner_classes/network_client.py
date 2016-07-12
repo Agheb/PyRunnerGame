@@ -32,7 +32,7 @@ class Client(threading.Thread, MastermindClientTCP):
     def send_key(self, key):
         """send the current pressed key action"""
         client_log.info("Sending key Action %s to server" % key)
-        data = json.dumps({'type': 'key_update', 'data': str(key)})
+        data = json.dumps({'type': Message.type_key_update, 'data': str(key)})
         self.send(data, compression=COMPRESSION)
 
     def run(self):
@@ -113,7 +113,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.send(data, compression=COMPRESSION)
 
     def kill(self):
-        """stop the server"""
+        """stop the client"""
         try:
             self.disconnect()
         except AttributeError:
@@ -121,7 +121,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.connected = False
 
     def update(self):
-        """run the server"""
+        """run the client"""
         self.send_keep_alive()
         raw_data = self.receive(False)
 
@@ -143,6 +143,7 @@ class Client(threading.Thread, MastermindClientTCP):
                 try:
                     self.main.level.players[int(data['data']['player_id'])]
                 except IndexError:
+                    print("Fehler")
                     pid = len(self.main.level.players)
                     self.main.level.add_player(pid)
                 self.main.menu.show_menu(False)
