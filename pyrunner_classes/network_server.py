@@ -80,7 +80,8 @@ class Server(threading.Thread, MastermindServerTCP):
         level_info = self.main.level.get_level_info_json()
         # the clients id
         misc_info = {'player_id': str(self.known_clients.index(connection_object)),
-                     Message.field_removed_sprites: self.sprites_removed}
+                     Message.field_removed_sprites: self.sprites_removed,
+                     Message.field_level_name: self.main.level.path}
         # concat the data
         combined = {}
         for d in (level_info, misc_info):

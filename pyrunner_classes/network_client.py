@@ -134,6 +134,12 @@ class Client(threading.Thread, MastermindClientTCP):
             if data['type'] == Message.type_init:
                 client_log.info("got init succ")
                 try:
+                    level = data[Message.field_level_name]
+                    if level != self.main.level.path:
+                        self.main.load_level(level)
+                except ValueError:
+                    pass
+                try:
                     self.main.level.players[int(data['data']['player_id'])]
                 except IndexError:
                     pid = len(self.main.level.players)
