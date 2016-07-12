@@ -26,12 +26,12 @@ class Bots(Player):
         self.previous_action = None
         self.robbed_gold = None
         # network related
+        self.brain_counter = 0
+        self.brain_refresh = 3 + self.pid  # the brain is faster than the feet
         self.update_counter = 0
-        self.update_refresh = 15  # update less than two times a second
+        self.update_refresh = 10 + self.brain_refresh * (self.pid + 1)  # update less than two times a second
         # give humans a chance
         self.speed -= self.size / 30
-        self.frame_counter = 0
-        self.frame_stop = 3  # the brain is faster than the feet
         self.spawning = True
         self.spawn_frame = 0
         # Sound
@@ -162,8 +162,8 @@ class Bots(Player):
     def process(self):
         """jetzt scharf nachdenken... denk denk denk"""
         if not self.direction == "Trapped":
-            if self.frame_counter >= self.frame_stop:
-                self.frame_counter = 0
+            if self.brain_counter >= self.brain_refresh:
+                self.brain_counter = 0
                 '''don't think too fast'''
                 try:
                     self.brain.think()
@@ -171,7 +171,7 @@ class Bots(Player):
                     '''sometimes values are not set fast enough'''
                     pass
             else:
-                self.frame_counter += 1
+                self.brain_counter += 1
 
     def update(self):
         """add some bot only behaviour"""

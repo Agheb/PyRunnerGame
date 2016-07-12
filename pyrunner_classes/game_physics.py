@@ -40,8 +40,12 @@ class Physics(object):
             player.rect.y = top
         if x > right:
             player.rect.x = right
+            if not player.is_human:
+                player.walk_left = True
         elif x < left:
             player.rect.x = left
+            if not player.is_human:
+                player.walk_left = False
             
     @staticmethod
     def find_collision(x, y, group=WorldObject.group):
@@ -221,7 +225,7 @@ class Physics(object):
     @staticmethod
     def hit_inner_bottom(player, sprite):
         """player hits the inner ground of a sprite"""
-        if player.rect.bottom > sprite.rect.bottom - 1 and not player.is_human:
+        if player.rect.bottom > sprite.rect.bottom and not player.is_human:
             player.direction = "Trapped"
             player.change_x = 0
             player.change_y = 0
