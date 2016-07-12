@@ -92,7 +92,7 @@ class PyRunner(object):
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.music_thread, self.network_connector, self.fps)
         '''switch the music after loading the new level but not on game startup'''
-        if self.level:
+        if self.level and self.menu:
             "new music for level change"
             self.switch_music()
         '''bug fix for old background appearing on the screen'''
