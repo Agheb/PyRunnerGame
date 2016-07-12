@@ -593,9 +593,9 @@ class Level(object):
 
     def set_player_data(self, player_id, full_pos, is_bot, info):
         """set the player position for all players in the level according to the viewers screen resolution"""
-        group = Level.bots if is_bot else Level.players
         try:
-            player = group[int(player_id)]
+            player_id = int(player_id)
+            player = Level.bots[player_id] if is_bot else Level.players[player_id]
             '''set the position'''
             try:
                 update_pos = bool(full_pos)
