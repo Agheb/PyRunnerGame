@@ -17,6 +17,7 @@ from pyrunner_classes.game_physics import Physics
 log = logging.getLogger("Level")
 LEVEL_PATH = "./resources/levels/"
 LEVEL_EXT = ".tmx"
+LEVEL_EXT_MUSIC = ".ogg"
 
 """
 Level Builder for PyRunner game
@@ -47,6 +48,7 @@ class Level(object):
         self.background = self.surface.copy()
         self.path = path
         self.sound_thread = sound_thread
+        self.lvl_music_name = None
         self.network_connector = network_connector
         self.fps = fps
         self.physics = Physics(self)
@@ -118,6 +120,8 @@ class Level(object):
             bot2_pos = (self.width - 100, 0)  # randint(0, self.width), 0
         try:
             next_level = self.tm.get_object_by_name("Exit_Gate")
+            lvl_music_name = next_level.type
+            self.lvl_music_name = lvl_music_name + LEVEL_EXT_MUSIC
             self.next_level_pos = self.calc_object_pos((next_level.x, next_level.y))
             self.next_level = LEVEL_PATH + next_level.type + LEVEL_EXT
         except ValueError:

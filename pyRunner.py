@@ -79,6 +79,10 @@ class PyRunner(object):
         if self.level:
             self.level.prepare_level_change()
             self.level_exit = False
+            "new music for level change"
+            self.music_thread.clear_background_music()
+            self.music_thread.background_music = (self.level.lvl_music_name, 1)
+            self.music_thread.play_music = True
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.music_thread, self.network_connector, self.fps)
@@ -127,6 +131,8 @@ class PyRunner(object):
         """main game loop"""
         # Main loop relevant vars
         clock = pygame.time.Clock()
+
+        self.music_thread.background_music = ('thememusic.ogg', 1)
 
         while self.game_is_running:
             for event in pygame.event.get():
