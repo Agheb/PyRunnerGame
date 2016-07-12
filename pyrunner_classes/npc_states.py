@@ -118,7 +118,7 @@ class State(object):
                 '''check if there's nothing in the way to the player'''
                 for tile in self.bot.level.walkable_list:
                     tx, ty = tile
-                    if bx is tx:
+                    if bx == tx:
                         if by < ty < y:
                             jump_down = False
                         elif ty >= y:
@@ -127,7 +127,7 @@ class State(object):
             if jump_down:
                 self.bot.change_x = 0
                 self.bot.go_down()
-        elif x < bx:
+        if x < bx:
             '''else simply go to the left if the player is on the left or we hit the right border'''
             self.bot.go_left()
             self.bot.walk_left = True
@@ -252,12 +252,12 @@ class Exploring(State):
 
     def do_actions(self):
         """if the player can move we will walk around the map until we find a close player"""
-        if self.bot.direction is not "Trapped":
+        if self.bot.direction != "Trapped":
             '''if there's no shortest path walk around and lookout for players'''
             if self.bot.on_tile:
                 x, y = bx, by = self.bot.on_tile
 
-                if self.next_pos is not self.old_pos:
+                if self.next_pos != self.old_pos:
                     if self.bot.on_ladder or self.bot.can_go_down:
                         if self.bot.on_ladder or self.bot.change_y < 0:
                             y = by - 1
@@ -341,7 +341,7 @@ class ShortestPath(State):
                 self.next_pos = self.get_next_position()
 
                 # log.info("trying to get a new position: ", str(self.next_pos), " old: ", str(self.old_pos))
-                if self.next_pos is self.old_pos:
+                if self.next_pos == self.old_pos:
                     self.next_pos = self.old_pos = None
 
     def check_conditions(self):
@@ -377,13 +377,13 @@ class Hunting(Exploring):
     def do_actions(self):
         """walk along the path"""
 
-        if self.bot.direction is not "Trapped":
+        if self.bot.direction != "Trapped":
             '''if there's no shortest path search for the closest player'''
             if self.bot.on_tile and self.closest_player and self.closest_player.on_tile:
                 x, y = self.closest_player.on_tile
                 bx, by = self.bot.on_tile
 
-                if self.bot.on_tile is not self.old_pos:
+                if self.bot.on_tile != self.old_pos:
                     self.check_sp = True
 
                 if by == y:
