@@ -10,10 +10,12 @@ Um das spiel zu starten werden die folgenden Libs benötigt
 - pyTmx
 - Mastermind
 
-Mastermind ist bereits inkludiert, Pygame muss selbst installiert/compiliert werden, der rest kann mit `pip install -r requirements.txt` installiert werden 
+Mastermind ist bereits inkludiert.
+Pygame muss selbst installiert/kompiliert werden.
+Die restlichen Libraries können mit `pip install -r requirements.txt` installiert werden
 
 ##Starten
-Das Spiel wird mit `python3 pyRunner.py` gestarted
+Das Spiel wird mit `python3 pyRunner.py` gestartet
 
 ## Team Communication:
 
