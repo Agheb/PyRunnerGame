@@ -29,6 +29,7 @@ class PyRunner(object):
     """main PyRunner Class"""
 
     START_LEVEL = "./resources/levels/level1.tmx"
+    THEME_MUSIC = "thememusic.ogg"
 
     def __init__(self):
         """initialize the game"""
@@ -40,7 +41,6 @@ class PyRunner(object):
         '''init the audio subsystem prior to anything else'''
         self.music_thread = MusicMixer(self.config.play_music, self.config.vol_music,
                                        self.config.play_sfx, self.config.vol_sfx, self.fps)
-        self.music_thread.background_music = ('thememusic.ogg', 1)
         self.music_thread.start()
         '''init the main screen'''
         self.render_thread = RenderThread(self.config.name, self.config.screen_x, self.config.screen_y, self.fps,
@@ -65,8 +65,16 @@ class PyRunner(object):
         self.loading_level = False
         self.game_over = False
         """sound variables"""
-        self.sfx_portal_sound = pygame.mixer.Sound(
-            self.music_thread.get_full_path_sfx('portal_sound.ogg'))
+        self.sfx_portal_sound = pygame.mixer.Sound(self.music_thread.get_full_path_sfx('portal_sound.ogg'))
+
+    def switch_music(self, main_theme=False):
+        """switch the music according to each level"""
+        music = self.THEME_MUSIC if main_theme or not self.level.background_music else self.level.background_music
+        '''play the new song'''
+        if not self.music_thread.background_music or not self.music_thread.background_music.endswith(music):
+            self.music_thread.clear_background_music()
+            self.music_thread.background_music = (music, 1)
+            self.music_thread.play_music = True
 
     def load_level(self, path=None):
         """load another level"""
@@ -77,11 +85,16 @@ class PyRunner(object):
             self.current_level_path = path
         '''clear all sprites from an old level if present'''
         if self.level:
+            self.music_thread.clear_sounds()
             self.level.prepare_level_change()
             self.level_exit = False
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.music_thread, self.network_connector, self.fps)
+        '''switch the music after loading the new level but not on game startup'''
+        if self.level and self.menu:
+            "new music for level change"
+            self.switch_music()
         '''bug fix for old background appearing on the screen'''
         WorldObject.group.clear(self.level.surface, self.level.background)
         '''change the dirty rect for fps display'''
@@ -132,6 +145,9 @@ class PyRunner(object):
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.quit_game()
+                elif event.type == ACTIVEEVENT and event.state is 2:
+                    '''redraw screen content after minimizing'''
+                    self.render_thread.refresh_screen(True)
                 elif event.type == KEYDOWN:
                     key = event.key
                     '''key pressing events'''
@@ -223,8 +239,9 @@ class PyRunner(object):
                 self.music_thread.play_sound(self.sfx_portal_sound, loop=True)
             except AttributeError:
                 for player in Player.humans:
+                    '''mark players as survivors so they keep their score'''
                     player.reached_exit = True
-                self.game_over_menu()
+                self.game_over = True
 
         '''check if all players are still alive'''
         if not len(Player.humans) or self.game_over:
@@ -233,12 +250,10 @@ class PyRunner(object):
                 self.game_over_menu()
             else:
                 '''load the next level, recreate the players and bots etc.'''
-                for player in Player.humans:
-                    if player.reached_exit:
-                        self.load_level(self.level.next_level)
-                        self.music_thread.clear_sounds()
-                        return
-                self.game_over_menu()
+                if self.level.reached_next_level:
+                    self.load_level(self.level.next_level)
+                else:
+                    self.game_over_menu()
 
         return rects
 
@@ -257,7 +272,10 @@ class PyRunner(object):
                     self.menu.game_over.add_item(MenuItem("Collected Gold"))
                 score_str = "Player %s: %s coins" % (score.gid + 1, score.gold)
                 self.menu.game_over.add_item(MenuItem(score_str))
-        self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
+
+        if self.network_connector.master:
+            self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
+            self.menu.game_over.add_item(MenuItem("Restart Game", self.menu.reload_level, vars=True))
 
 
 if __name__ == "__main__":

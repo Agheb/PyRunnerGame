@@ -131,8 +131,7 @@ class Server(threading.Thread, MastermindServerTCP):
 
     def notify_level_changed(self, level):
         """notify all clients when level sprites changed"""
-        data = {Message.field_level_name: level}
-        self.send_to_all_clients(Message.type_level_changed, data)
+        self.send_to_all_clients_except_self(Message.type_level_changed, {Message.field_level_name: level})
 
     def send_to_all_clients(self, message, data=None):
         """send message to all clients"""

@@ -3,6 +3,8 @@
 """thread taking care of all pygame.display.update()'s etc."""
 
 # universal imports
+import sys
+import ctypes
 import threading
 import pygame
 from pygame.locals import *
@@ -76,6 +78,13 @@ class RenderThread(threading.Thread):
         self._fps_margin = None
         self._fps_font_size = width >> 5  # results in 25 pt at 800x600, 32 at 1024x768
         self.show_framerate = False
+        """Linux multi threading GUI crash workaround"""
+        if sys.platform.startswith('linux'):
+            try:
+                x11 = ctypes.cdll.LoadLibrary('libX11.so')
+                x11.XInitThreads()
+            except Exception as e:
+                print("failed to lock screen rendering %s" % str(e))
         if self.switch_resolution:
             self._surface = None
         # initialize pygame in case it's not already
@@ -183,7 +192,7 @@ class RenderThread(threading.Thread):
                         while self.rects_to_update and not self._force_refresh:
                             pygame.display.update(self.rects_to_update.pop())
                         self._updating_screen = False
-                except ValueError or pygame.error:
+                except (IndexError, ValueError, pygame.error):
                     '''completely refresh the screen'''
                     print("Error occurred parsing %s" % self._rects_to_update)
                     self._rects_to_update = []

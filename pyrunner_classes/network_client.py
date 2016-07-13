@@ -32,7 +32,7 @@ class Client(threading.Thread, MastermindClientTCP):
     def send_key(self, key):
         """send the current pressed key action"""
         client_log.info("Sending key Action %s to server" % key)
-        data = json.dumps({'type': 'key_update', 'data': str(key)})
+        data = json.dumps({'type': Message.type_key_update, 'data': str(key)})
         self.send(data, compression=COMPRESSION)
 
     def run(self):
@@ -47,7 +47,6 @@ class Client(threading.Thread, MastermindClientTCP):
             error = "An error occurred connecting to the server."
             error += " %s:%s Please try again later." % (self.target_ip, self.port)
             self.main.menu.network.print_error(error)
-            pass
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
     def wait_for_init_data(self):
@@ -60,6 +59,13 @@ class Client(threading.Thread, MastermindClientTCP):
             self.player_id = int(contents['player_id'])
             if self.master:
                 self.main.network_connector.server.own_client = self.player_id
+
+            try:
+                level = data['data']['level']
+                if level != self.main.level.path:
+                    self.main.load_level(level)
+            except KeyError:
+                pass
 
             for pl_center in contents['players']:
                 try:
@@ -106,7 +112,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.send(data, compression=COMPRESSION)
 
     def kill(self):
-        """stop the server"""
+        """stop the client"""
         try:
             self.disconnect()
         except AttributeError:
@@ -114,7 +120,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.connected = False
 
     def update(self):
-        """run the server"""
+        """run the client"""
         self.send_keep_alive()
         raw_data = self.receive(False)
 
@@ -164,15 +170,15 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_level_changed:
                 client_log.info("Got change level from Server")
-                level_name = data[Message.field_level_name]
-                self.main.level.load_level(level_name)
+                level_name = data['data'][Message.field_level_name]
+                self.main.load_level(level_name)
                 return
 
             if data['type'] == Message.type_comp_update_set:
                 '''don't set the positions on the server'''
                 player_id, normalized_pos, is_bot, info = data['data']
                 player_id = int(player_id)
-                is_bot = bool(int(is_bot))
+                is_bot = bool(is_bot)
 
                 if is_bot or player_id != self.player_id:
                     client_log.debug("received player data: ", data['data'])
@@ -209,7 +215,8 @@ class Client(threading.Thread, MastermindClientTCP):
             data = json.dumps({'type': Message.type_keep_alive})
             try:
                 self.send(data, compression=COMPRESSION)
+                self.timer = datetime.now()
             except MastermindErrorClient:
                 self.main.menu.network.print_error("An error occurred while trying to send data to the server.")
-            self.timer = datetime.now()
-        pass
+                self.disconnect()
+                self.connected = False

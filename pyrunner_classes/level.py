@@ -17,6 +17,7 @@ from pyrunner_classes.game_physics import Physics
 log = logging.getLogger("Level")
 LEVEL_PATH = "./resources/levels/"
 LEVEL_EXT = ".tmx"
+LEVEL_EXT_MUSIC = ".ogg"
 
 """
 Level Builder for PyRunner game
@@ -47,9 +48,11 @@ class Level(object):
         self.background = self.surface.copy()
         self.path = path
         self.sound_thread = sound_thread
+        self.background_music = None
         self.network_connector = network_connector
         self.fps = fps
         self.physics = Physics(self)
+        self.reached_next_level = False
         self.graph = None
         self.climbable_list = []
         self.walkable_list = []
@@ -65,7 +68,8 @@ class Level(object):
         self.cols = self.tm.width
         self.rows = self.tm.height
         tm_width = self.cols * self.tile_width
-        tm_height = self.rows * self.tile_height - 16
+        self.bottom_tile_height = round(self.tile_height / 2)
+        tm_height = self.rows * self.tile_height - self.bottom_tile_height
         self.width, self.height = tm_width, tm_height
         self.pixel_diff = 0
         self.margin_left = 0
@@ -77,16 +81,19 @@ class Level(object):
 
         if tm_height != s_height or tm_width != s_width:
             '''automatically scale the tilemap'''
-            diff_h = (s_height - tm_height) // self.tm.height
-            diff_w = (s_width - tm_width) // self.tm.width
+            diff_h = round((s_height - tm_height) / self.tm.height)
+            diff_w = round((s_width - tm_width) / self.tm.width)
 
             self.pixel_diff = diff_h if diff_h < diff_w else diff_w
             self.tile_width += self.pixel_diff
             self.tile_height += self.pixel_diff
             self.width = self.cols * self.tile_width
-            self.height = self.rows * self.tile_height
-            self.margin_left = (s_width - self.width) // 2
-            self.margin_top = (s_height - self.height) // 2
+            self.height = self.rows * self.tile_height - (self.bottom_tile_height + round(self.pixel_diff / 2))
+            self.margin_left = round((s_width - self.width) / 2)
+            self.margin_top = round((s_height - self.height) / 2)
+            if self.margin_top < 0:
+                # there should be no negative margins
+                self.margin_top = 0
 
         self.last_row = self.margin_top + self.height - self.tile_height
 
@@ -216,8 +223,8 @@ class Level(object):
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
         x, y = pos_pixel
-        x //= self.tm.tilewidth
-        y //= self.tm.tileheight
+        x = round(x / self.tm.tilewidth)
+        y = round(y / self.tm.tileheight)
         x *= self.tile_width
         y *= self.tile_height
         x += self.margin_left
@@ -264,6 +271,12 @@ class Level(object):
         for layer in self.tm.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 if layer.name == "Background":
+                    try:
+                        self.background_music = layer.properties.get("music")
+                        log.info(self.background_music)
+                    except AttributeError:
+                        pass
+
                     for a in layer.tiles():
                         a, tile_id = resize_tile_to_fit(a, size)
 
@@ -472,7 +485,7 @@ class Level(object):
     def squeeze_half_image(image):
         """remove the bottom half of an image"""
         w, h = image.get_size()
-        h //= 2
+        h = round(h / 2)
         size = w, h
         return pygame.transform.scale(image, size)
 
@@ -505,7 +518,7 @@ class Level(object):
         
         sheet = self.PLAYERS[pid % len(self.PLAYERS)]
 
-        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps)
+        new_player = Player(pos, sheet, pid, self.SM_SIZE, self, self.fps, False)
 
         return new_player
 
@@ -539,9 +552,9 @@ class Level(object):
         """returns the x/y coordinates independant of the screen resolution"""
         if calc_pos:
             '''and calculate the normalized position'''
-            pos_x = (player.rect.x - self.margin_left) / player.size
-            pos_y = (player.rect.y - self.margin_top) / player.size
-            calc_pos = pos_x, pos_y
+            pos_x = player.rect.x - self.margin_left
+            pos_y = player.rect.y - self.margin_top
+            calc_pos = pos_x, pos_y, self.pixel_diff
 
         '''and return it to the server/client'''
         return player.pid, calc_pos, is_bot, self.get_player_states(player)
@@ -578,15 +591,26 @@ class Level(object):
 
     def set_normalized_pos(self, player, player_pos):
         """set the player position dependant to the screen resolution"""
-        x, y = player_pos
-        player.rect.x = round(x * player.size + self.margin_left)
-        player.rect.y = round(y * player.size + self.margin_top)
+        x, y, diff = player_pos
+        x = int(x)
+        y = int(y)
+        diff = int(diff)
+
+        if diff is 0 and self.pixel_diff is 0:
+            player.rect.x = x
+            player.rect.y = y
+        else:
+            tile_size = 32 + diff
+            player_x = x / tile_size
+            player_y = y / tile_size
+            player.rect.x = round(player_x * player.size + self.margin_left)
+            player.rect.y = round(player_y * player.size + self.margin_top)
 
     def set_player_data(self, player_id, full_pos, is_bot, info):
         """set the player position for all players in the level according to the viewers screen resolution"""
-        group = Level.bots if is_bot else Level.players
         try:
-            player = group[int(player_id)]
+            player_id = int(player_id)
+            player = Level.bots[player_id] if is_bot else Level.players[player_id]
             '''set the position'''
             try:
                 update_pos = bool(full_pos)
@@ -602,14 +626,13 @@ class Level(object):
         except IndexError:
             log.info("Cant find player {} (bot: {}) to set pos".format(player_id, is_bot))
     
-    @staticmethod
-    def get_level_info_json():
+    def get_level_info_json(self):
         """get current level status information"""
         # TODO: finish me
         a = []
         for d in Level.players:
             a.append(d.rect.topleft)
-        data = {'players': a}
+        data = {'level': self.path, 'players': a}
         return data
 
     @staticmethod
