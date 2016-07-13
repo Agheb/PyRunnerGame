@@ -83,8 +83,8 @@ class RenderThread(threading.Thread):
             try:
                 x11 = ctypes.cdll.LoadLibrary('libX11.so')
                 x11.XInitThreads()
-            except:
-                print("failed to lock screen rendering %s" % str(Exception))
+            except Exception as e:
+                print("failed to lock screen rendering %s" % str(e))
         if self.switch_resolution:
             self._surface = None
         # initialize pygame in case it's not already
