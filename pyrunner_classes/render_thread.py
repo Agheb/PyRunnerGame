@@ -192,7 +192,7 @@ class RenderThread(threading.Thread):
                         while self.rects_to_update and not self._force_refresh:
                             pygame.display.update(self.rects_to_update.pop())
                         self._updating_screen = False
-                except ValueError or pygame.error:
+                except (IndexError, ValueError, pygame.error):
                     '''completely refresh the screen'''
                     print("Error occurred parsing %s" % self._rects_to_update)
                     self._rects_to_update = []

@@ -548,9 +548,9 @@ class Level(object):
         """returns the x/y coordinates independant of the screen resolution"""
         if calc_pos:
             '''and calculate the normalized position'''
-            pos_x = (player.rect.x - self.margin_left) / player.size
-            pos_y = (player.rect.y - self.margin_top) / player.size
-            calc_pos = pos_x, pos_y
+            pos_x = player.rect.x - self.margin_left
+            pos_y = player.rect.y - self.margin_top
+            calc_pos = pos_x, pos_y, self.pixel_diff
 
         '''and return it to the server/client'''
         return player.pid, calc_pos, is_bot, self.get_player_states(player)
@@ -587,9 +587,20 @@ class Level(object):
 
     def set_normalized_pos(self, player, player_pos):
         """set the player position dependant to the screen resolution"""
-        x, y = player_pos
-        player.rect.x = round(x * player.size + self.margin_left)
-        player.rect.y = round(y * player.size + self.margin_top)
+        x, y, diff = player_pos
+        x = int(x)
+        y = int(y)
+        diff = int(diff)
+
+        if diff is 0 and self.pixel_diff is 0:
+            player.rect.x = x
+            player.rect.y = y
+        else:
+            tile_size = 32 + diff
+            player_x = x / tile_size
+            player_y = y / tile_size
+            player.rect.x = round(player_x * player.size + self.margin_left)
+            player.rect.y = round(player_y * player.size + self.margin_top)
 
     def set_player_data(self, player_id, full_pos, is_bot, info):
         """set the player position for all players in the level according to the viewers screen resolution"""
