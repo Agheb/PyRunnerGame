@@ -102,7 +102,7 @@ class State(object):
                 # go right
                 self.bot.go_right()
                 self.bot.walk_left = False
-            elif y > by and (self.bot.can_go_down or not self.bot.on_ground):
+            elif y > by and self.bot.can_go_down:
                 '''use ladders solid top spots to climb down'''
                 if self.bot.change_x:
                     self.bot.change_x = 0

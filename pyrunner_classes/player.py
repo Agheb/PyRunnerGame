@@ -261,8 +261,8 @@ class Player(pygame.sprite.DirtySprite):
                     self.digging_frame = 0
                     self.direction = "Stop"
 
-            if not self.direction.startswith("D") and self.direction != self.previous_direction:
-                '''completely sync players each time they change direction'''
+            if self.direction == "Stop" and self.direction != self.previous_direction:
+                '''completely sync players each time they stop at one point'''
                 self.previous_direction = self.direction
                 self.send_network_update()
 
