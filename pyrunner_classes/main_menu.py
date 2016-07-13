@@ -301,10 +301,12 @@ class MainMenu(object):
         self.in_menu = show
 
         if self.in_menu:
+            self.main.switch_music(True)
             self.render_thread.blit(self.main.level.background, None, True)
             rects, self.menu_pos = self.current_menu.print_menu(self.menu_pos, self.menu_pos, True)
             self.render_thread.blit(self.current_menu.surface, None, True)
         else:
+            self.main.switch_music()
             self.menu_pos = 1
             self.render_thread.blit(self.main.level.surface, None, True)
 
@@ -319,9 +321,14 @@ class MainMenu(object):
         self.render_thread.blit(self.current_menu.surface, None, True)
         self.render_thread.add_rect_to_update(rects, self.current_menu.surface, None, True)
 
-    def reload_level(self):
+    def reload_level(self, restart=False):
         """retry/reload the current level"""
-        self.main.load_level()
+        if restart:
+            self.main.load_level(self.main.START_LEVEL)
+        else:
+            self.main.load_level()
+        if self.network_connector.server:
+            self.network_connector.server.notify_level_changed(self.main.level.path)
         self.current_menu = self.main_menu
         self.menu_pos = 1
         self.show_menu(False)

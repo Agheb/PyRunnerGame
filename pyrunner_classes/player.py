@@ -9,7 +9,10 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 """
 # Python 2 related fixes
 from __future__ import division
+
 import pygame
+
+from pyrunner_classes import datetime
 from .spritesheet_handling import SpriteSheet
 from .player_objects import GoldScore
 
@@ -33,8 +36,10 @@ class Player(pygame.sprite.DirtySprite):
         self.fps = fps
         self.is_human = True if not bot else False
         self.dirty = 2  # always repaint this sprite
-        # network
-        self.previous_direction = None
+        '''start animation'''
+        self.direction = "Stop"  # direction the player is facing at the beginning of the game
+        '''network update related value'''
+        self.previous_direction = self.direction
         # positional attributes
         self.x, self.y = pos
         self.on_tile = None
@@ -69,6 +74,7 @@ class Player(pygame.sprite.DirtySprite):
         self.stop_at_y = 0
         self.is_human = False if bot else True
         self.reached_exit = False
+        self.last_sync = datetime.now()
 
         if self.is_human:
             Player.humans.add(self)
@@ -115,7 +121,6 @@ class Player(pygame.sprite.DirtySprite):
             self.stand_right = self.sprite_sheet.add_animation(3, 2)
             self.trapped = self.sprite_sheet.add_animation(5, 0)
 
-            self.direction = "Stop"  # direction the player is facing at the beginning of the game
             # Set the image the player starts with
             self.image = self.stand_right
             # Set a reference to the image rect.
@@ -262,9 +267,18 @@ class Player(pygame.sprite.DirtySprite):
                     self.direction = "Stop"
 
             if self.direction != self.previous_direction:
-                '''completely sync players each time they change direction'''
-                self.previous_direction = self.direction
-                self.send_network_update()
+                '''ignore digging left/right/stop/stand left/stand right switches'''
+                if self.previous_direction.startswith("D") or self.direction.startswith("D"):
+                    self.previous_direction = self.direction
+                elif self.direction.startswith("S") and self.previous_direction.startswith("S"):
+                    self.previous_direction = self.direction
+                else:
+                    time = datetime.now()
+                    if (time - self.last_sync).microseconds >= 500000:
+                        '''completely sync players each time they stop at one point'''
+                        self.last_sync = time
+                        self.send_network_update()
+                        self.previous_direction = self.direction
 
             # Gravity
             self.calc_gravity()
@@ -281,7 +295,7 @@ class Player(pygame.sprite.DirtySprite):
         """send all relevant data to the server"""
         if self.is_human:
             self.level.network_connector.client.send_current_pos_and_data()
-        if self.level.network_connector.master:
+        if not self.is_human and self.level.network_connector.master:
             self.level.network_connector.server.send_bot_pos_and_data(self)
 
     def calc_gravity(self):

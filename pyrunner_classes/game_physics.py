@@ -14,11 +14,11 @@ class Physics(object):
     def __init__(self, level):
         self.level = level
         '''sounds'''
-        self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Collect_Point_01.wav'))
+        self.sfx_coin_collected = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_collect.wav'))
         self.sfx_coin_robbed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('Robbed_Point_01.wav'))
         self.sfx_player_portal = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('portal_exit.wav'))
         self.sfx_player_killed = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_kill.ogg'))
-        self.sfx_player_dig = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('player_dig.wav'))
+        self.sfx_player_dig = pygame.mixer.Sound(self.level.sound_thread.get_full_path_sfx('sfx_sounds_interaction24.wav'))
 
     def register_callback(self, network):
         """creates a link to the network connector, this is needed to notify the network of canged blocks"""
@@ -40,8 +40,12 @@ class Physics(object):
             player.rect.y = top
         if x > right:
             player.rect.x = right
+            if not player.is_human:
+                player.walk_left = True
         elif x < left:
             player.rect.x = left
+            if not player.is_human:
+                player.walk_left = False
             
     @staticmethod
     def find_collision(x, y, group=WorldObject.group):
@@ -128,7 +132,6 @@ class Physics(object):
                 if right_bottom and right_bottom.removable and not right_tile:
                     right_bottom.kill()
                     self.level.sound_thread.play_sound(self.sfx_player_dig)
-                    #  TODO add digging sound
             elif player.direction is "DL":
                 '''remove the bottom sprite to the left'''
                 if left_bottom and left_bottom.removable and not left_tile:
@@ -138,7 +141,6 @@ class Physics(object):
                 '''go down the top part of a solid ladder'''
                 if bottom_sprite and bottom_sprite.climbable or player.on_rope:
                     if player.change_y > 0:
-                        # bottom_sprite.dirty = 1
                         can_go_down = True
                         player.rect.y += half_size
                         on_ladder = True
@@ -181,7 +183,8 @@ class Physics(object):
                         if not player.killed:
                             player.rect.center = sprite.rect.center
                             if player.is_human:
-                                player.reached_exit = True
+                                self.level.reached_next_level = True
+                                player.reached_exit = True  # keep his gold coins
                             # Play Exit sound
                             self.level.sound_thread.play_sound(self.sfx_player_portal)
                             player.kill()
@@ -220,11 +223,11 @@ class Physics(object):
     @staticmethod
     def hit_inner_bottom(player, sprite):
         """player hits the inner ground of a sprite"""
-        if player.rect.bottom > sprite.rect.bottom - 1 and not player.is_human:
+        if player.rect.bottom >= sprite.rect.bottom and not player.is_human:
             player.direction = "Trapped"
             player.change_x = 0
             player.change_y = 0
-            player.rect.midbottom = sprite.rect.midbottom
+            player.rect.center = sprite.rect.center
 
     @staticmethod
     def hit_top(player, sprite):
