@@ -27,7 +27,7 @@ class Bots(Player):
         self.robbed_gold = None
         # network related
         self.brain_counter = 0
-        self.brain_refresh = 3 + self.pid  # the brain is faster than the feet
+        self.brain_refresh = 2 + self.pid  # the brain is faster than the feet
         self.update_counter = 0
         self.update_refresh = 10 + self.brain_refresh * (self.pid + 1)  # update less than two times a second
         # give humans a chance
@@ -87,7 +87,8 @@ class Bots(Player):
         """handle all the bot movements"""
         try:
             if self.level.network_connector.master:
-                if self.update_counter >= self.update_refresh or self.previous_action != action:
+                if self.update_counter >= self.update_refresh or (self.previous_action != action and
+                                                                  self.update_counter > self.update_refresh // 2):
                     self.update_counter = 0
                     self.previous_action = action
                     self.level.network_connector.server.send_bot_movement(action, self.pid)
