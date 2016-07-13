@@ -180,11 +180,10 @@ class State(object):
 
         players_in_range = pygame.sprite.spritecollide(self.bot, Player.humans, False, collided=collide_rect)
 
-        # if len(players_in_range) > 1:
-        #     self.check_closest_player(players_in_range)
-        # el
-        if players_in_range:
-            return players_in_range.pop()
+        if len(players_in_range) > 1:
+            self.check_closest_player(players_in_range)
+        elif len(players_in_range) == 1:
+            return players_in_range[0]
         else:
             return None
 
