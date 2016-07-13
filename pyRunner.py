@@ -74,7 +74,6 @@ class PyRunner(object):
         if not self.music_thread.background_music or not self.music_thread.background_music.endswith(music):
             self.music_thread.clear_background_music()
             self.music_thread.background_music = (music, 1)
-            self.music_thread.play_music = True
 
     def load_level(self, path=None):
         """load another level"""
