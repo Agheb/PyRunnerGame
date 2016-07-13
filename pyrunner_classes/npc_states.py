@@ -80,7 +80,7 @@ class State(object):
 
         log.debug("walking from %(bx)s/%(by)s to %(x)s/%(y)s" % locals())
 
-        if y != by and (self.bot.on_ladder or self.bot.can_go_down):
+        if (y != by and (self.bot.on_ladder or self.bot.can_go_down)) or (y == by and self.bot.on_ladder):
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
                 '''climb on ropes which are connected to ladders etc. left of the player'''
                 if self.bot.change_y:
@@ -180,11 +180,10 @@ class State(object):
 
         players_in_range = pygame.sprite.spritecollide(self.bot, Player.humans, False, collided=collide_rect)
 
-        # if len(players_in_range) > 1:
-        #     self.check_closest_player(players_in_range)
-        # el
-        if players_in_range:
-            return players_in_range.pop()
+        if len(players_in_range) > 1:
+            self.check_closest_player(players_in_range)
+        elif len(players_in_range) == 1:
+            return players_in_range[0]
         else:
             return None
 

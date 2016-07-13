@@ -35,6 +35,7 @@ class MusicMixer(threading.Thread):
         # had to reduce the buffer to 1024 for Linux not to lag too much
         pygame.mixer.pre_init(22050, -16, 2, 1024)
         pygame.mixer.init()
+        pygame.mixer.set_num_channels(16)
         self.thread_is_running = True
         self.fps = fps
         self.clock = pygame.time.Clock()
