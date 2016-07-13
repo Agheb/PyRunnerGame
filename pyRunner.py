@@ -74,7 +74,6 @@ class PyRunner(object):
         if not self.music_thread.background_music or not self.music_thread.background_music.endswith(music):
             self.music_thread.clear_background_music()
             self.music_thread.background_music = (music, 1)
-            self.music_thread.play_music = True
 
     def load_level(self, path=None):
         """load another level"""
@@ -107,6 +106,11 @@ class PyRunner(object):
         if not self.network_connector:
             self.network_connector = NetworkConnector(self)
             self.level.network_connector = self.network_connector
+        
+        '''notify all clients'''
+        if self.network_connector.server:
+            self.network_connector.server.sprites_removed.clear()
+            self.network_connector.server.notify_level_changed(self.level.path)
 
         if not self.menu:
             self.menu = MainMenu(self, self.network_connector)
@@ -212,7 +216,11 @@ class PyRunner(object):
                     self.menu.set_current_menu(self.menu.game_over)
             elif self.network_connector.client:
                 """send keep alive"""
-                self.network_connector.client.send_keep_alive()
+                if self.game_over:
+                    '''wait for a game restart etc'''
+                    self.network_connector.update()
+                else:
+                    self.network_connector.client.send_keep_alive()
 
             clock.tick(self.fps)
 

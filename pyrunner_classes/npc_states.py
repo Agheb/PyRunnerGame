@@ -145,7 +145,7 @@ class State(object):
         try:
             return self.bot.level.graph.shortest_path(own_tile, target_tile)
         except KeyError:
-            log.info("Error: ", str(own_tile), " ", str(target_tile))
+            log.info("Error: " + str(own_tile) + " " + str(target_tile))
             return False
 
     def shortest_path(self):
