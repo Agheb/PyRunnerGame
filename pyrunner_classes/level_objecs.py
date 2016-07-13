@@ -165,7 +165,7 @@ class Collectible(WorldObject):
             on_ground = False
 
             for tile in WorldObject.group:
-                if tile != self:
+                if tile != self and not tile.collectible:
                     if self.rect.collidepoint(tile.rect.centerx, tile.rect.top - self.change_coll_h):
                         on_ground = True
                         self.rect.bottom = tile.rect.top - self.change_coll_h

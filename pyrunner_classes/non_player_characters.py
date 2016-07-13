@@ -24,6 +24,7 @@ class Bots(Player):
         self.right_bottom = None
         self.walk_left = True
         self.previous_action = None
+        self.last_tile = None
         self.robbed_gold = None
         # network related
         self.brain_counter = 0
