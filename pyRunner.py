@@ -216,7 +216,11 @@ class PyRunner(object):
                     self.menu.set_current_menu(self.menu.game_over)
             elif self.network_connector.client:
                 """send keep alive"""
-                self.network_connector.client.send_keep_alive()
+                if self.game_over:
+                    '''wait for a game restart etc'''
+                    self.network_connector.update()
+                else:
+                    self.network_connector.client.send_keep_alive()
 
             clock.tick(self.fps)
 
