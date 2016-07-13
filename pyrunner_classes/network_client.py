@@ -47,8 +47,6 @@ class Client(threading.Thread, MastermindClientTCP):
             error = "An error occurred connecting to the server."
             error += " %s:%s Please try again later." % (self.target_ip, self.port)
             self.main.menu.network.print_error(error)
-            self.main.game_over = True
-            self.kill()
             # self.port = self.port + 1 if self.port and self.port < START_PORT else START_PORT
 
     def wait_for_init_data(self):
@@ -144,7 +142,6 @@ class Client(threading.Thread, MastermindClientTCP):
                 try:
                     self.main.level.players[int(data['data']['player_id'])]
                 except IndexError:
-                    print("Fehler")
                     pid = len(self.main.level.players)
                     self.main.level.add_player(pid)
                 self.main.menu.show_menu(False)
@@ -173,8 +170,8 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_level_changed:
                 client_log.info("Got change level from Server")
-                level_name = data[Message.field_level_name]
-                self.main.level.load_level(level_name)
+                level_name = data['data'][Message.field_level_name]
+                self.main.load_level(level_name)
                 return
 
             if data['type'] == Message.type_comp_update_set:
@@ -218,7 +215,8 @@ class Client(threading.Thread, MastermindClientTCP):
             data = json.dumps({'type': Message.type_keep_alive})
             try:
                 self.send(data, compression=COMPRESSION)
+                self.timer = datetime.now()
             except MastermindErrorClient:
                 self.main.menu.network.print_error("An error occurred while trying to send data to the server.")
-            self.timer = datetime.now()
-        pass
+                self.disconnect()
+                self.connected = False

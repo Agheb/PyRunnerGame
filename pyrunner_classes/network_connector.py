@@ -149,7 +149,7 @@ class NetworkConnector(object):
             ip = socket.gethostbyname(ip)
 
         if self.client and (self.client.target_ip == ip or self.external_ip == ip)\
-                and self.port == port and not self.local_game:
+                and self.port == port and not self.local_game and not self.main.game_over and self.client.connected:
             self.main.menu.network.print_error("You are already connected to this server")
             return
 
@@ -158,6 +158,7 @@ class NetworkConnector(object):
 
         if self.server and self.server.ip != ip:
             self.server.kill()
+            self.master = False
             if self.advertiser:
                 self.advertiser.shutdown()
 

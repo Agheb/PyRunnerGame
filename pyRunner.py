@@ -272,8 +272,10 @@ class PyRunner(object):
                     self.menu.game_over.add_item(MenuItem("Collected Gold"))
                 score_str = "Player %s: %s coins" % (score.gid + 1, score.gold)
                 self.menu.game_over.add_item(MenuItem(score_str))
-        self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
-        self.menu.game_over.add_item(MenuItem("Restart Game", self.menu.reload_level, vars=True))
+
+        if self.network_connector.master:
+            self.menu.game_over.add_item(MenuItem("Retry Current Level", self.menu.reload_level))
+            self.menu.game_over.add_item(MenuItem("Restart Game", self.menu.reload_level, vars=True))
 
 
 if __name__ == "__main__":

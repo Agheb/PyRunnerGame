@@ -268,12 +268,13 @@ class Player(pygame.sprite.DirtySprite):
 
             if self.direction != self.previous_direction:
                 '''ignore digging left/right/stop/stand left/stand right switches'''
-                if self.direction.startswith("S") and self.previous_direction.startswith("D") or \
-                   self.previous_direction.startswith("S") and self.direction.startswith("D"):
+                if self.previous_direction.startswith("D") or self.direction.startswith("D"):
+                    self.previous_direction = self.direction
+                elif self.direction.startswith("S") and self.previous_direction.startswith("S"):
                     self.previous_direction = self.direction
                 else:
                     time = datetime.now()
-                    if (time - self.last_sync).microseconds > 500000:
+                    if (time - self.last_sync).microseconds >= 500000:
                         '''completely sync players each time they stop at one point'''
                         self.last_sync = time
                         self.send_network_update()
