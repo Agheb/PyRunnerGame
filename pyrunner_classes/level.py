@@ -68,7 +68,8 @@ class Level(object):
         self.cols = self.tm.width
         self.rows = self.tm.height
         tm_width = self.cols * self.tile_width
-        tm_height = self.rows * self.tile_height - 16
+        self.bottom_tile_height = round(self.tile_height / 2)
+        tm_height = self.rows * self.tile_height - self.bottom_tile_height
         self.width, self.height = tm_width, tm_height
         self.pixel_diff = 0
         self.margin_left = 0
@@ -80,16 +81,19 @@ class Level(object):
 
         if tm_height != s_height or tm_width != s_width:
             '''automatically scale the tilemap'''
-            diff_h = (s_height - tm_height) // self.tm.height
-            diff_w = (s_width - tm_width) // self.tm.width
+            diff_h = round((s_height - tm_height) / self.tm.height)
+            diff_w = round((s_width - tm_width) / self.tm.width)
 
             self.pixel_diff = diff_h if diff_h < diff_w else diff_w
             self.tile_width += self.pixel_diff
             self.tile_height += self.pixel_diff
             self.width = self.cols * self.tile_width
-            self.height = self.rows * self.tile_height
-            self.margin_left = (s_width - self.width) // 2
-            self.margin_top = (s_height - self.height) // 2
+            self.height = self.rows * self.tile_height - (self.bottom_tile_height + round(self.pixel_diff / 2))
+            self.margin_left = round((s_width - self.width) / 2)
+            self.margin_top = round((s_height - self.height) / 2)
+            if self.margin_top < 0:
+                # there should be no negative margins
+                self.margin_top = 0
 
         self.last_row = self.margin_top + self.height - self.tile_height
 
@@ -219,8 +223,8 @@ class Level(object):
     def calc_object_pos(self, pos_pixel):
         """adjust pixels to scaled tile map"""
         x, y = pos_pixel
-        x //= self.tm.tilewidth
-        y //= self.tm.tileheight
+        x = round(x / self.tm.tilewidth)
+        y = round(y / self.tm.tileheight)
         x *= self.tile_width
         y *= self.tile_height
         x += self.margin_left
@@ -481,7 +485,7 @@ class Level(object):
     def squeeze_half_image(image):
         """remove the bottom half of an image"""
         w, h = image.get_size()
-        h //= 2
+        h = round(h / 2)
         size = w, h
         return pygame.transform.scale(image, size)
 

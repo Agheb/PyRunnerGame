@@ -36,8 +36,10 @@ class Player(pygame.sprite.DirtySprite):
         self.fps = fps
         self.is_human = True if not bot else False
         self.dirty = 2  # always repaint this sprite
-        # network
-        self.previous_direction = None
+        '''start animation'''
+        self.direction = "Stop"  # direction the player is facing at the beginning of the game
+        '''network update related value'''
+        self.previous_direction = self.direction
         # positional attributes
         self.x, self.y = pos
         self.on_tile = None
@@ -119,7 +121,6 @@ class Player(pygame.sprite.DirtySprite):
             self.stand_right = self.sprite_sheet.add_animation(3, 2)
             self.trapped = self.sprite_sheet.add_animation(5, 0)
 
-            self.direction = "Stop"  # direction the player is facing at the beginning of the game
             # Set the image the player starts with
             self.image = self.stand_right
             # Set a reference to the image rect.
@@ -266,12 +267,17 @@ class Player(pygame.sprite.DirtySprite):
                     self.direction = "Stop"
 
             if self.direction != self.previous_direction:
-                time = datetime.now()
-                if (time - self.last_sync).microseconds > 500000:
-                    '''completely sync players each time they stop at one point'''
-                    self.last_sync = time
+                '''ignore digging left/right/stop/stand left/stand right switches'''
+                if self.direction.startswith("S") and self.previous_direction.startswith("D") or \
+                   self.previous_direction.startswith("S") and self.direction.startswith("D"):
                     self.previous_direction = self.direction
-                    self.send_network_update()
+                else:
+                    time = datetime.now()
+                    if (time - self.last_sync).microseconds > 500000:
+                        '''completely sync players each time they stop at one point'''
+                        self.last_sync = time
+                        self.send_network_update()
+                        self.previous_direction = self.direction
 
             # Gravity
             self.calc_gravity()

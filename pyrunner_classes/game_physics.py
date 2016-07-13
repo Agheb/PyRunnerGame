@@ -132,7 +132,6 @@ class Physics(object):
                 if right_bottom and right_bottom.removable and not right_tile:
                     right_bottom.kill()
                     self.level.sound_thread.play_sound(self.sfx_player_dig)
-                    #  TODO add digging sound
             elif player.direction is "DL":
                 '''remove the bottom sprite to the left'''
                 if left_bottom and left_bottom.removable and not left_tile:
@@ -142,7 +141,6 @@ class Physics(object):
                 '''go down the top part of a solid ladder'''
                 if bottom_sprite and bottom_sprite.climbable or player.on_rope:
                     if player.change_y > 0:
-                        # bottom_sprite.dirty = 1
                         can_go_down = True
                         player.rect.y += half_size
                         on_ladder = True
@@ -225,11 +223,11 @@ class Physics(object):
     @staticmethod
     def hit_inner_bottom(player, sprite):
         """player hits the inner ground of a sprite"""
-        if player.rect.bottom > sprite.rect.bottom and not player.is_human:
+        if player.rect.bottom >= sprite.rect.bottom and not player.is_human:
             player.direction = "Trapped"
             player.change_x = 0
             player.change_y = 0
-            player.rect.midbottom = sprite.rect.midbottom
+            player.rect.center = sprite.rect.center
 
     @staticmethod
     def hit_top(player, sprite):
