@@ -123,10 +123,10 @@ class MainMenu(object):
 
         '''New Game / Multiplayer'''
         m_game_mp = menu_main.add_submenu("Multiplayer")
-        m_game_mp.add_item(MenuItem("Local Game", None))
+        # m_game_mp.add_item(MenuItem("Local Game", None))
         m_game_mp.add_item(MenuItem("Start Server", self.network_connector.start_server_prompt))
         m_game_mp.add_item(MenuItem("Join Server", self.network_connector.join_server_menu))
-        m_game_mp.add_item(MenuItem("Game Settings", None))
+        # m_game_mp.add_item(MenuItem("Game Settings", None))
 
         '''Settings'''
         m_settings = menu_main.add_submenu("Settings")
@@ -328,6 +328,7 @@ class MainMenu(object):
         else:
             self.main.load_level()
         if self.network_connector.server:
+            self.network_connector.server.sprites_removed.clear()
             self.network_connector.server.notify_level_changed(self.main.level.path)
         self.current_menu = self.main_menu
         self.menu_pos = 1
