@@ -328,6 +328,7 @@ class MainMenu(object):
         else:
             self.main.load_level()
         if self.network_connector.server:
+            self.network_connector.server.sprites_removed.clear()
             self.network_connector.server.notify_level_changed(self.main.level.path)
         self.current_menu = self.main_menu
         self.menu_pos = 1
