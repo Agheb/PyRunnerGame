@@ -86,6 +86,18 @@ class WorldObject(pygame.sprite.DirtySprite):
             world_object.index = index
 
     @staticmethod
+    def get_removed_block_ids():
+        ids = []
+        for a in WorldObject.removed:
+            ids.append(a.tile_id)
+
+    @staticmethod
+    def remove_blocks_by_ids(kill_list):
+        for a in kill_list:
+            kill_world_object(a)
+        
+        
+    @staticmethod
     def kill_world_object(item_index):
         """kill a specific item in the WorldObject.group"""
         for index, world_object in enumerate(WorldObject.group, item_index):

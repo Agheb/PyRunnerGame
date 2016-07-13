@@ -176,7 +176,9 @@ class Client(threading.Thread, MastermindClientTCP):
 
             if data['type'] == Message.type_comp_update_set:
                 '''don't set the positions on the server'''
-                player_id, normalized_pos, is_bot, info = data['data']
+                #pdb.set_trace()
+                player_id, normalized_pos, is_bot, info = data['data']['player_info']
+                removed_blocks = data['data']['block_info']
                 player_id = int(player_id)
                 is_bot = bool(is_bot)
 
@@ -185,6 +187,10 @@ class Client(threading.Thread, MastermindClientTCP):
                     client_log.info("Got pos setter from server")
                     client_log.debug("setting player data: ", data['data'])
                     self.main.level.set_player_data(player_id, normalized_pos, is_bot, info)
+
+                    client_log.info("removing blocks if there are still in the World")
+                    if removed_blocks:
+                        WorldObject.remove_blocks_by_ids(removed_blocks)
                 return
 
             if data['type'] == Message.type_gold_removed:
@@ -205,7 +211,9 @@ class Client(threading.Thread, MastermindClientTCP):
         try:
             player = self.main.level.players[self.player_id]
             player_info = self.main.level.get_normalized_pos_and_data(player, False)
-            self.send_data_to_server(Message.type_comp_update, player_info)
+            block_info = WorldObject.get_removed_block_ids()
+            data = {'player_info': player_info, 'block_info': block_info}
+            self.send_data_to_server(Message.type_comp_update, data)
         except IndexError:
             pass
 
