@@ -90,10 +90,6 @@ class PyRunner(object):
             # don't remove the GoldScore.scores as they should stay for a level switch
         '''load the new level'''
         self.level = Level(self.bg_surface, path, self.music_thread, self.network_connector, self.fps)
-        '''notify all clients'''
-        if self.network_connector.server:
-            self.network_connector.server.sprites_removed.clear()
-            self.network_connector.server.notify_level_changed(self.level.path)
         '''switch the music after loading the new level but not on game startup'''
         if self.level and self.menu:
             "new music for level change"
@@ -110,6 +106,11 @@ class PyRunner(object):
         if not self.network_connector:
             self.network_connector = NetworkConnector(self)
             self.level.network_connector = self.network_connector
+        
+        '''notify all clients'''
+        if self.network_connector.server:
+            self.network_connector.server.sprites_removed.clear()
+            self.network_connector.server.notify_level_changed(self.level.path)
 
         if not self.menu:
             self.menu = MainMenu(self, self.network_connector)
