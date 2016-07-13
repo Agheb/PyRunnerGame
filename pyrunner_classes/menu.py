@@ -373,9 +373,9 @@ class MenuItem(object):
                 self.action(self._action_values)
             except TypeError:
                 self.action()
-        except TypeError:
+        except TypeError as e:
             '''if the action is invalid/uninitialized just ignore it'''
-            print("invalid action %s in %s/%s" % (self.action, self.menu.name, self._name))
+            print("invalid action %s in %s/%s [%s]" % (self.action, self.menu.name, self._name, e))
             pass
 
     def draw(self, margin_top=None):
