@@ -115,10 +115,8 @@ class WorldObject(pygame.sprite.DirtySprite):
         if self.removable or self.collectible:
             if not self.killed and self.removable:
                 if timer:
-                    print("remv with timer")
                     RemovedBlock(self.tile, self.rect.size, self.tile_id, self.fps, 10, timer)
                 else:
-                    print("rm without timer")
                     RemovedBlock(self.tile, self.rect.size, self.tile_id, self.fps, 10)
             self.killed = True
         else:
