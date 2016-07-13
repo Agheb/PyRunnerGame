@@ -9,7 +9,10 @@ widht of image, height of image) to spritesheet_handling to cut the sprite out o
 """
 # Python 2 related fixes
 from __future__ import division
+
 import pygame
+
+from pyrunner_classes import datetime
 from .spritesheet_handling import SpriteSheet
 from .player_objects import GoldScore
 
@@ -69,6 +72,7 @@ class Player(pygame.sprite.DirtySprite):
         self.stop_at_y = 0
         self.is_human = False if bot else True
         self.reached_exit = False
+        self.last_sync = datetime.now()
 
         if self.is_human:
             Player.humans.add(self)
@@ -261,10 +265,13 @@ class Player(pygame.sprite.DirtySprite):
                     self.digging_frame = 0
                     self.direction = "Stop"
 
-            if self.direction == "Stop" and self.direction != self.previous_direction:
-                '''completely sync players each time they stop at one point'''
-                self.previous_direction = self.direction
-                self.send_network_update()
+            if self.direction != self.previous_direction:
+                time = datetime.now()
+                if (time - self.last_sync).microseconds > 500000:
+                    '''completely sync players each time they stop at one point'''
+                    self.last_sync = time
+                    self.previous_direction = self.direction
+                    self.send_network_update()
 
             # Gravity
             self.calc_gravity()
