@@ -88,18 +88,18 @@ class WorldObject(pygame.sprite.DirtySprite):
 
     @staticmethod
     def get_removed_block_ids():
-        ids = []
+        ids_and_create_time = []
         for a in WorldObject.removed:
-            ids.append(a.tile_id)
-        return ids
+            ids.append((a.tile_id, a.timer))
+        return ids_and_create_time
 
     @staticmethod
     def remove_blocks_by_ids(kill_list):
         #pdb.set_trace()
         for remove_me in kill_list:
             for item in WorldObject.group:
-                if item.tile_id == (remove_me[0],remove_me[1]):
-                    item.kill()
+                if item.tile_id == (remove_me[0][0],remove_me[0][1]):
+                    item.kill(remove_me[1])
         
         
     @staticmethod
@@ -110,11 +110,14 @@ class WorldObject(pygame.sprite.DirtySprite):
                 world_object.kill()
                 return
 
-    def kill(self):
+    def kill(self, timer=None):
         """remove this sprite"""
         if self.removable or self.collectible:
             if not self.killed and self.removable:
-                RemovedBlock(self.tile, self.rect.size, self.tile_id, self.fps, 10)
+                if timer:
+                    RemovedBlock(self.tile, self.rect.size, self.tile_id, self.fps, 10, timer)
+                else:
+                    RemovedBlock(self.tile, self.rect.size, self.tile_id, self.fps, 10)
             self.killed = True
         else:
             '''let the network server know which sprite got killed'''
@@ -123,7 +126,7 @@ class WorldObject(pygame.sprite.DirtySprite):
             self.update_indices()
             '''remove the tile from all groups'''
             self.super_kill()
-
+        
     def super_kill(self):
         """call the parent class kill function"""
         self.dirty = 1
@@ -198,14 +201,14 @@ class Collectible(WorldObject):
 
 class RemovedBlock(pygame.sprite.DirtySprite):
     """store values of removed blocks to restore them later on"""
-    def __init__(self, tile, size, tile_id, fps=25, time_out=1):
+    def __init__(self, tile, size, tile_id, fps=25, time_out=1, timer = datetime.now()):
         pygame.sprite.DirtySprite.__init__(self, WorldObject.removed)
         self.tile = tile
         self.size = size
         self.tile_id = tile_id
         self.fps = fps
         self.time_out = time_out
-        self.timer = datetime.now()
+        self.timer = timer
         self.width, self.height = self.size
         self.pos_x, self.pos_y, self.restore_image = self.tile
         self.image = pygame.Surface(size, SRCALPHA)
@@ -217,7 +220,7 @@ class RemovedBlock(pygame.sprite.DirtySprite):
 
     def update(self):
         """countdown on each update until the object get's restored"""
-        if (datetime.now() - self.timer).seconds == self.time_out:
+        if (datetime.now() - self.timer).seconds >= self.time_out:
             self.restore()
             self.kill()
 
