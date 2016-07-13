@@ -82,8 +82,8 @@ class State(object):
         if y != by and (self.bot.on_ladder or self.bot.can_go_down):
             if self.bot.left_tile and self.bot.left_tile.is_rope and x < bx:
                 '''climb on ropes which are connected to ladders etc. left of the player'''
-                # self.bot.stop_on_ground = True
-                self.bot.change_y = 0
+                if self.bot.change_y:
+                    self.bot.change_y = 0
                 # get past ground collisions
                 self.bot.on_rope = True
                 self.bot.rect.y = self.bot.left_tile.rect.y
@@ -93,8 +93,8 @@ class State(object):
                 self.bot.walk_left = True
             elif self.bot.right_tile and self.bot.right_tile.is_rope and bx < x:
                 '''climb on ropes which are connected to ladders etc. right of the player'''
-                # self.bot.stop_on_ground = True
-                self.bot.change_y = 0
+                if self.bot.change_y:
+                    self.bot.change_y = 0
                 # get past ground collisions
                 self.bot.on_rope = True
                 self.bot.rect.y = self.bot.right_tile.rect.y
@@ -102,13 +102,15 @@ class State(object):
                 # go right
                 self.bot.go_right()
                 self.bot.walk_left = False
-            elif y > by and (self.bot.can_go_down or self.bot.on_ladder):
+            elif y > by and self.bot.can_go_down:
                 '''use ladders solid top spots to climb down'''
-                self.bot.change_x = 0
+                if self.bot.change_x:
+                    self.bot.change_x = 0
                 self.bot.go_down()
             elif y < by and self.bot.on_ladder:
                 '''or simply climb up'''
-                self.bot.change_x = 0
+                if self.bot.change_x:
+                    self.bot.change_x = 0
                 self.bot.go_up()
         elif y > by and self.bot.on_rope and (x - 2 <= bx <= x + 2 or not self.bot.change_x):
             '''jump down of ropes if the player is walking below the bot'''
@@ -118,7 +120,7 @@ class State(object):
                 '''check if there's nothing in the way to the player'''
                 for tile in self.bot.level.walkable_list:
                     tx, ty = tile
-                    if bx is tx:
+                    if bx == tx:
                         if by < ty < y:
                             jump_down = False
                         elif ty >= y:
@@ -252,12 +254,12 @@ class Exploring(State):
 
     def do_actions(self):
         """if the player can move we will walk around the map until we find a close player"""
-        if self.bot.direction is not "Trapped":
+        if self.bot.direction != "Trapped":
             '''if there's no shortest path walk around and lookout for players'''
             if self.bot.on_tile:
                 x, y = bx, by = self.bot.on_tile
 
-                if self.next_pos is not self.old_pos:
+                if self.next_pos != self.old_pos:
                     if self.bot.on_ladder or self.bot.can_go_down:
                         if self.bot.on_ladder or self.bot.change_y < 0:
                             y = by - 1
@@ -341,7 +343,7 @@ class ShortestPath(State):
                 self.next_pos = self.get_next_position()
 
                 # log.info("trying to get a new position: ", str(self.next_pos), " old: ", str(self.old_pos))
-                if self.next_pos is self.old_pos:
+                if self.next_pos == self.old_pos:
                     self.next_pos = self.old_pos = None
 
     def check_conditions(self):
@@ -377,13 +379,13 @@ class Hunting(Exploring):
     def do_actions(self):
         """walk along the path"""
 
-        if self.bot.direction is not "Trapped":
+        if self.bot.direction != "Trapped":
             '''if there's no shortest path search for the closest player'''
             if self.bot.on_tile and self.closest_player and self.closest_player.on_tile:
                 x, y = self.closest_player.on_tile
                 bx, by = self.bot.on_tile
 
-                if self.bot.on_tile is not self.old_pos:
+                if self.bot.on_tile != self.old_pos:
                     self.check_sp = True
 
                 if by == y:
