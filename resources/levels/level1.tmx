@@ -75,6 +75,6 @@
     <property name="enemies" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="25" name="Exit_Gate" type="level2" x="1149.99" y="189.586" width="64" height="64"/>
+  <object id="25" name="Exit_Gate" type="level2" x="1152" y="160" width="64" height="64"/>
  </objectgroup>
 </map>
