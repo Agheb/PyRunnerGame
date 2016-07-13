@@ -93,6 +93,7 @@ class WorldObject(pygame.sprite.DirtySprite):
 
     @staticmethod
     def remove_blocks_by_ids(kill_list):
+        pdb.set_trace()
         for a in kill_list:
             kill_world_object(a)
         
