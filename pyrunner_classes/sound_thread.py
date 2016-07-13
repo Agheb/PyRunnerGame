@@ -6,6 +6,7 @@
 import threading
 import pygame
 import os
+from pyrunner_classes import datetime
 
 '''constants'''
 # relative folder paths
@@ -49,6 +50,7 @@ class MusicMixer(threading.Thread):
         self.play_sfx = play_sfx
         self._sound_fx_volume = None
         self.sfx_volume = sfx_volume
+        self.last_switch = datetime.now()
 
     def run(self):
         """Thread main run function
@@ -131,6 +133,7 @@ class MusicMixer(threading.Thread):
            should be used if you switch levels etc. and want to switch the atmosphere
         """
         # pygame.mixer.music.fadeout(50)
+        self.last_switch = datetime.now()
         pygame.mixer.music.stop()
         self._music = []
 
@@ -156,6 +159,7 @@ class MusicMixer(threading.Thread):
             file_loops (tuple): contains the filename (str) and loop instructions (int) of the file you want to play
         """
         file, loops = file_loops
+        current_time = datetime.now()
         # add the directory path
         file = self.get_full_path_music(file)
 
@@ -164,7 +168,8 @@ class MusicMixer(threading.Thread):
             self._music.append(file_loops)
         if self.play_music:
             try:
-                if not pygame.mixer.music.get_busy():
+                if not pygame.mixer.music.get_busy() and (current_time - self.last_switch).microseconds >= 250000:
+                    self.last_switch = current_time
                     self._background_music = file
                     pygame.mixer.music.load(file)
                     '''play background music'''

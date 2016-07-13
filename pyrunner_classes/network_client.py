@@ -32,7 +32,7 @@ class Client(threading.Thread, MastermindClientTCP):
     def send_key(self, key):
         """send the current pressed key action"""
         client_log.info("Sending key Action %s to server" % key)
-        data = json.dumps({'type': 'key_update', 'data': str(key)})
+        data = json.dumps({'type': Message.type_key_update, 'data': str(key)})
         self.send(data, compression=COMPRESSION)
 
     def run(self):
@@ -60,6 +60,13 @@ class Client(threading.Thread, MastermindClientTCP):
             self.player_id = int(contents['player_id'])
             if self.master:
                 self.main.network_connector.server.own_client = self.player_id
+
+            try:
+                level = data['data']['level']
+                if level != self.main.level.path:
+                    self.main.load_level(level)
+            except KeyError:
+                pass
 
             for pl_center in contents['players']:
                 try:
@@ -106,7 +113,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.send(data, compression=COMPRESSION)
 
     def kill(self):
-        """stop the server"""
+        """stop the client"""
         try:
             self.disconnect()
         except AttributeError:
@@ -114,7 +121,7 @@ class Client(threading.Thread, MastermindClientTCP):
         self.connected = False
 
     def update(self):
-        """run the server"""
+        """run the client"""
         self.send_keep_alive()
         raw_data = self.receive(False)
 
@@ -136,6 +143,7 @@ class Client(threading.Thread, MastermindClientTCP):
                 try:
                     self.main.level.players[int(data['data']['player_id'])]
                 except IndexError:
+                    print("Fehler")
                     pid = len(self.main.level.players)
                     self.main.level.add_player(pid)
                 self.main.menu.show_menu(False)
@@ -172,7 +180,7 @@ class Client(threading.Thread, MastermindClientTCP):
                 '''don't set the positions on the server'''
                 player_id, normalized_pos, is_bot, info = data['data']
                 player_id = int(player_id)
-                is_bot = bool(int(is_bot))
+                is_bot = bool(is_bot)
 
                 if is_bot or player_id != self.player_id:
                     client_log.debug("received player data: ", data['data'])
