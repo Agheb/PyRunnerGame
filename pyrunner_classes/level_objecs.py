@@ -115,8 +115,10 @@ class WorldObject(pygame.sprite.DirtySprite):
         if self.removable or self.collectible:
             if not self.killed and self.removable:
                 if timer:
+                    print("remv with timer")
                     RemovedBlock(self.tile, self.rect.size, self.tile_id, self.fps, 10, timer)
                 else:
+                    print("rm without timer")
                     RemovedBlock(self.tile, self.rect.size, self.tile_id, self.fps, 10)
             self.killed = True
         else:
@@ -201,14 +203,17 @@ class Collectible(WorldObject):
 
 class RemovedBlock(pygame.sprite.DirtySprite):
     """store values of removed blocks to restore them later on"""
-    def __init__(self, tile, size, tile_id, fps=25, time_out=1, timer = datetime.now()):
+    def __init__(self, tile, size, tile_id, fps=25, time_out=1, timer = None):
         pygame.sprite.DirtySprite.__init__(self, WorldObject.removed)
         self.tile = tile
         self.size = size
         self.tile_id = tile_id
         self.fps = fps
         self.time_out = time_out
-        self.timer = timer
+        if timer == None:
+            self.timer = datetime.now()
+        else:
+            self.timer = timer
         self.width, self.height = self.size
         self.pos_x, self.pos_y, self.restore_image = self.tile
         self.image = pygame.Surface(size, SRCALPHA)
