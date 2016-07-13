@@ -29,7 +29,7 @@ class Bots(Player):
         self.brain_counter = 0
         self.brain_refresh = 2 + self.pid  # the brain is faster than the feet
         self.update_counter = 0
-        self.update_refresh = 10 + self.brain_refresh * (self.pid + 1)  # update less than two times a second
+        self.update_refresh = 5 + self.brain_refresh * (self.pid + 1)
         # give humans a chance
         self.speed -= self.size / 30
         self.spawning = True
@@ -99,8 +99,9 @@ class Bots(Player):
 
     def go_left(self):
         """add network connector to movement"""
-        self.network_movements(Action.LEFT)
-        log.debug("move bot (" + str(self.pid) + ") left")
+        if self.change_x >= 0:
+            self.network_movements(Action.LEFT)
+            log.debug("move bot (" + str(self.pid) + ") left")
 
     def move_left(self):
         """do the calculated actions"""
@@ -108,8 +109,9 @@ class Bots(Player):
 
     def go_right(self):
         """add network connector to movement"""
-        self.network_movements(Action.RIGHT)
-        log.debug("move bot (" + str(self.pid) + ") right")
+        if self.change_x <= 0:
+            self.network_movements(Action.RIGHT)
+            log.debug("move bot (" + str(self.pid) + ") right")
 
     def move_right(self):
         """do the calculated actions"""
@@ -117,8 +119,9 @@ class Bots(Player):
 
     def go_up(self):
         """add network connector to movement"""
-        self.network_movements(Action.UP)
-        log.debug("move bot (" + str(self.pid) + ") up")
+        if self.change_y >= 0:
+            self.network_movements(Action.UP)
+            log.debug("move bot (" + str(self.pid) + ") up")
 
     def move_up(self):
         """do the calculated actions"""
@@ -126,8 +129,9 @@ class Bots(Player):
 
     def go_down(self):
         """add network connector to movement"""
-        self.network_movements(Action.DOWN)
-        log.debug("move bot (" + str(self.pid) + ") down")
+        if self.change_y <= 0:
+            self.network_movements(Action.DOWN)
+            log.debug("move bot (" + str(self.pid) + ") down")
 
     def move_down(self):
         """do the calculated actions"""
