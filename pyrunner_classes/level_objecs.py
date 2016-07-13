@@ -4,8 +4,8 @@
 
 from pygame.locals import *
 from pyrunner_classes import logging, pygame, datetime
+import dateutil.parser
 from pyrunner_classes.spritesheet_handling import SpriteSheet
-import pdb
 
 log = logging.getLogger("World Objects")
 
@@ -90,7 +90,7 @@ class WorldObject(pygame.sprite.DirtySprite):
     def get_removed_block_ids():
         ids_and_create_time = []
         for a in WorldObject.removed:
-            ids.append((a.tile_id, a.timer))
+            ids_and_create_time.append((a.tile_id, a.timer.isoformat()))
         return ids_and_create_time
 
     @staticmethod
@@ -99,7 +99,7 @@ class WorldObject(pygame.sprite.DirtySprite):
         for remove_me in kill_list:
             for item in WorldObject.group:
                 if item.tile_id == (remove_me[0][0],remove_me[0][1]):
-                    item.kill(remove_me[1])
+                    item.kill(dateutil.parser.parse(remove_me[1]))
         
         
     @staticmethod
