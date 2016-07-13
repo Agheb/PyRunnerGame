@@ -28,7 +28,7 @@ if args.log is not None:
 class PyRunner(object):
     """main PyRunner Class"""
 
-    START_LEVEL = "./resources/levels/desert.tmx"
+    START_LEVEL = "./resources/levels/level1.tmx"
     THEME_MUSIC = "thememusic.ogg"
 
     def __init__(self):
