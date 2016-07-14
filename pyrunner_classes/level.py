@@ -182,7 +182,7 @@ class Level(object):
                     if (datetime.now() - time).seconds >= 10:
                         self.bots_respawn.remove((bid, time))
                         pos = self.spawn_enemies_1_pos if bid & 1 else self.spawn_enemies_2_pos
-                        self.create_bot(bid, pos)
+                        self.create_bot(bid, pos, True)
 
     def spawn_bots(self):
         """spawn the specified amount of bots in the level"""
@@ -192,15 +192,17 @@ class Level(object):
             x += self.tile_width * i
             self.create_bot(i, (x, y))
 
-    def create_bot(self, bid, location):
+    def create_bot(self, bid, location, respawn=False):
         """create a bot at location (x, y)"""
         bot = Bots(bid, location, self.PLAYERS[bid % len(self.PLAYERS)], self)
-        Level.bots.append(bot)
+        if respawn:
+            Level.bots[bid] = bot
+        else:
+            Level.bots.append(bot)
 
     def kill_bot(self, bot):
         """remove a specific bot an death and add it to the respawn list"""
         self.bots_respawn.append((bot.pid, datetime.now()))
-        Level.bots.remove(bot)
 
     def prepare_level_change(self):
         """call this function before switching to a new level"""

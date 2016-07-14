@@ -12,7 +12,7 @@ Um das spiel zu starten werden die folgenden Libs benötigt
 
 Mastermind ist bereits inkludiert.
 Pygame muss selbst installiert/kompiliert werden.
-Die restlichen Libraries können mit `pip install -r requirements.txt` installiert werden
+Die restlichen Libraries können mit `pip3 install -r requirements.txt` installiert werden
 
 ##Starten
 Das Spiel wird mit `python3 pyRunner.py` gestartet

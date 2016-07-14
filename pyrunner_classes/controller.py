@@ -20,10 +20,18 @@ class Controller(object):
         self.player_1_movements.append(self.config.p1_right)
         self.player_1_movements.append(self.config.p1_up)
         self.player_1_movements.append(self.config.p1_down)
+        self.player_1_movements.append(self.config.p1_js_left)
+        self.player_1_movements.append(self.config.p1_js_right)
+        self.player_1_movements.append(self.config.p1_js_up)
+        self.player_1_movements.append(self.config.p1_js_down)
         self.player_2_movements.append(self.config.p2_left)
         self.player_2_movements.append(self.config.p2_right)
         self.player_2_movements.append(self.config.p2_up)
         self.player_2_movements.append(self.config.p2_down)
+        self.player_2_movements.append(self.config.p2_js_left)
+        self.player_2_movements.append(self.config.p2_js_right)
+        self.player_2_movements.append(self.config.p2_js_up)
+        self.player_2_movements.append(self.config.p2_js_down)
 
     def interpret_key(self, key):
         """controls and key settings if the game is in foreground"""
@@ -77,9 +85,10 @@ class Controller(object):
         try:
             if key in self.player_1_movements or key in self.player_2_movements:
                 self.network_connector.client.send_key(Action.STOP)
-        except MastermindErrorClient:
-            for player in Level.players:
-                player.kill()
+        except (MastermindErrorClient, TypeError):
+            if not TypeError:
+                for player in Level.players:
+                    player.kill()
 
     @staticmethod
     def do_action(action, player_num):

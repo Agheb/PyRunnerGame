@@ -40,12 +40,8 @@ class Physics(object):
             player.rect.y = top
         if x > right:
             player.rect.x = right
-            if not player.is_human:
-                player.walk_left = True
         elif x < left:
             player.rect.x = left
-            if not player.is_human:
-                player.walk_left = False
             
     @staticmethod
     def find_collision(x, y, group=WorldObject.group):

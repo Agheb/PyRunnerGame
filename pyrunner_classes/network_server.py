@@ -104,7 +104,8 @@ class Server(threading.Thread, MastermindServerTCP):
             '''update the bot positions only on the clients'''
             player_info = self.main.level.get_normalized_pos_and_data(bot, True)
             srvlog.debug("sending bot data: ", player_info)
-            self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
+            data = {'player_info':player_info, 'block_info':[]}
+            self.send_to_all_clients_except_self(Message.type_comp_update_set, data)
 
         return super(MastermindServerTCP, self).callback_connect_client(connection_object)
 
@@ -198,7 +199,8 @@ class Server(threading.Thread, MastermindServerTCP):
         """send updated bot movements to all clients"""
         player_info = self.main.level.get_normalized_pos_and_data(bot, True)
         srvlog.debug("sending bot data: ", player_info)
-        self.send_to_all_clients_except_self(Message.type_comp_update_set, player_info)
+        data = {'player_info':player_info, 'block_info':[]}
+        self.send_to_all_clients_except_self(Message.type_comp_update_set, data)
 
     def get_collected_data(self):
         """gather collected data"""
