@@ -1,4 +1,4 @@
-# Licence
+# License
 
 Copyright (c) 2016 Arne Fahrenwalde, Luis Wanklmueller, Amanuel Ghebreweldi, Robin Grombach
 
