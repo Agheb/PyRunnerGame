@@ -10,15 +10,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Pyrunner includes code from the following projects which have their own licenses:
 * [Python](https://docs.python.org/3/license.html) [BSD-3, effectively]
-* [Mastermind Networking Libary] (https://geometrian.com/programming/projects/index.php?project=Mastermind%20Networking%20Library) by Ian Mallet [CC-4.0]
+* [Mastermind Networking](https://geometrian.com/programming/projects/index.php?project=Mastermind%20Networking%20Library) by Ian Mallet [CC-4.0]
 
 PyRunner uses the following external libraries, which have their own licenses:
 * [Pygame](https://www.pygame.org/docs/) [LGPLv2]
-* [PyTMX] (https://github.com/bitcraft/PyTMX) [LGPLv3]
-* [ZeroConf] (https://github.com/vstirbu/ZeroConf) [MIT]
+* [PyTMX](https://github.com/bitcraft/PyTMX) [LGPLv3]
+* [ZeroConf](https://github.com/vstirbu/ZeroConf) [MIT]
 
 PyRunner uses the following external tools:
-* [Tiled Map Editor] (http://www.mapeditor.org/)
+* [Tiled Map Editor](http://www.mapeditor.org/)
 
 All copyrights belong to their respective owners. For educational purpose only.
 Every effort has been made to give proper attribution.
