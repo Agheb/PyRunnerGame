@@ -1,5 +1,6 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP
-###### last updated: 2016-05-24 at 06:15 pm (UTC +2)
+
+PyRunner is a Remake of classic platformer game Loderunner. It was developed during a semester-long class project by a group of students from the University of Munich. To fulfill the class requirements, PyRunner is optimized for the Raspberry PI hardware and features gamepad support with local multiplayer.
 
 ##Running the game
 
@@ -52,21 +53,6 @@ Das Spiel wird mit `python3 pyRunner.py` gestartet
             - ~~I might remove the resize window feature and add the resolution selection in windowed mode~~
             - this ~~would~~ ensures that the screen resolution doesn't change if the game is running (restarts on resolution change)
 
-
-
-## External Libraries
-
-### PyGame 1.9.2 linked against Python 3.5
-- http://www.pygame.org/wiki/Compilation
-
-### PyMTX for TileMap Support
-- https://github.com/bitcraft/PyTMX
-
-
-## Editors
-
-### Tiled
-- http://www.mapeditor.org/
 
 
 ## Main Class
