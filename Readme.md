@@ -1,8 +1,6 @@
-# pyRunner @ Python mit dem Raspberry Pi SEP
+# pyRunner @ Python mit dem Raspberry Pi SEP  
 
 PyRunner is a Remake of classic platformer game Loderunner. It was developed during a semester-long class project by a group of students from the University of Munich. To fulfill the class requirements, PyRunner is optimized for the Raspberry PI hardware and features gamepad support with local multiplayer.
-
-##Running the game
 
 ## Setup
 Um das spiel zu starten werden die folgenden Libs benötigt
@@ -15,18 +13,8 @@ Mastermind ist bereits inkludiert.
 Pygame muss selbst installiert/kompiliert werden.
 Die restlichen Libraries können mit `pip3 install -r requirements.txt` installiert werden
 
-##Starten
+## Starten
 Das Spiel wird mit `python3 pyRunner.py` gestartet
-
-## Team Communication:
-
-### Slack
-- https://pyberries.slack.com
-
-### Trello
-- https://trello.com/b/VtSg0iUi/
-
-
 
 ## Documentation and Codeguidelines
 - regulary check this file for updates or update it yourself
