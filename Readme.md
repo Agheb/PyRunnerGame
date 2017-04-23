@@ -1,6 +1,7 @@
 # pyRunner @ Python mit dem Raspberry Pi SEP  
 
-PyRunner is a Remake of classic platformer game Loderunner. It was developed during a semester-long class project by a group of students from the University of Munich. To fulfill the class requirements, PyRunner is optimized for the Raspberry PI hardware and features gamepad support with local multiplayer.
+PyRunner is a remake of classic platformer game Loderunner. It was developed during a semester-long class project by a group of students from the University of Munich.
+To fulfill the class requirements, PyRunner is optimized for the Raspberry PI hardware and features gamepad support with local multiplayer.
 
 ## Setup
 Um das spiel zu starten werden die folgenden Libs benötigt
